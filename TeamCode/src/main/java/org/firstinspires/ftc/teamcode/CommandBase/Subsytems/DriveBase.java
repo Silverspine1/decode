@@ -5,11 +5,15 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
+import dev.weaponboy.nexus_command_base.Commands.Command;
+import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
+import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 
 public class DriveBase extends SubSystem {
 
@@ -32,12 +36,12 @@ public class DriveBase extends SubSystem {
 
     @Override
     public void init() {
-        LF.initMotor("LF", getOpmodeEX().hardwareMap);
-        RF.initMotor("RF", getOpModeEX().hardwareMap);
-        LB.initMotor("LB", getOpModeEX().hardwareMap);
-        RB.initMotor("RB", getOpModeEX().hardwareMap);
+        LF.initMotor("LF", getOpMode().hardwareMap);
+        RF.initMotor("RF", getOpMode().hardwareMap);
+        LB.initMotor("LB", getOpMode().hardwareMap);
+        RB.initMotor("RB", getOpMode().hardwareMap);
 
-        imu = getOpModeEX().hardwareMap.get(IMU.class, "imu");
+        imu = getOpMode().hardwareMap.get(IMU.class, "imu");
 
         RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.DOWN;
         RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
