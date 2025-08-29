@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
@@ -136,6 +138,11 @@ public class Odometry extends SubSystem {
     public void offsetY(double offset){
         Y += offset;
     }
+    public double deltaHeading;
+    public double deltaLeft;
+    public double deltaX;
+    public double imu360;
+
 
     public LambdaCommand updateLineBased = new LambdaCommand(
             () -> {},
@@ -145,26 +152,25 @@ public class Odometry extends SubSystem {
 
                 lastBackPod = currentBackPod;
                 lastLeftPod = currentLeftPod;
-                lastRightPod = currentRightPod;
+
 
                 currentBackPod = -backPod.getCurrentPosition();
                 currentLeftPod = -leftPod.getCurrentPosition();
-                currentRightPod = -rightPod.getCurrentPosition();
 
-                double deltaRight = currentRightPod - lastRightPod;
-                double deltaLeft = currentLeftPod - lastLeftPod;
+
+                deltaLeft = currentLeftPod - lastLeftPod;
                 double deltaBack = currentBackPod - lastBackPod;
 
-                double imu360;
-                if (imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES) <0) {
-                imu360 = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES) + 360;
+
+                if (imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle <0) {
+                imu360 = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle + 360;
                 } else{
-                    imu360 = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES);
+                    imu360 = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle;
                 }
 
 
-                double deltaHeading = imu360 - Heading;
-
+                deltaHeading = Math.toRadians(imu360) - Heading;
+//                Heading = Math.toRadians(imu360);
                 Heading += deltaHeading;
 
                 if (Math.toDegrees(Heading) < 0){
@@ -173,7 +179,7 @@ public class Odometry extends SubSystem {
                     Heading = Math.toRadians(Math.toDegrees(Heading) - 360);
                 }
 
-                double deltaX = ((((deltaRight+deltaLeft)*ticksPerCM)/2)) + (Math.toDegrees(deltaHeading) * cmPerDegreeX);
+                deltaX = ((((deltaLeft)*ticksPerCM)/2)) + (Math.toDegrees(deltaHeading) * cmPerDegreeX);
                 double deltaY = (ticksPerCM * deltaBack) - (Math.toDegrees(deltaHeading) * cmPerDegreeY);
 
 //                X += deltaX;
