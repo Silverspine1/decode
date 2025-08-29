@@ -1,9 +1,11 @@
-package dev.weaponboy.command_library.Subsystems;
+package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
@@ -11,18 +13,18 @@ import java.util.ArrayList;
 
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
+import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Odometry extends SubSystem {
 
-    DistanceSensor backLeft = new DistanceSensor();
-    DistanceSensor backRight = new DistanceSensor();
-    DistanceSensor right = new DistanceSensor();
 
-    ArrayList<SensorReadings> sensorReadings = new ArrayList<>();
 
     DcMotorEx leftPod;
     DcMotorEx rightPod;
     DcMotorEx backPod;
+
+    public IMU imu;
+
 
     double X, Y, Heading;
     int startHeading;
@@ -33,8 +35,8 @@ public class Odometry extends SubSystem {
     public double rightPodPos, leftPodPos, backPodPos;
 
     double podTicks = 2000;
-    double wheelRadius = 2.4;
-    double trackWidth = 24.2;
+    double wheelRadius = 1.5;
+    double trackWidth = 15.8;
     double backPodOffset = 9.8;
 
     double ticksPerCM = ((2.0 * Math.PI) * wheelRadius)/podTicks;
@@ -50,12 +52,7 @@ public class Odometry extends SubSystem {
         return runningDistanceSensorReset;
     }
 
-    public void runDistanceSensorReset(boolean sampleReset) {
-        runningDistanceSensorReset = true;
-        this.sampleReset = sampleReset;
-        resetCounter = 0;
-        sensorReadings.clear();
-    }
+
 
     boolean runningDistanceSensorReset = false;
     int resetCounter = 0;
@@ -77,15 +74,8 @@ public class Odometry extends SubSystem {
         rightPod = getOpMode().hardwareMap.get(DcMotorEx.class, "RF");
         backPod = getOpMode().hardwareMap.get(DcMotorEx.class, "LF");
 
-        backRight.init(getOpMode().hardwareMap, "backRight");
-        backLeft.init(getOpMode().hardwareMap, "backLeft");
+        imu = getOpMode().hardwareMap.get(IMU.class, "imu");
 
-        backRight.setOffset(-180);
-        backLeft.setOffset(-180);
-
-        right.init(getOpMode().hardwareMap, "right");
-
-        right.setOffset(-200);
     }
 
     public double headingError(double targetHeading){
@@ -98,70 +88,8 @@ public class Odometry extends SubSystem {
         executeEX();
         updateVelocity();
 
-        if (runningDistanceSensorReset){
-
-            resetCounter++;
-            sensorReadings.add(new SensorReadings(backRight.getPosition(), backLeft.getPosition(), right.getPosition()));
-
-//            System.out.println(sensorReadings.size());
-//            System.out.println(resetCounter);
-
-            if (resetCounter > 20){
-
-                runningDistanceSensorReset = false;
-                SensorReadings averaged;
-
-                double backRight = 0;
-                double backLeft = 0;
-                double right = 0;
-
-                for (SensorReadings reading: sensorReadings){
-                    backRight += reading.getSen1();
-                    backLeft += reading.getSen2();
-                    right += reading.getSen3();
-
-//                    System.out.println(reading.getSen1());
-//                    System.out.println(reading.getSen2());
-//                    System.out.println(reading.getSen3());
-                }
-
-                averaged = new SensorReadings((backRight/resetCounter)*0.1, (backLeft/resetCounter)*0.1, (right/resetCounter)*0.1);
-
-//                System.out.println("Avg sen 1: " + averaged.getSen1());
-//                System.out.println("Avg sen 2: " + averaged.getSen2());
-//                System.out.println("Avg sen 3: " + averaged.getSen3());
-
-                final double distanceFromRobotCenterToSensor = 11;
-                final double distanceBetweenSensors = 13.2;
-
-                double readingDifference = averaged.getSen2() - averaged.getSen1();
-
-                double headingError = Math.atan(readingDifference / distanceBetweenSensors);
-
-                double newHeading;
-                double newY;
-                double newX;
-
-                if (sampleReset){
-                    newHeading = 180 + Math.toDegrees(headingError);
-
-                    newY = 360 - (Math.cos(Math.abs(headingError))*(averaged.getSen3() + distanceFromRobotCenterToSensor));
-                    newX = 360 - (((averaged.getSen1() + averaged.getSen2())/2) + 17.5);
-                }else{
-                    newHeading = 90 + Math.toDegrees(headingError);
-
-                    newX = 360 - (Math.cos(Math.abs(headingError))*(averaged.getSen3() + distanceFromRobotCenterToSensor));
-                    newY = (((averaged.getSen1() + averaged.getSen2())/2) + 17.5);
-                }
 
 
-
-                X = newX;
-                Y = newY;
-                Heading = Math.toRadians(newHeading);
-
-            }
-        }
     }
 
     public double X (){
@@ -227,7 +155,16 @@ public class Odometry extends SubSystem {
                 double deltaLeft = currentLeftPod - lastLeftPod;
                 double deltaBack = currentBackPod - lastBackPod;
 
-                double deltaHeading = (ticksPerCM * (deltaRight - deltaLeft)) / (trackWidth+0.22);
+                double imu360;
+                if (imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES) <0) {
+                imu360 = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES) + 360;
+                } else{
+                    imu360 = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES);
+                }
+
+
+                double deltaHeading = imu360 - Heading;
+
                 Heading += deltaHeading;
 
                 if (Math.toDegrees(Heading) < 0){
