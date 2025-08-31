@@ -179,7 +179,7 @@ public class Odometry extends SubSystem {
                     Heading = Math.toRadians(Math.toDegrees(Heading) - 360);
                 }
 
-                deltaX = ((((deltaLeft)*ticksPerCM)/2)) + (Math.toDegrees(deltaHeading) * cmPerDegreeX);
+                deltaX = ((((deltaLeft)*ticksPerCM))) + (Math.toDegrees(deltaHeading) * cmPerDegreeX);
                 double deltaY = (ticksPerCM * deltaBack) - (Math.toDegrees(deltaHeading) * cmPerDegreeY);
 
 //                X += deltaX;
