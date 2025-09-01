@@ -37,13 +37,13 @@ public class Odometry extends SubSystem {
     public double rightPodPos, leftPodPos, backPodPos;
 
     double podTicks = 2000;
-    double wheelRadius = 1.57;
+    double wheelRadius = 1.53;
     double trackWidth = 15.8;
     double backPodOffset = 9.8;
 
     double ticksPerCM = ((2.0 * Math.PI) * wheelRadius)/podTicks;
-    double cmPerDegreeX = (double) (1) / 360;
-    double cmPerDegreeY = ((1.0 * Math.PI) * backPodOffset) / 360;
+    double cmPerDegreeX = (double) (2 / 360);
+    double cmPerDegreeY = ((2 * Math.PI) * backPodOffset) / 360;
 
     double currentXVelocity = 0;
     double currentYVelocity = 0;
@@ -77,6 +77,8 @@ public class Odometry extends SubSystem {
         backPod = getOpMode().hardwareMap.get(DcMotorEx.class, "LF");
 
         imu = getOpMode().hardwareMap.get(IMU.class, "imu");
+
+
 
     }
 
@@ -141,6 +143,7 @@ public class Odometry extends SubSystem {
     public double deltaHeading;
     public double deltaLeft;
     public double deltaX;
+    public double deltaY;
     public double imu360;
 
 
@@ -170,6 +173,7 @@ public class Odometry extends SubSystem {
 
 
                 deltaHeading = Math.toRadians(imu360) - Heading;
+                deltaHeading = (deltaHeading +180) % 360 - 180;
 //                Heading = Math.toRadians(imu360);
                 Heading += deltaHeading;
 
@@ -180,7 +184,7 @@ public class Odometry extends SubSystem {
                 }
 
                 deltaX = ((((deltaLeft)*ticksPerCM))) + (Math.toDegrees(deltaHeading) * cmPerDegreeX);
-                double deltaY = (ticksPerCM * deltaBack) - (Math.toDegrees(deltaHeading) * cmPerDegreeY);
+                deltaY = (ticksPerCM * deltaBack) - (Math.toDegrees(deltaHeading) * cmPerDegreeY);
 
 //                X += deltaX;
 //                Y += deltaY;
