@@ -37,12 +37,13 @@ public class Odometry extends SubSystem {
     public double rightPodPos, leftPodPos, backPodPos;
 
     double podTicks = 2000;
-    double wheelRadius = 1.53;
+    double wheelRadius = 1.5;
     double trackWidth = 15.8;
     double backPodOffset = 9.8;
+    double sidePodOfSet = 4.5;
 
     double ticksPerCM = ((2.0 * Math.PI) * wheelRadius)/podTicks;
-    double cmPerDegreeX = (double) (2 / 360);
+    double cmPerDegreeX = (double) ((2*sidePodOfSet)/ 360);
     double cmPerDegreeY = ((2 * Math.PI) * backPodOffset) / 360;
 
     double currentXVelocity = 0;
@@ -173,7 +174,6 @@ public class Odometry extends SubSystem {
 
 
                 deltaHeading = Math.toRadians(imu360) - Heading;
-                deltaHeading = (deltaHeading +180) % 360 - 180;
 //                Heading = Math.toRadians(imu360);
                 Heading += deltaHeading;
 
