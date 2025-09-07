@@ -43,8 +43,8 @@ public class Odometry extends SubSystem {
     double sidePodOfSet = 4.5;
 
     double ticksPerCM = ((2.0 * Math.PI) * wheelRadius)/podTicks;
-    double cmPerDegreeX = (double) ((2*sidePodOfSet)/ 360);
-    double cmPerDegreeY = ((2 * Math.PI) * backPodOffset) / 360;
+    double cmPerDegreeX = (double) ((0.5*sidePodOfSet)/ 360);
+    double cmPerDegreeY = ((0.5 * Math.PI) * backPodOffset) / 360;
 
     double currentXVelocity = 0;
     double currentYVelocity = 0;
@@ -78,7 +78,7 @@ public class Odometry extends SubSystem {
         backPod = getOpMode().hardwareMap.get(DcMotorEx.class, "LF");
 
         imu = getOpMode().hardwareMap.get(IMU.class, "imu");
-
+        imu.resetYaw();
 
 
     }
@@ -142,6 +142,7 @@ public class Odometry extends SubSystem {
         Y += offset;
     }
     public double deltaHeading;
+    public double oldHeading;
     public double deltaLeft;
     public double deltaX;
     public double deltaY;
@@ -165,6 +166,9 @@ public class Odometry extends SubSystem {
                 deltaLeft = currentLeftPod - lastLeftPod;
                 double deltaBack = currentBackPod - lastBackPod;
 
+                deltaHeading = Math.toRadians(imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle) - oldHeading;
+
+                oldHeading += deltaHeading;
 
                 if (imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle <0) {
                 imu360 = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle + 360;
@@ -173,9 +177,9 @@ public class Odometry extends SubSystem {
                 }
 
 
-                deltaHeading = Math.toRadians(imu360) - Heading;
 //                Heading = Math.toRadians(imu360);
                 Heading += deltaHeading;
+
 
                 if (Math.toDegrees(Heading) < 0){
                     Heading = Math.toRadians(360 - Math.toDegrees(Heading));
