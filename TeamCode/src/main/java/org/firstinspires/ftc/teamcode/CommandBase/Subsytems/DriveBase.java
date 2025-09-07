@@ -22,7 +22,7 @@ public class DriveBase extends SubSystem {
     public MotorEx RB = new MotorEx();
     public MotorEx LB = new MotorEx();
 
-    PIDController headingPID = new PIDController(0.025,0,0.000301);
+    PIDController headingPID = new PIDController(0.025,0,0.0003);
     public IMU imu;
     public double strafeExtra = 1.2;
 
