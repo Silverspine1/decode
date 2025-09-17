@@ -2,10 +2,13 @@ package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
 import dev.weaponboy.nexus_command_base.Commands.Command;
@@ -21,6 +24,8 @@ public class DriveBase extends SubSystem {
     public MotorEx RF = new MotorEx();
     public MotorEx RB = new MotorEx();
     public MotorEx LB = new MotorEx();
+    public MotorEx intake = new MotorEx();
+
 
     PIDController headingPID = new PIDController(0.025,0,0.0003);
     public IMU imu;
@@ -40,6 +45,9 @@ public class DriveBase extends SubSystem {
         RF.initMotor("RF", getOpMode().hardwareMap);
         LB.initMotor("LB", getOpMode().hardwareMap);
         RB.initMotor("RB", getOpMode().hardwareMap);
+
+        intake.initMotor("intake", getOpMode().hardwareMap);
+
 
         imu = getOpMode().hardwareMap.get(IMU.class, "imu");
 
@@ -123,9 +131,8 @@ public class DriveBase extends SubSystem {
             () -> {
                 double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
-                imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
-                double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+                double heading = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle;
 
                 double rotX = vertikal * Math.cos(-heading) - strafe * Math.sin(-heading);
                 double rotY = vertikal * Math.sin(-heading) + strafe * Math.cos(-heading);

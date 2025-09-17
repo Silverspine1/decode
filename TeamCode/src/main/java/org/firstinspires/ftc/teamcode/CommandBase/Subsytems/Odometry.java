@@ -21,9 +21,9 @@ public class Odometry extends SubSystem {
 
 
 
-    DcMotorEx leftPod;
-    DcMotorEx rightPod;
-    DcMotorEx backPod;
+    public DcMotorEx leftPod;
+    public DcMotorEx rightPod;
+    public DcMotorEx backPod;
 
     public IMU imu;
 
@@ -39,12 +39,12 @@ public class Odometry extends SubSystem {
     double podTicks = 2000;
     double wheelRadius = 1.5;
     double trackWidth = 15.8;
-    double backPodOffset = 9.8;
-    double sidePodOfSet = 4.5;
+    double backPodOffset = -1.8;
+    double sidePodOfSet = 13;
 
     double ticksPerCM = ((2.0 * Math.PI) * wheelRadius)/podTicks;
-    double cmPerDegreeX = (double) ((0.5*sidePodOfSet)/ 360);
-    double cmPerDegreeY = ((0.5 * Math.PI) * backPodOffset) / 360;
+    double cmPerDegreeX = (double) ((1.4*sidePodOfSet)/ 360);
+    double cmPerDegreeY = ((1.4 * Math.PI) * backPodOffset) / 360;
 
     double currentXVelocity = 0;
     double currentYVelocity = 0;
@@ -73,8 +73,8 @@ public class Odometry extends SubSystem {
 
     @Override
     public void init() {
-        leftPod = getOpMode().hardwareMap.get(DcMotorEx.class, "RB");
-        rightPod = getOpMode().hardwareMap.get(DcMotorEx.class, "RF");
+        leftPod = getOpMode().hardwareMap.get(DcMotorEx.class, "RF");
+        rightPod = getOpMode().hardwareMap.get(DcMotorEx.class, "RB");
         backPod = getOpMode().hardwareMap.get(DcMotorEx.class, "LF");
 
         imu = getOpMode().hardwareMap.get(IMU.class, "imu");
