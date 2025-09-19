@@ -5,6 +5,8 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -25,15 +27,25 @@ public class DriveBase extends SubSystem {
     public MotorEx RB = new MotorEx();
     public MotorEx LB = new MotorEx();
     public MotorEx intake = new MotorEx();
+    public MotorEx shoot = new MotorEx();
+    public MotorEx shoot2 = new MotorEx();
+    public Servo trans;
+    public TouchSensor intakeSensor;
+
+
 
 
     PIDController headingPID = new PIDController(0.025,0,0.0003);
+    public PIDController shootPID = new PIDController(0.01,0.00004,0.0003);
+
     public IMU imu;
     public double strafeExtra = 1.2;
 
     double vertikal ;
     double turn ;
     double strafe;
+
+    double targetRPM = 400;
 
     public DriveBase(OpModeEX opModeEX){
         registerSubsystem(opModeEX,driveCommand);
@@ -48,14 +60,19 @@ public class DriveBase extends SubSystem {
 
         intake.initMotor("intake", getOpMode().hardwareMap);
 
+        shoot.initMotor("shoot", getOpMode().hardwareMap);
+        shoot2.initMotor("shoot2", getOpMode().hardwareMap);
+        intakeSensor = getOpMode().hardwareMap.get(TouchSensor.class, "intakeSensor");
+
+
+        trans = getOpMode().hardwareMap.get(Servo.class,"trans");
+
+
+
 
         imu = getOpMode().hardwareMap.get(IMU.class, "imu");
 
-        RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.DOWN;
-        RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection);
 
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         imu.resetYaw();
 
@@ -77,17 +94,19 @@ public class DriveBase extends SubSystem {
         executeEX();
     }
 
+
     public Command drivePowers (double vertical, double turn, double strafe){
         this.vertikal = -vertical;
         this.strafe = strafe;
         this.turn = turn;
 
         return driveCommand;
+
     }
 
     public Command drivePowers (RobotPower power){
-        this.vertikal = power.getVertical();
-        this.strafe = -power.getHorizontal();
+        this.vertikal =- power.getVertical();
+        this.strafe = power.getHorizontal();
         this.turn = power.getPivot();
 
         return driveCommand;
@@ -97,7 +116,7 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
-                double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+                 double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
                 LF.update((vertikal-(strafe)-turn)/denominator);
                 RF.update((vertikal+(strafe)+turn)/denominator);
@@ -132,7 +151,7 @@ public class DriveBase extends SubSystem {
                 double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
 
-                double heading = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).secondAngle;
+                double heading = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.RADIANS);
 
                 double rotX = vertikal * Math.cos(-heading) - strafe * Math.sin(-heading);
                 double rotY = vertikal * Math.sin(-heading) + strafe * Math.cos(-heading);
