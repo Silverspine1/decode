@@ -6,7 +6,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.DriveBase;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Odometry;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 
 import dev.weaponboy.nexus_command_base.Examples.SubSystems.Subsystem;
 import dev.weaponboy.nexus_command_base.OpmodeEX.Scheduler;
@@ -22,7 +24,12 @@ public abstract class OpModeEX extends OpMode {
 
     public Odometry odometry = new Odometry(this);
 
-    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry});
+    public Intake intake = new Intake(this) {};
+
+    public Turret turret = new Turret(this);
+
+
+    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,intake,turret});
 
     List<LynxModule> allHubs;
 

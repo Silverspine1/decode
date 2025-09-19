@@ -1,13 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
 import dev.weaponboy.nexus_pathing.Follower.follower;
@@ -26,7 +21,7 @@ public class TestingProgram extends OpModeEX {
     public IMU imu;
     double targetRPM = 2700;
     boolean shootHim = false;
-    double shoopower;
+    double shootpower;
 
 
     public final sectionBuilder[] setPoint = new sectionBuilder[]{
@@ -47,42 +42,45 @@ public class TestingProgram extends OpModeEX {
     @Override
     public void loopEX() {
         driveBase.driveFieldCentric(gamepad1.right_stick_y,(gamepad1.left_trigger - gamepad1.right_trigger),-gamepad1.right_stick_x);
+        turret.robotX = odometry.X();
+        turret.robotY = odometry.Y();
+        turret.robotHeading = Math.toRadians(odometry.Heading());
 
         if (gamepad1.a){
-            driveBase.shoot.update(gamepad1.left_stick_y);
-            driveBase.shoot2.update(gamepad1.left_stick_y);
+            turret.shooterMotorOne.update(gamepad1.left_stick_y);
+            turret.shooterMotorTwo.update(gamepad1.left_stick_y);
         }
         if (gamepad1.y){
            shootHim = true;
 
         }
-        double rpm = -(driveBase.shoot.getVelocity()/28)*60;
+        double rpm = -(turret.shooterMotorOne.getVelocity()/28)*60;
 
-        if (driveBase.shootPID.calculate(targetRPM,rpm) <0){
-            shoopower = 0;
+        if (turret.shootPID.calculate(targetRPM,rpm) <0){
+            shootpower = 0;
         }else {
-            shoopower = driveBase.shootPID.calculate(targetRPM,rpm);
+            shootpower = turret.shootPID.calculate(targetRPM,rpm);
         }
 
         if (shootHim) {
             targetRPM += (gamepad1.left_stick_y*14);
-            driveBase.shoot.update(Math.abs(shoopower));
-            driveBase.shoot2.update(Math.abs(shoopower));
+            turret.shooterMotorOne.update(Math.abs(shootpower));
+            turret.shooterMotorTwo.update(Math.abs(shootpower));
         }
         if (pathing && follow.isFinished(5,5)){
             pathing = false;
         }
         if (gamepad1.b){
-            driveBase.intake.update(-1);
+            intake.intakeMotor.update(-1);
         }else if(gamepad1.x) {
-            driveBase.intake.update(1);
+            intake.intakeMotor.update(1);
         }else {
-            driveBase.intake.update(0);
+            intake.intakeMotor.update(0);
         }
         if (gamepad1.dpad_up){
-            driveBase.trans.setPosition(1);
+            intake.trans.setPosition(1);
         }else {
-            driveBase.trans.setPosition(0.5);
+            intake.trans.setPosition(0.5);
         }
 
         if (pathing) {
@@ -101,7 +99,7 @@ public class TestingProgram extends OpModeEX {
         telemetry.addData("Intake Sensor",driveBase.intakeSensor.isPressed());
         telemetry.addData("shoot rpm",rpm);
         telemetry.addData("target",targetRPM);
-        telemetry.addData("power",shoopower);
+        telemetry.addData("power", shootpower);
         telemetry.update();
 
 

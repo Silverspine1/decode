@@ -26,17 +26,12 @@ public class DriveBase extends SubSystem {
     public MotorEx RF = new MotorEx();
     public MotorEx RB = new MotorEx();
     public MotorEx LB = new MotorEx();
-    public MotorEx intake = new MotorEx();
-    public MotorEx shoot = new MotorEx();
-    public MotorEx shoot2 = new MotorEx();
-    public Servo trans;
     public TouchSensor intakeSensor;
 
 
 
 
     PIDController headingPID = new PIDController(0.025,0,0.0003);
-    public PIDController shootPID = new PIDController(0.01,0.00004,0.0003);
 
     public IMU imu;
     public double strafeExtra = 1.2;
@@ -45,7 +40,6 @@ public class DriveBase extends SubSystem {
     double turn ;
     double strafe;
 
-    double targetRPM = 400;
 
     public DriveBase(OpModeEX opModeEX){
         registerSubsystem(opModeEX,driveCommand);
@@ -58,15 +52,8 @@ public class DriveBase extends SubSystem {
         LB.initMotor("LB", getOpMode().hardwareMap);
         RB.initMotor("RB", getOpMode().hardwareMap);
 
-        intake.initMotor("intake", getOpMode().hardwareMap);
 
-        shoot.initMotor("shoot", getOpMode().hardwareMap);
-        shoot2.initMotor("shoot2", getOpMode().hardwareMap);
         intakeSensor = getOpMode().hardwareMap.get(TouchSensor.class, "intakeSensor");
-
-
-        trans = getOpMode().hardwareMap.get(Servo.class,"trans");
-
 
 
 
