@@ -82,6 +82,9 @@ public class TestingProgram extends OpModeEX {
         }else {
             intake.trans.setPosition(0.5);
         }
+        if (gamepad1.dpad_left){
+            turret.turretTarget = true;
+        }
 
         if (pathing) {
 
@@ -100,6 +103,7 @@ public class TestingProgram extends OpModeEX {
         telemetry.addData("shoot rpm",rpm);
         telemetry.addData("target",targetRPM);
         telemetry.addData("power", shootpower);
+        telemetry.addData("turret target",turret.turretAngle);
         telemetry.update();
 
 

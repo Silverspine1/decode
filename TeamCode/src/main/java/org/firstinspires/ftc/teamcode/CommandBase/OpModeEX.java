@@ -24,12 +24,12 @@ public abstract class OpModeEX extends OpMode {
 
     public Odometry odometry = new Odometry(this);
 
-    public Intake intake = new Intake(this) {};
-
     public Turret turret = new Turret(this);
 
+    public Intake intake = new Intake(this);
 
-    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,intake,turret});
+
+    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,turret,intake});
 
     List<LynxModule> allHubs;
 

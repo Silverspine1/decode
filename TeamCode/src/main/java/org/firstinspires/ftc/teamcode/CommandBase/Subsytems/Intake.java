@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
-public abstract class Intake extends SubSystem {
+public class Intake extends SubSystem {
     public MotorEx intakeMotor = new MotorEx();
     public Servo trans;
     public Intake(OpModeEX opModeEX){
