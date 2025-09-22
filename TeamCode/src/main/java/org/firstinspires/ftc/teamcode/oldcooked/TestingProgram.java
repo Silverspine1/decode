@@ -1,9 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.oldcooked;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import dev.weaponboy.nexus_pathing.Follower.follower;
 import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
@@ -14,6 +16,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @TeleOp
 public class TestingProgram extends OpModeEX {
 
+    private static final Logger log = LoggerFactory.getLogger(TestingProgram.class);
     follower follow = new follower();
     pathsManager paths = new pathsManager();
     boolean pathing = false;
@@ -22,6 +25,7 @@ public class TestingProgram extends OpModeEX {
     double targetRPM = 2700;
     boolean shootHim = false;
     double shootpower;
+    double hood = 178;
 
 
     public final sectionBuilder[] setPoint = new sectionBuilder[]{
@@ -41,10 +45,12 @@ public class TestingProgram extends OpModeEX {
 
     @Override
     public void loopEX() {
-        driveBase.driveFieldCentric(gamepad1.right_stick_y,(gamepad1.left_trigger - gamepad1.right_trigger),-gamepad1.right_stick_x);
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = Math.toRadians(odometry.Heading());
+        if (Math.abs(gamepad1.right_stick_y)>0){
+            turret.hoodAdjust.setPosition(hood += gamepad1.right_stick_y);
+        }
 
         if (gamepad1.a){
             turret.shooterMotorOne.update(gamepad1.left_stick_y);
@@ -83,7 +89,8 @@ public class TestingProgram extends OpModeEX {
             intake.trans.setPosition(0.5);
         }
         if (gamepad1.dpad_left){
-            turret.turretTarget = true;
+            turret.turretTurnOne.setPosition(0);
+            turret.turretTurnTwo.setPosition(0);
         }
 
         if (pathing) {
@@ -104,6 +111,8 @@ public class TestingProgram extends OpModeEX {
         telemetry.addData("target",targetRPM);
         telemetry.addData("power", shootpower);
         telemetry.addData("turret target",turret.turretAngle);
+        telemetry.addData("ditance",turret.distance);
+        telemetry.addData("hood angle",hood);
         telemetry.update();
 
 
