@@ -34,9 +34,13 @@ public class Turret extends SubSystem {
     double distance2 = 244;
     double hoodAngle2 = 110;
     double power2 = 4200;
+    double power2NoHood;
     double distance3 = 320;
     double hoodAngle3 = 100;
     double power3 = 4840;
+    double power3NoHood;
+    double power4NoHood;
+    double distance4 = 380;
     double interpolatePower;
 
 
@@ -90,11 +94,46 @@ public class Turret extends SubSystem {
             double deltaX = targetX - robotX;
             double deltaY = targetY - robotY;
             distance = Math.hypot(deltaY,deltaX);
-            double term1 = power1 * ((distance - distance2) * (distance - distance3)) / ((distance1 - distance2) * (distance1 - distance3));
-            double term2 = power2 * ((distance - distance1) * (distance - distance3)) / ((distance2 - distance1) * (distance2 - distance3));
-            double term3 = power3 * ((distance - distance1) * (distance - distance2)) / ((distance3 - distance1) * (distance2 - distance2));
+        // --- Interpolation Logic ---
+        if (distance <= distance1) {
 
-            // interpolatePower = term1 + term2 + term3;
+            interpolatePower = power1;
+
+        } else if (distance <= distance2) {
+
+            interpolatePower = power1 + (power2NoHood - power1) * (distance - distance1) / (distance2 - distance1);
+
+        } else if (distance <= distance3) {
+
+
+            interpolatePower = power2 + (power3NoHood - power2) * (distance - distance2) / (distance3 - distance2);
+
+        } else if (distance <= distance4) {
+
+            interpolatePower = power3 + (power4NoHood - power3) * (distance - distance3) / (distance4 - distance3);
+
+        } else {
+
+            if (distance4 - distance3 != 0) {
+
+                double slope = (power4NoHood - power3) / (distance4 - distance3);
+                interpolatePower = power3 + slope * (distance - distance3);
+
+            } else {
+
+                interpolatePower = power4NoHood;
+
+            }
+        }
+//            if (distance >= distance1){
+//                hoodAdjust.setPosition(hoodAngle1);
+//            } else if (distance >= distance2){
+//                hoodAdjust.setPosition(hoodAngle2);
+//            } else if (distance >= distance3){
+//                hoodAdjust.setPosition(hoodAngle3);
+//            }
+
+
             // targetRPM = interpolatePower;
 
              if (robotHeading > Math.PI) {
