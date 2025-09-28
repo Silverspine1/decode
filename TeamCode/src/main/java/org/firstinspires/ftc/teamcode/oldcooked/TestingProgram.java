@@ -35,7 +35,7 @@ public class TestingProgram extends OpModeEX {
 
     @Override
     public void initEX() {
-        odometry.startPosition(0, 0, 0);
+        odometry.startPosition(16.6, 76.6, 180);
         targetHeading = 0;
         paths.addNewPath("setPoint");
         paths.buildPath(setPoint);
@@ -104,15 +104,11 @@ public class TestingProgram extends OpModeEX {
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
         telemetry.addData("Heading",odometry.Heading());
-        telemetry.addData("left pod",odometry.leftPod.getCurrentPosition());
-        telemetry.addData("back pod",odometry.backPod.getCurrentPosition());
-        telemetry.addData("Intake Sensor",driveBase.intakeSensor.isPressed());
-        telemetry.addData("shoot rpm",rpm);
         telemetry.addData("target",targetRPM);
         telemetry.addData("power", shootpower);
-        telemetry.addData("turret target",turret.turretAngle);
         telemetry.addData("ditance",turret.distance);
         telemetry.addData("hood angle",hood);
+        telemetry.addData("shoot zone",turret.inZone);
         telemetry.update();
 
 

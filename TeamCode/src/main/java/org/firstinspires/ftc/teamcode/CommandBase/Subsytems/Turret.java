@@ -14,33 +14,81 @@ import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 public class Turret extends SubSystem {
     public MotorEx shooterMotorOne = new MotorEx();
     public MotorEx shooterMotorTwo = new MotorEx();
+
     public ServoDegrees turretTurnOne = new ServoDegrees();
     public ServoDegrees turretTurnTwo =new ServoDegrees();
     public ServoDegrees hoodAdjust = new ServoDegrees();
 
-    public double targetRPM = 2700;
+    enum lowMediumHigh{
+        low,
+        medium,
+        high
+    }
+    public lowMediumHigh shootingLevel = lowMediumHigh.low;
+
+    public boolean inZone = false;
+    double Xoffset = 16.6;
+    double Yoffset = 16.6;
+
+
     public double targetX = 80;
     public double targetY = 0;
     public double robotX;
     public double robotY;
     public double robotHeading;
-    public double turretAngle;
+
+    double targetRPM = 2700;
+    double turretAngle;
     final double gearRatio = 0.7272;
     final double turretLimitAngle =80;
+
+
     public double distance;
     double distance1 = 143;
-    double hoodAngle1 = 166.2;
-    double power1 = 3760;
     double distance2 = 244;
-    double hoodAngle2 = 110;
-    double power2 = 4200;
-    double power2NoHood;
     double distance3 = 320;
-    double hoodAngle3 = 100;
-    double power3 = 4840;
-    double power3NoHood;
-    double power4NoHood;
     double distance4 = 380;
+
+
+
+    double lowHoodAngle1 = 166.2;
+    double lowHoodAngle2 = 110;
+    double lowHoodAngle3 = 100;
+
+    double mediumHoodAngle1 = 166.2;
+    double mediumHoodAngle2 = 110;
+    double mediumHoodAngle3 = 100;
+
+    double highHoodAngle1 = 166.2;
+    double highHoodAngle2 = 110;
+    double highHoodAngle3 = 100;
+
+
+    double lowPower1 = 3760;
+    double lowPower2 = 4200;
+    double lowPower3 = 4840;
+
+    double mediumPower1 = 3760;
+    double mediumPower2 = 4200;
+    double mediumPower3 = 4840;
+
+    double highPower1 = 3760;
+    double highPower2 = 4200;
+    double highPower3 = 4840;
+
+
+    double lowPower2NoHood;
+    double lowPower3NoHood;
+    double lowPower4NoHood;
+
+    double mediumPower2NoHood;
+    double mediumPower3NoHood;
+    double mediumPower4NoHood;
+
+    double highPower2NoHood;
+    double highPower3NoHood;
+    double highPower4NoHood;
+
     double interpolatePower;
 
 
@@ -89,52 +137,135 @@ public class Turret extends SubSystem {
     @Override
     public void execute() {
         executeEX();
+        switch (shootingLevel) {
+            case low:
+                if (distance <= distance1) {
 
+                    interpolatePower = lowPower1;
+
+                } else if (distance <= distance2) {
+
+                    interpolatePower = lowPower1 + (lowPower2NoHood - lowPower1) * (distance - distance1) / (distance2 - distance1);
+
+                } else if (distance <= distance3) {
+
+
+                    interpolatePower = lowPower2 + (lowPower3NoHood - lowPower2) * (distance - distance2) / (distance3 - distance2);
+
+                } else if (distance <= distance4) {
+
+                    interpolatePower = lowPower3 + (lowPower4NoHood - lowPower3) * (distance - distance3) / (distance4 - distance3);
+
+                } else {
+
+                    if (distance4 - distance3 != 0) {
+
+                        double slope = (lowPower4NoHood - lowPower3) / (distance4 - distance3);
+                        interpolatePower = lowPower3 + slope * (distance - distance3);
+
+                    } else {
+
+                        interpolatePower = lowPower4NoHood;
+
+                    }
+                }
+                if (distance >= distance1) {
+                    hoodAdjust.setPosition(lowHoodAngle1);
+                } else if (distance >= distance2) {
+                    hoodAdjust.setPosition(lowHoodAngle2);
+                } else if (distance >= distance3) {
+                    hoodAdjust.setPosition(lowHoodAngle3);
+                }
+
+                break;
+            case medium:
+                if (distance <= distance1) {
+
+                    interpolatePower = mediumPower1;
+
+                } else if (distance <= distance2) {
+
+                    interpolatePower = mediumPower1 + (mediumPower2NoHood - mediumPower1) * (distance - distance1) / (distance2 - distance1);
+
+                } else if (distance <= distance3) {
+
+
+                    interpolatePower = mediumPower2 + (mediumPower3NoHood - mediumPower2) * (distance - distance2) / (distance3 - distance2);
+
+                } else if (distance <= distance4) {
+
+                    interpolatePower = mediumPower3 + (mediumPower4NoHood - mediumPower3) * (distance - distance3) / (distance4 - distance3);
+
+                } else {
+
+                    if (distance4 - distance3 != 0) {
+
+                        double slope = (mediumPower4NoHood - mediumPower3) / (distance4 - distance3);
+                        interpolatePower = mediumPower3 + slope * (distance - distance3);
+
+                    } else {
+
+                        interpolatePower = mediumPower4NoHood;
+
+                    }
+                }
+                if (distance >= distance1) {
+                    hoodAdjust.setPosition(mediumHoodAngle1);
+                } else if (distance >= distance2) {
+                    hoodAdjust.setPosition(mediumHoodAngle2);
+                } else if (distance >= distance3) {
+                    hoodAdjust.setPosition(mediumHoodAngle3);
+
+
+                }
+                break;
+                case high:
+                    if (distance <= distance1) {
+
+                        interpolatePower = highPower1;
+
+                    } else if (distance <= distance2) {
+
+                        interpolatePower = highPower1 + (highPower2NoHood - highPower1) * (distance - distance1) / (distance2 - distance1);
+
+                    } else if (distance <= distance3) {
+
+
+                        interpolatePower = highPower2 + (highPower3NoHood - highPower2) * (distance - distance2) / (distance3 - distance2);
+
+                    } else if (distance <= distance4) {
+
+                        interpolatePower = highPower3 + (highPower4NoHood - highPower3) * (distance - distance3) / (distance4 - distance3);
+
+                    } else {
+
+                        if (distance4 - distance3 != 0) {
+
+                            double slope = (highPower4NoHood - highPower3) / (distance4 - distance3);
+                            interpolatePower = highPower3 + slope * (distance - distance3);
+
+                        } else {
+
+                            interpolatePower = highPower4NoHood;
+
+                        }
+                    }
+                    if (distance >= distance1) {
+                        hoodAdjust.setPosition(highHoodAngle1);
+                    } else if (distance >= distance2) {
+                        hoodAdjust.setPosition(highHoodAngle2);
+                    } else if (distance >= distance3) {
+                        hoodAdjust.setPosition(highHoodAngle3);
+
+                    }
+
+
+        }
 
             double deltaX = targetX - robotX;
             double deltaY = targetY - robotY;
             distance = Math.hypot(deltaY,deltaX);
-        // --- Interpolation Logic ---
-        if (distance <= distance1) {
 
-            interpolatePower = power1;
-
-        } else if (distance <= distance2) {
-
-            interpolatePower = power1 + (power2NoHood - power1) * (distance - distance1) / (distance2 - distance1);
-
-        } else if (distance <= distance3) {
-
-
-            interpolatePower = power2 + (power3NoHood - power2) * (distance - distance2) / (distance3 - distance2);
-
-        } else if (distance <= distance4) {
-
-            interpolatePower = power3 + (power4NoHood - power3) * (distance - distance3) / (distance4 - distance3);
-
-        } else {
-
-            if (distance4 - distance3 != 0) {
-
-                double slope = (power4NoHood - power3) / (distance4 - distance3);
-                interpolatePower = power3 + slope * (distance - distance3);
-
-            } else {
-
-                interpolatePower = power4NoHood;
-
-            }
-        }
-//            if (distance >= distance1){
-//                hoodAdjust.setPosition(hoodAngle1);
-//            } else if (distance >= distance2){
-//                hoodAdjust.setPosition(hoodAngle2);
-//            } else if (distance >= distance3){
-//                hoodAdjust.setPosition(hoodAngle3);
-//            }
-
-
-            // targetRPM = interpolatePower;
 
              if (robotHeading > Math.PI) {
                 robotHeading = robotHeading - Math.PI * 2;
@@ -151,9 +282,16 @@ public class Turret extends SubSystem {
                 turretAngle = -turretLimitAngle;
 
             }
-
-            turretTurnOne.setPosition(((turretAngle) / gearRatio) );
-            turretTurnTwo.setPosition(((turretAngle) / gearRatio) );
+            if (robotX > 120 && robotX < 240 && robotY > 320 || ((robotY - Yoffset > 180)&& (robotX + Xoffset < 180) && (robotX + Xoffset >= robotY - Yoffset)) || ((robotY + Yoffset < 180) && (robotX - Xoffset > 180) && (360- robotX-Xoffset >= robotY + Yoffset))){
+                inZone = true;
+            }else {
+                inZone = false;
+            }
+            if (inZone) {
+                targetRPM = interpolatePower;
+                turretTurnOne.setPosition(((turretAngle) / gearRatio));
+                turretTurnTwo.setPosition(((turretAngle) / gearRatio));
+            }
 
 
 
