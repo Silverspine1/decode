@@ -35,7 +35,7 @@ public class TestingProgram extends OpModeEX {
 
     @Override
     public void initEX() {
-        odometry.startPosition(16.6, 86.6, 0);
+        odometry.startPosition(86.6, 16.6, 0);
         targetHeading = 0;
         paths.addNewPath("setPoint");
         paths.buildPath(setPoint);

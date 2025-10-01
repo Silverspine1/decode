@@ -7,15 +7,15 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 public class First_Tele extends OpModeEX {
     @Override
     public void initEX() {
-        odometry.startPosition(16.6, 96.6, 0);
+        odometry.startPosition(86.6, 16.6, 0);
 
 
     }
 
     @Override
     public void loopEX() {
-        turret.robotX = odometry.X();
-        turret.robotY = odometry.Y();
+        turret.robotX = odometry.Y();
+        turret.robotY = odometry.X();
         turret.robotHeading = Math.toRadians(odometry.Heading());
         driveBase.drivePowers(gamepad1.right_stick_y,(gamepad1.left_trigger - gamepad1.right_trigger),gamepad1.left_stick_x);
         if (gamepad1.right_bumper){
@@ -31,8 +31,8 @@ public class First_Tele extends OpModeEX {
         }
 
         telemetry.addData("in zone",turret.inZone);
-        telemetry.addData("odometry x", odometry.X());
-        telemetry.addData("odometry y", odometry.Y());
+        telemetry.addData("odometry x", odometry.Y());
+        telemetry.addData("odometry y", odometry.X());
         telemetry.addData("Heading",odometry.Heading());
         telemetry.update();
 

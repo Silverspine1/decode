@@ -275,7 +275,7 @@ public class Turret extends SubSystem {
             distance = Math.hypot(deltaY,deltaX);
 
 
-             if (robotHeading > Math.PI) {
+             if (robotHeading < Math.PI) {
                 robotHeading = robotHeading - Math.PI * 2;
             }
 
@@ -304,6 +304,7 @@ public class Turret extends SubSystem {
             }else{
                 shooterMotorTwo.update(0);
                 shooterMotorOne.update(0);
+
             }
             //robotX > 120 && robotX < 240 && robotY > 320 ||
         //|| ((robotY + Yoffset < 180) && (robotX - Xoffset > 180) && (360- robotX-Xoffset >= robotY + Yoffset))
