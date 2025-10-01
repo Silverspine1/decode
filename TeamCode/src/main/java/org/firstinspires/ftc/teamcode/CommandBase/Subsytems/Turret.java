@@ -29,9 +29,10 @@ public class Turret extends SubSystem {
     public boolean inZone = false;
     double Xoffset = 16.6;
     double Yoffset = 16.6;
+    double shootPower;
 
 
-    public double targetX = 80;
+    public double targetX = 0;
     public double targetY = 0;
     public double robotX;
     public double robotY;
@@ -126,7 +127,7 @@ public class Turret extends SubSystem {
         turretTurnTwo.setOffset(178);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
-        hoodAdjust.setPosition(178);
+        hoodAdjust.setPosition(168);
     }
 
 
@@ -137,6 +138,13 @@ public class Turret extends SubSystem {
     @Override
     public void execute() {
         executeEX();
+        double rpm = -(shooterMotorOne.getVelocity()/28)*60;
+        if (shootPID.calculate(targetRPM,rpm) <0){
+            shootPower = 0;
+        }else {
+            shootPower = shootPID.calculate(targetRPM,rpm);
+        }
+
         switch (shootingLevel) {
             case low:
                 if (distance <= distance1) {
@@ -271,7 +279,7 @@ public class Turret extends SubSystem {
                 robotHeading = robotHeading - Math.PI * 2;
             }
 
-            turretAngle = Math.toDegrees(Math.atan2(-deltaY, deltaX) - robotHeading);
+            turretAngle = Math.toDegrees(Math.atan2(deltaY, -deltaX) - robotHeading);
 
             if ((turretAngle) > turretLimitAngle) {
 
@@ -282,16 +290,23 @@ public class Turret extends SubSystem {
                 turretAngle = -turretLimitAngle;
 
             }
-            if (robotX > 120 && robotX < 240 && robotY > 320 || ((robotY - Yoffset > 180)&& (robotX + Xoffset < 180) && (robotX + Xoffset >= robotY - Yoffset)) || ((robotY + Yoffset < 180) && (robotX - Xoffset > 180) && (360- robotX-Xoffset >= robotY + Yoffset))){
+            if ( (robotX > 120 && robotX < 240 && robotY > 320) || ((robotY - Yoffset < 180)&& (robotX - Xoffset < 180) && (robotX - Xoffset >= robotY - Yoffset))|| ((robotY + Yoffset < 180) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
                 inZone = true;
             }else {
                 inZone = false;
             }
             if (inZone) {
                 targetRPM = interpolatePower;
+                shooterMotorOne.update(shootPower);
+                shooterMotorTwo.update(shootPower);
                 turretTurnOne.setPosition(((turretAngle) / gearRatio));
                 turretTurnTwo.setPosition(((turretAngle) / gearRatio));
+            }else{
+                shooterMotorTwo.update(0);
+                shooterMotorOne.update(0);
             }
+            //robotX > 120 && robotX < 240 && robotY > 320 ||
+        //|| ((robotY + Yoffset < 180) && (robotX - Xoffset > 180) && (360- robotX-Xoffset >= robotY + Yoffset))
 
 
 

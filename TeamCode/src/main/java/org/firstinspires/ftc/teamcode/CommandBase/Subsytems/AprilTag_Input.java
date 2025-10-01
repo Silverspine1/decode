@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -18,28 +16,40 @@ import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class AprilTag_Input extends SubSystem {
-    Limelight3A limelight;
+    public Limelight3A limelight;
     private IMU imu;
-     LLResultTypes.FiducialResult fiducialResult;
+    public LLResultTypes.FiducialResult fiducialResult;
+    public  LLResult llResult;
     public double X;
     public double y;
     public double heading;
+    public double XOffset;
+    public double YOffset;
 
 
-    public AprilTag_Input(OpModeEX opModeEX){
-        registerSubsystem(opModeEX,defaultCommand);
+    public AprilTag_Input(OpModeEX opModeEX) {
+        registerSubsystem(opModeEX, defaultCommand);
     }
 
     @Override
     public void init() {
         limelight = getOpMode().hardwareMap.get(Limelight3A.class, "limelight");
-
+        limelight.pipelineSwitch(0);
+        RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot( RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,RevHubOrientationOnRobot.UsbFacingDirection.UP);
 
 
     }
+
+
+public void start(){
+
+    limelight.start();
+}
     public Command defaultCommand = new LambdaCommand(
-            () -> {},
-            () -> {},
+            () -> {
+            },
+            () -> {
+            },
             () -> true
     );
 
@@ -49,11 +59,11 @@ public class AprilTag_Input extends SubSystem {
         limelight.updateRobotOrientation(heading);
 
         LLResult llResult = limelight.getLatestResult();
-        if (llResult != null && llResult.isValid() );
-        Pose3D botpose = llResult.getBotpose_MT2();
-
-    }
 
 
     }
+}
+
+
+
 

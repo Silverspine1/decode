@@ -42,7 +42,7 @@ public class Odometry extends SubSystem {
     double backPodOffset = 16.6;
 
     double ticksPerCM = ((2.0 * Math.PI) * wheelRadius)/podTicks;
-    double cmPerDegreeX = (double) (2) / 360;
+    double cmPerDegreeX = (double) (2*Math.PI) / 360;
     double cmPerDegreeY = (((2 * Math.PI) * backPodOffset))/ 360;
 
     double currentXVelocity = 0;
@@ -170,14 +170,15 @@ public class Odometry extends SubSystem {
                     Heading = Math.toRadians(Math.toDegrees(Heading) - 360);
                 }
 
-                double deltaX = ((((deltaRight+deltaLeft)*ticksPerCM)/2)) + (Math.toDegrees(deltaHeading) * cmPerDegreeX);
+                double deltaX = ((((deltaRight+deltaLeft)*ticksPerCM)/2) - (Math.toDegrees(deltaHeading) * cmPerDegreeX));
                 double deltaY = (ticksPerCM * deltaBack) - (Math.toDegrees(deltaHeading) * cmPerDegreeY);
+                //+ (Math.toDegrees(deltaHeading) * cmPerDegreeX)
 
 //                X += deltaX;
 //                Y += deltaY;
 
-                X += deltaX * Math.cos(Heading) - deltaY * Math.sin(Heading);
-                Y += deltaX * Math.sin(Heading) + deltaY * Math.cos(Heading);
+                X += -(deltaX * Math.sin(Heading) + deltaY * Math.cos(Heading));;
+                Y += -(deltaX * Math.cos(Heading) - deltaY * Math.sin(Heading));
 
                 //4165 back pod 180
 

@@ -35,7 +35,7 @@ public class TestingProgram extends OpModeEX {
 
     @Override
     public void initEX() {
-        odometry.startPosition(16.6, 76.6, 180);
+        odometry.startPosition(16.6, 86.6, 0);
         targetHeading = 0;
         paths.addNewPath("setPoint");
         paths.buildPath(setPoint);
@@ -68,11 +68,6 @@ public class TestingProgram extends OpModeEX {
             shootpower = turret.shootPID.calculate(targetRPM,rpm);
         }
 
-        if (shootHim) {
-            targetRPM += (gamepad1.left_stick_y*14);
-            turret.shooterMotorOne.update(Math.abs(shootpower));
-            turret.shooterMotorTwo.update(Math.abs(shootpower));
-        }
         if (pathing && follow.isFinished(5,5)){
             pathing = false;
         }
