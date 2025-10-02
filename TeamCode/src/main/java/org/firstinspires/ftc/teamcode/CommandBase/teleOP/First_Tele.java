@@ -14,9 +14,10 @@ public class First_Tele extends OpModeEX {
 
     @Override
     public void loopEX() {
+        double normalizedHeading = (odometry.Heading() % 360 + 360) % 360;
         turret.robotX = odometry.Y();
         turret.robotY = odometry.X();
-        turret.robotHeading = Math.toRadians(odometry.Heading());
+        turret.robotHeading = Math.toRadians(normalizedHeading);
         driveBase.drivePowers(gamepad1.right_stick_y,(gamepad1.left_trigger - gamepad1.right_trigger),gamepad1.left_stick_x);
         if (gamepad1.right_bumper){
             intake.intakeMotor.update(-1);
