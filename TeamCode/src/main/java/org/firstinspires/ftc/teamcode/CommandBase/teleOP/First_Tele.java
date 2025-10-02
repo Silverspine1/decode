@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 @TeleOp
-public class First_Tele extends OpModeEX {
+ public class First_Tele extends OpModeEX {
     @Override
     public void initEX() {
         odometry.startPosition(16.6, 96.6, 0);

@@ -59,8 +59,8 @@ public class Odometry extends SubSystem {
     boolean runningDistanceSensorReset = false;
     int resetCounter = 0;
 
-    public Odometry(OpModeEX opModeEX) {
-        registerSubsystem(opModeEX, updateLineBased);
+   public Odometry(OpModeEX opModeEX) {
+       registerSubsystem(opModeEX, updateLineBased);
     }
 
     public void startPosition(double X, double Y, int Heading){

@@ -15,7 +15,7 @@ public class Intake extends SubSystem {
     double uselessBob = 3;
     public Intake(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
-    }
+   }
 
     @Override
     public void init() {
