@@ -14,8 +14,6 @@ public class odometryTest extends OpModeEX {
         telemetry.addData("X",odometry.X());
         telemetry.addData("Y",odometry.Y());
         telemetry.addData("heading",odometry.Heading());
-        telemetry.addData("left",odometry.leftPodPos);
-        telemetry.addData("right",odometry.rightPodPos);
-        telemetry.addData("back",odometry.backPodPos);
+
     }
 }
