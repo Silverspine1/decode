@@ -7,6 +7,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
 @TeleOp
+
 public class aprilTagTest extends OpModeEX {
     @Override
     public void initEX() {
@@ -14,27 +15,35 @@ public class aprilTagTest extends OpModeEX {
     }
 
     @Override
+    public void start() {
+
+        Apriltag.limelight.start();
+
+    }
+
+    @Override
     public void loopEX() {
         telemetry.addData("Limelight Connected?", Apriltag.limelight.isConnected());
-        if (Apriltag.llresult != null) {
-            int count = Apriltag.llresult.getFiducialResults().size();
+        if (Apriltag.limelight.isConnected()) {
+            telemetry.addData("con", "connected");
+        }
+        if (Apriltag.llResult.isValid()) {
+            int count = Apriltag.llResult.getFiducialResults().size();
             telemetry.addData("Fiducials Detected", count);
+            Pose3D botPose = Apriltag.llResult.getBotpose();
 
+                telemetry.addData( "tx", Apriltag.llResult.getTx());
+                telemetry.addData("ty", Apriltag.llResult.getTy());
+                telemetry.addData("ta", Apriltag.llResult.getTa());
+                telemetry.addData("Tag ID", Apriltag.llResult.getFiducialResults().get(0).getFiducialId());
             telemetry.update();
-            if (count > 0) {
-                telemetry.addData("tx", Apriltag.getTx());
-                telemetry.addData("ty", Apriltag.getTy());
-                telemetry.addData("ta", Apriltag.getTa());
-                telemetry.addData("Tag ID", Apriltag.llresult.getFiducialResults().get(0 ).getFiducialId());
-            } else {
-                telemetry.addData("Tags", "None detected");
-            }
-        } else {
+        }
+
+
             telemetry.addData("Limelight", "Result is NULL");
         }
 
 
-        telemetry.update();
 
     }
-}
+

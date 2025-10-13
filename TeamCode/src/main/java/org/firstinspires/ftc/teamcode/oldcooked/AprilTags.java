@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,7 +17,7 @@ import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class AprilTags extends SubSystem {
-   public  Limelight3A limelight;
+        Limelight3A limelight;
    public IMU imu;
    public JSONObject jsonData;
            public java.util.List<LLResultTypes.FiducialResult> fiducialResults;
@@ -26,7 +27,9 @@ public class AprilTags extends SubSystem {
        this.fiducialResults = new ArrayList<>();
 
    }
-   public LLResult llresult = getLatestResult();
+    LLResult llResult;
+   Pose3D botPose;
+
    public AprilTags(OpModeEX opModeEX) {
        registerSubsystem(opModeEX, defaultCommand);
    }
@@ -35,37 +38,34 @@ public class AprilTags extends SubSystem {
 
     @Override
     public void init() {
-        limelight= getOpMode().hardwareMap.get(Limelight3A.class,"limelight" );
+        limelight = getOpMode().hardwareMap.get(Limelight3A.class,"limelight" );
         limelight.pipelineSwitch(0);
-        LLResult llresult = getLatestResult();
+      //  LLResult llresult = getLatestResult();
 RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.RIGHT);
-    }
-    public LLResult getLatestResult() {
-        if (limelight != null) {
-            return limelight.getLatestResult();
-        }
-        return null;
-    }
-
-
-    public double getTx() {
-        LLResult llresult = getLatestResult();
-        return (llresult != null && llresult.isValid()) ? llresult.getTx() : 0.0;
-    }
-    public double getTy() {
-        LLResult result = getLatestResult();
-        return (result != null && result.isValid()) ? result.getTy() : 0.0;
-    }
-
-    public double getTa() {
-        LLResult result = getLatestResult();
-        return (result != null && result.isValid()) ? result.getTa() : 0.0;
     }
 
 
     public void start(){
-       limelight.start();
+
+        limelight.start();
     }
+
+   public double getTx() {
+
+        return (llResult != null && llResult.isValid()) ? llResult.getTx() : 0.0;
+    }
+   public double getTy() {
+
+        return (llResult != null && llResult.isValid()) ? llResult.getTy() : 0.0;
+   }
+
+  public double getTa() {
+
+        return (llResult != null && llResult.isValid()) ? llResult.getTa() : 0.0;
+    }
+
+
+
     public Command defaultCommand = new LambdaCommand(
             () -> {
             },
@@ -76,6 +76,7 @@ RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot
     @Override
     public void execute() {
 
-//
+LLResult llResult = limelight.getLatestResult();
+this.llResult = llResult;
     }
 }
