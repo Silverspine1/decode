@@ -19,7 +19,7 @@ public class First_Tele extends OpModeEX {
     public void loopEX() {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
-        turret.robotHeading = Math.toRadians(odometry.Heading());
+        turret.robotHeading = odometry.normilised;
  //       driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.medium;
@@ -49,8 +49,7 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
         telemetry.addData("Heading",odometry.Heading());
-        telemetry.addData("difference",turret.targetRPM - turret.rpm);
-        telemetry.addData("target",turret.targetRPM);
+        telemetry.addData("target",turret.turretAngle);
         telemetry.addData("ditance",turret.distance);
         telemetry.addData("hood angle",hood);
         telemetry.update();

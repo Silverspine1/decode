@@ -92,7 +92,7 @@ public class TestingProgram extends OpModeEX {
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
         telemetry.addData("Heading",odometry.Heading());
-        telemetry.addData("target",targetRPM);
+        telemetry.addData("rpm",turret.rpm);
         telemetry.addData("power", shootpower);
         telemetry.addData("ditance",turret.distance);
         telemetry.addData("hood angle",hood);

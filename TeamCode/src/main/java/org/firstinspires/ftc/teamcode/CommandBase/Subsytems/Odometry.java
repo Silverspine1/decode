@@ -33,7 +33,7 @@ public class Odometry extends SubSystem {
     DcMotorEx rightPod;
     DcMotorEx backPod;
 
-    double X, Y, Heading;
+    public double X, Y, Heading,normilised;
     double startX, startY, startHeading;
 
     double XVelocity = 0;
@@ -44,9 +44,9 @@ public class Odometry extends SubSystem {
     }
 
     public void startPosition(double X, double Y, int Heading) {
-        this.X = X;
-        this.Y = Y;
-        this.Heading = Math.toRadians(Heading);
+        this.startX = X;
+        this.startY = Y;
+        this.Heading = Heading;
     }
 
     @Override
@@ -77,7 +77,7 @@ public class Odometry extends SubSystem {
         the tracking point the Y (strafe) odometry pod is. forward of center is a positive number,
         backwards is a negative number.
          */
-        odo.setOffsets(-23, 0, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
+        odo.setOffsets(20, 136, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
 
         /*
         Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
@@ -129,6 +129,9 @@ public class Odometry extends SubSystem {
     public double Heading() {
         return 360 - Heading;
     }
+    public double normiliased() {
+        return normilised;
+    }
 
     public double getYVelocity() {
         return YVelocity;
@@ -149,6 +152,7 @@ public class Odometry extends SubSystem {
                 YVelocity = odo.getVelY(DistanceUnit.CM);
 
                 Heading = startHeading + odo.getHeading(AngleUnit.DEGREES);
+                normilised = startHeading + odo.getHeading(AngleUnit.RADIANS);
 
                 if (odo.getHeading(AngleUnit.DEGREES) <0) {
                     Heading = odo.getHeading(AngleUnit.DEGREES) + 360;
@@ -156,8 +160,8 @@ public class Odometry extends SubSystem {
                     Heading = odo.getHeading(AngleUnit.DEGREES);
                 }
 
-                X = startX + odo.getPosX(DistanceUnit.CM);
-                Y = startY + odo.getPosY(DistanceUnit.CM);
+                X =  startX + odo.getPosX(DistanceUnit.CM);
+                Y =  startY + odo.getPosY(DistanceUnit.CM);
             },
             () -> false
     );

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -41,7 +42,7 @@ public class Turret extends SubSystem {
     public double targetRPM = 2700;
     public double rpm;
     double mapOfset = 150;
-    double turretAngle;
+    public double turretAngle;
     final double gearRatio = 0.7272;
     final double turretLimitAngle =80;
 
@@ -137,8 +138,9 @@ public class Turret extends SubSystem {
         turretTurnOne.setDirection(Servo.Direction.REVERSE);
 
 
-        turretTurnOne.setOffset(160);
-        turretTurnTwo.setOffset(160);
+
+        turretTurnOne.setOffset(168);
+        turretTurnTwo.setOffset(168);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
     }
@@ -151,10 +153,10 @@ public class Turret extends SubSystem {
     @Override
     public void execute() {
         executeEX();
-        double deltaX = Math.abs(targetX - robotX);
-        double deltaY = Math.abs(targetY - robotY);
+        double deltaX = robotX;
+        double deltaY = robotY;
         distance = Math.hypot(deltaY,deltaX);
-        rpm = -(shooterMotorOne.getVelocity()/28)*60;
+        rpm = ((shooterMotorOne.getVelocity()/28)*60);
         if (shootPID.calculate(targetRPM,rpm) <0){
             shootPower = 0;
         }else {
@@ -269,70 +271,65 @@ public class Turret extends SubSystem {
                     hoodAdjust.setPosition(mediumHoodAngle3);
                 }
                 break;
-                case high:
-                    if (distance <= distance1) {
+            case high:
+                if (distance <= distance1) {
 
-                        interpolatePower = highPower1;
+                    interpolatePower = highPower1;
 
-                    } else if (distance <= distance2) {
+                } else if (distance <= distance2) {
 
-                        interpolatePower = highPower1 + (highPower2NoHood - highPower1) * (distance - distance1) / (distance2 - distance1);
+                    interpolatePower = highPower1 + (highPower2NoHood - highPower1) * (distance - distance1) / (distance2 - distance1);
 
-                    } else if (distance <= distance3) {
+                } else if (distance <= distance3) {
 
 
-                        interpolatePower = highPower2 + (highPower3NoHood - highPower2) * (distance - distance2) / (distance3 - distance2);
+                    interpolatePower = highPower2 + (highPower3NoHood - highPower2) * (distance - distance2) / (distance3 - distance2);
 
-                    } else if (distance <= distance4) {
+                } else if (distance <= distance4) {
 
-                        interpolatePower = highPower3 + (highPower4NoHood - highPower3) * (distance - distance3) / (distance4 - distance3);
+                    interpolatePower = highPower3 + (highPower4NoHood - highPower3) * (distance - distance3) / (distance4 - distance3);
+
+                } else {
+
+                    if (distance4 - distance3 != 0) {
+
+                        double slope = (highPower4NoHood - highPower3) / (distance4 - distance3);
+                        interpolatePower = highPower3 + slope * (distance - distance3);
 
                     } else {
 
-                        if (distance4 - distance3 != 0) {
-
-                            double slope = (highPower4NoHood - highPower3) / (distance4 - distance3);
-                            interpolatePower = highPower3 + slope * (distance - distance3);
-
-                        } else {
-
-                            interpolatePower = highPower4NoHood;
-
-                        }
-                    }
-                    if (distance >= distance1) {
-                        hoodAdjust.setPosition(highHoodAngle1);
-                    } else if (distance >= distance2) {
-                        hoodAdjust.setPosition(highHoodAngle2);
-                    } else if (distance >= distance3) {
-                        hoodAdjust.setPosition(highHoodAngle3);
+                        interpolatePower = highPower4NoHood;
 
                     }
+                }
+                if (distance >= distance1) {
+                    hoodAdjust.setPosition(highHoodAngle1);
+                } else if (distance >= distance2) {
+                    hoodAdjust.setPosition(highHoodAngle2);
+                } else if (distance >= distance3) {
+                    hoodAdjust.setPosition(highHoodAngle3);
+
+                }
 
 
         }
-            // *** Turret angle adjustment
+        // *** Turret angle adjustment
 
 
 
 
-             if (robotHeading > Math.PI) {
-                robotHeading = robotHeading - Math.PI * 2;
+        turretAngle = Math.toDegrees(-Math.atan2(deltaX,deltaY) + robotHeading);
+        if ((turretAngle) > turretLimitAngle) {
+            turretInRange = true;
+            turretAngle = turretLimitAngle;
 
-            }
+        } else if ((turretAngle) < -turretLimitAngle) {
+            turretInRange = true;
+            turretAngle = -turretLimitAngle;
 
-            turretAngle = Math.toDegrees(  -Math.atan2(deltaX,deltaY) - robotHeading);
-            if ((turretAngle) > turretLimitAngle) {
-                turretInRange = true;
-                turretAngle = turretLimitAngle;
-
-            } else if ((turretAngle) < -turretLimitAngle) {
-                turretInRange = true;
-                turretAngle = -turretLimitAngle;
-
-            }else{
-                turretInRange = false;
-            }
+        }else{
+            turretInRange = false;
+        }
 //
 //            if ( (robotX > 100 && robotX < 180 && robotY > 260) || ((robotY + Yoffset < 180)&& (robotX + Xoffset < 180) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 180) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
 ////                inZone = true;
@@ -341,18 +338,18 @@ public class Turret extends SubSystem {
 ////            }
 //        if (inZone) {
 ////                targetRPM = interpolatePower + mapOfset;
-//            shooterMotorOne.update(shootPower);
-//            shooterMotorTwo.update(shootPower);
-//            turretTurnOne.setPosition(((turretAngle) / gearRatio));
-//            turretTurnTwo.setPosition(((turretAngle) / gearRatio));
+        shooterMotorOne.update(shootPower);
+        shooterMotorTwo.update(shootPower);
+                turretTurnOne.setPosition(((turretAngle) / gearRatio));
+                turretTurnTwo.setPosition(((turretAngle) / gearRatio));
 //        } else {
 //            shooterMotorTwo.update(0);
-//                shooterMotorOne.update(0);
+        shooterMotorOne.update(0);
 //
 //            }
 
 
 
-        }
+    }
 }
 
