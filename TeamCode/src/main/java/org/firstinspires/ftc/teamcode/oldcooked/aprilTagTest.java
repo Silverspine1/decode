@@ -12,6 +12,7 @@ public class aprilTagTest extends OpModeEX {
     @Override
     public void initEX() {
 
+
     }
 
     @Override
@@ -30,17 +31,21 @@ public class aprilTagTest extends OpModeEX {
         if (Apriltag.llResult.isValid()) {
             int count = Apriltag.llResult.getFiducialResults().size();
             telemetry.addData("Fiducials Detected", count);
-            Pose3D botPose = Apriltag.llResult.getBotpose();
+            Pose3D botpose = Apriltag.llResult.getBotpose();
 
                 telemetry.addData( "tx", Apriltag.llResult.getTx());
                 telemetry.addData("ty", Apriltag.llResult.getTy());
                 telemetry.addData("ta", Apriltag.llResult.getTa());
                 telemetry.addData("Tag ID", Apriltag.llResult.getFiducialResults().get(0).getFiducialId());
+                telemetry.addData("yaw",Apriltag.llResult.getFiducialResults().get(0).getRobotPoseFieldSpace());
+                telemetry.addData("post",Apriltag.llResult.getBotpose().getPosition());
+
+                telemetry.addData("botpose", botpose.toString());
             telemetry.update();
         }
 
 
-            telemetry.addData("Limelight", "Result is NULL");
+            telemetry.addData("yessss", "7777");
         }
 
 
