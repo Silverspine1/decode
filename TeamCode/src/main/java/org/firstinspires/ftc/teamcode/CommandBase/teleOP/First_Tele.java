@@ -6,8 +6,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 
 @TeleOp
-public class First_Tele extends OpModeEX {
-    double hood = 168;
+ public class First_Tele extends OpModeEX {
     @Override
     public void initEX() {
         odometry.startPosition(139, 75, 0);

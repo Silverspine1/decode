@@ -39,8 +39,8 @@ public class Odometry extends SubSystem {
     double XVelocity = 0;
     double YVelocity = 0;
 
-    public Odometry(OpModeEX opModeEX) {
-        registerSubsystem(opModeEX, update);
+   public Odometry(OpModeEX opModeEX) {
+       registerSubsystem(opModeEX, updateLineBased);
     }
 
     public void startPosition(double X, double Y, int Heading) {

@@ -19,7 +19,7 @@ public class AprilTag_Input extends SubSystem {
     public Limelight3A limelight;
     private IMU imu;
     public LLResultTypes.FiducialResult fiducialResult;
-    public  LLResult llResult;
+
     public double X;
     public double y;
     public double heading;
@@ -58,7 +58,7 @@ public void start(){
         executeEX();
         limelight.updateRobotOrientation(heading);
 
-        LLResult llResult = limelight.getLatestResult();
+
 
 
     }
