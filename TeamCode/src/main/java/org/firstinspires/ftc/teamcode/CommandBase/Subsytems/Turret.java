@@ -48,14 +48,14 @@ public class Turret extends SubSystem {
 
 
     public double distance;
-    double distance1 = 71;
+    double distance1 = 91;
     double distance2 = 222;
     double distance3 = 301;
     double distance4 = 370;
 
 
 
-    double lowHoodAngle1 = 167;
+    double lowHoodAngle1 = 64;
     double lowHoodAngle2 = 96;
     double lowHoodAngle3 = 95;
 
@@ -68,7 +68,7 @@ public class Turret extends SubSystem {
     double highHoodAngle3 = 100;
 
 
-    double lowPower1 = 3030;
+    double lowPower1 = 2389;
     double lowPower2 = 4560;
     double lowPower3 = 5250;
 
@@ -111,7 +111,7 @@ public class Turret extends SubSystem {
 
 
 
-    public PIDController shootPID = new PIDController(0.01,0,0.0003);
+    public PIDController shootPID = new PIDController(0.013,0,0.00045);
     public Turret(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
     }
@@ -139,8 +139,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(168);
-        turretTurnTwo.setOffset(168);
+        turretTurnOne.setOffset(164);
+        turretTurnTwo.setOffset(164);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
     }
@@ -338,8 +338,8 @@ public class Turret extends SubSystem {
 ////            }
 //        if (inZone) {
 ////                targetRPM = interpolatePower + mapOfset;
-        shooterMotorOne.update(shootPower);
-        shooterMotorTwo.update(shootPower);
+                shooterMotorOne.update(shootPower);
+                shooterMotorTwo.update(shootPower);
                 turretTurnOne.setPosition(((turretAngle) / gearRatio));
                 turretTurnTwo.setPosition(((turretAngle) / gearRatio));
 //        } else {

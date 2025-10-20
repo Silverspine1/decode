@@ -161,7 +161,7 @@ public class Odometry extends SubSystem {
                 }
 
                 X =  startX + odo.getPosX(DistanceUnit.CM);
-                Y =  startY + odo.getPosY(DistanceUnit.CM);
+                Y =  startY - odo.getPosY(DistanceUnit.CM);
             },
             () -> false
     );
