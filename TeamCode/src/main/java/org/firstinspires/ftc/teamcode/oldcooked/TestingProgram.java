@@ -13,7 +13,7 @@ import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@TeleOp
+
 public class TestingProgram extends OpModeEX {
 
     private static final Logger log = LoggerFactory.getLogger(TestingProgram.class);
@@ -35,7 +35,7 @@ public class TestingProgram extends OpModeEX {
 
     @Override
     public void initEX() {
-        odometry.startPosition(16.6, 86.6, 0);
+        odometry.startPosition(86.6, 16.6, 0);
         targetHeading = 0;
         paths.addNewPath("setPoint");
         paths.buildPath(setPoint);
@@ -88,18 +88,11 @@ public class TestingProgram extends OpModeEX {
             turret.turretTurnTwo.setPosition(0);
         }
 
-        if (pathing) {
 
-            odometry.queueCommand(odometry.updateLineBased);
-            RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
-
-            driveBase.queueCommand(driveBase.drivePowers(currentPower));
-
-        }
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
         telemetry.addData("Heading",odometry.Heading());
-        telemetry.addData("target",targetRPM);
+        telemetry.addData("rpm",turret.rpm);
         telemetry.addData("power", shootpower);
         telemetry.addData("ditance",turret.distance);
         telemetry.addData("hood angle",hood);
