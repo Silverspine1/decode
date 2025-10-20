@@ -42,8 +42,8 @@ public class DriveBase extends SubSystem {
 
 
     public DriveBase(OpModeEX opModeEX){
-        registerSubsystem(opModeEX,driveCommand);
-    }
+       registerSubsystem(opModeEX,driveCommand);
+   }
 
     @Override
     public void init() {
