@@ -32,7 +32,7 @@ public abstract class OpModeEX extends OpMode {
     public AprilTag_Input aprilTagInput = new AprilTag_Input(this);
 
 
-    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {aprilTagInput,Apriltag});
+    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,turret,intake});
 
     List<LynxModule> allHubs;
 

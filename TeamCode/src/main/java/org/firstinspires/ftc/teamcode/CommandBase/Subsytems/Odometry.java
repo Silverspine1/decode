@@ -40,7 +40,7 @@ public class Odometry extends SubSystem {
     double YVelocity = 0;
 
    public Odometry(OpModeEX opModeEX) {
-       registerSubsystem(opModeEX, updateLineBased);
+       registerSubsystem(opModeEX, update);
     }
 
     public void startPosition(double X, double Y, int Heading) {
@@ -161,7 +161,7 @@ public class Odometry extends SubSystem {
                 }
 
                 X =  startX + odo.getPosX(DistanceUnit.CM);
-                Y =  startY + odo.getPosY(DistanceUnit.CM);
+                Y =  startY - odo.getPosY(DistanceUnit.CM);
             },
             () -> false
     );

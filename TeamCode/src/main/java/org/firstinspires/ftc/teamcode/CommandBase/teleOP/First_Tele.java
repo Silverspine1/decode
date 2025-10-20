@@ -6,10 +6,12 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 
 @TeleOp
- public class First_Tele extends OpModeEX {
+public class First_Tele extends OpModeEX {
+    double drivepower = 0.5;
+    double hood = 168;
     @Override
     public void initEX() {
-        odometry.startPosition(139, 75, 0);
+        odometry.startPosition(75, 139, 0);
 
 
     }
@@ -27,6 +29,14 @@ import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 //        }
         if (Math.abs(gamepad1.right_stick_y)>0){
             turret.hoodAdjust.setPosition(hood += gamepad1.right_stick_y);
+        }
+        if (gamepad1.dpad_up){
+            drivepower += 0.01;
+        }
+        if (gamepad1.dpad_left){
+            driveBase.drivePowers(drivepower,0,0);
+        }else {
+            driveBase.drivePowers(0,0,0);
         }
         turret.targetRPM += gamepad1.left_stick_y*7;
         if (gamepad1.right_bumper){
@@ -48,9 +58,10 @@ import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
         telemetry.addData("Heading",odometry.Heading());
-        telemetry.addData("target",turret.turretAngle);
+        telemetry.addData("target",turret.targetRPM);
         telemetry.addData("ditance",turret.distance);
         telemetry.addData("hood angle",hood);
+        telemetry.addData("drive",drivepower);
         telemetry.update();
 
 
