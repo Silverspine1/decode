@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Auto;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
@@ -9,7 +10,7 @@ import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
 import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
-
+@Autonomous
 public class Close_Auto extends OpModeEX {
     pathsManager paths = new pathsManager();
 
@@ -24,6 +25,7 @@ public class Close_Auto extends OpModeEX {
     enum AutoState {
         preload,
         driveToCollect,
+        firstShootDone,
         collect1,
         driveToShoot1,
         Collect2,
@@ -35,6 +37,7 @@ public class Close_Auto extends OpModeEX {
     private final sectionBuilder[] preload = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(84, 28), new Vector2D(108, 44), new Vector2D(120, 89)),
     };
+
 
     private final sectionBuilder[] driveToCollect = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(120, 89), new Vector2D(135, 136), new Vector2D(107, 151)),
@@ -54,7 +57,9 @@ public class Close_Auto extends OpModeEX {
 
     @Override
     public void initEX() {
-        odometry.startPosition(86.6, 16.6, 0);
+        odometry.startPosition(75, 22, 0);
+        odometry.startPosition(0, 0, 0);
+
         paths.addNewPath("driveToCollect");
         paths.buildPath(driveToCollect);
         paths.addNewPath("preload");
@@ -73,9 +78,12 @@ public class Close_Auto extends OpModeEX {
 
     @Override
     public void loopEX() {
+        turret.robotX = odometry.X();
+        turret.robotY = odometry.Y();
+        turret.robotHeading = odometry.normilised;
 
         if (built && state == AutoState.preload) {
-            paths.setCurrentPath("preload");
+            follow.setPath(paths.returnPath("preload"));
             targetHeading = 315;
             built = false;
             pathing = true;
@@ -84,63 +92,70 @@ public class Close_Auto extends OpModeEX {
 
 
         }
-        if (pathing && follow.isFinished(5, 5) && state == AutoState.preload) {
+        if (pathing && follow.isFinished(2, 2) && state == AutoState.preload) {
             built = true;
             pathing = false;
             shootTime.reset();
             intake.intakeMotor.update(-1);
-            if (shootTime.milliseconds() > 3000 && built){
-                state = AutoState.driveToCollect;
-                paths.setCurrentPath("driveToCollect");
-                intake.intakeMotor.update(0);
-                turret.targetRPM = 0;
-                targetHeading = 270;
-                pathing = true;
-            }
-
+            state = AutoState.firstShootDone;
 
 
         }
+        if (shootTime.milliseconds() > 3000 && built && state == AutoState.firstShootDone){
+            state = AutoState.driveToCollect;
+            follow.setPath(paths.returnPath("driveToCollect"));
+            intake.intakeMotor.update(0);
+            turret.targetRPM = 0;
+            targetHeading = 270;
+            built = false;
+            pathing = true;
+        }
+
         if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToCollect) {
             state = AutoState.collect1;
-            paths.setCurrentPath("collect1");
+            follow.setPath(paths.returnPath("collect1"));
             state = AutoState.collect1;
             targetHeading = 270;
             pathing = true;
             intake.intakeMotor.update(-1);
         }
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.collect1){
+        if (pathing && follow.isFinished(2, 2) && state == AutoState.collect1){
             state = AutoState.driveToShoot1;
-            paths.setCurrentPath("driveToShoot1");
+            follow.setPath(paths.returnPath("driveToShoot1"));
             targetHeading = 310;
             pathing = true;
             intake.intakeMotor.update(0);
             turret.targetRPM = 2900;
             turret.hoodAdjust.setPosition(90);
+            state = AutoState.driveToShoot1;
+
         }
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot1){
+        if (pathing && follow.isFinished(2, 2) && state == AutoState.driveToShoot1){
             pathing = false;
             shootTime.reset();
             intake.intakeMotor.update(-1);
-            if (shootTime.milliseconds() > 3000){
-                turret.targetRPM = 0;
-                targetHeading = 270;
-                state = AutoState.Collect2;
-                paths.setCurrentPath("Collect2");
-                pathing = true;
+            built = true;
 
-            }
 
         }
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.Collect2){
+        if (shootTime.milliseconds() > 3000 && state == AutoState.driveToShoot1 && built){
+            turret.targetRPM = 0;
+            targetHeading = 270;
+            state = AutoState.Collect2;
+            follow.setPath(paths.returnPath("Collect2"));
+            pathing = true;
+            built = false;
+
+        }
+        if (pathing && follow.isFinished(2, 2) && state == AutoState.Collect2){
             state = AutoState.driveToShoot2;
-            paths.setCurrentPath("driveToShoot2");
+            follow.setPath(paths.returnPath("driveToShoot2"));
             intake.intakeMotor.update(0);
             turret.targetRPM = 2900;
             turret.hoodAdjust.setPosition(90);
             targetHeading = 310;
         }
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot2){
+        if (pathing && follow.isFinished(2, 2) && state == AutoState.driveToShoot2){
             pathing = false;
             intake.intakeMotor.update(-1);
             shootTime.reset();
@@ -155,6 +170,8 @@ public class Close_Auto extends OpModeEX {
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));
 
+        }else {
+            driveBase.queueCommand(driveBase.drivePowers(0,0,0));
         }
 
 
