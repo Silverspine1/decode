@@ -38,31 +38,27 @@ public class Close_Auto extends OpModeEX {
     AutoState state = AutoState.preload;
 
     private final sectionBuilder[] preload = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(84, 28), new Vector2D(108, 44), new Vector2D(95, 120)),
+            () -> paths.addPoints(new Vector2D(84, 28), new Vector2D(107, 75), new Vector2D(135, 128 )),
     };
 
-    private final sectionBuilder[] driveToCollect = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(95, 120), new Vector2D(135, 136), new Vector2D(107, 151)),
-    };
     private final sectionBuilder[] collect1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(107, 151), new Vector2D(77, 151), new Vector2D(45, 152)),
+            () -> paths.addPoints(new Vector2D(135, 128), new Vector2D(95, 157), new Vector2D(45, 151)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(45, 151), new Vector2D(104, 134), new Vector2D(95, 130)),
+            () -> paths.addPoints(new Vector2D(45, 151), new Vector2D(99, 152), new Vector2D(150, 150)),
     };
     private final sectionBuilder[] Collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(95, 130), new Vector2D(144, 217), new Vector2D(45, 210)),
+            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 209), new Vector2D(45, 211)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(45, 220), new Vector2D(144, 217), new Vector2D(95, 130)),
+            () -> paths.addPoints(new Vector2D(45, 211), new Vector2D(126, 197), new Vector2D(179, 180)),
     };
 
     @Override
     public void initEX() {
         odometry.startPosition(75, 22, 0);
 
-        paths.addNewPath("driveToCollect");
-        paths.buildPath(driveToCollect);
+
         paths.addNewPath("preload");
         paths.buildPath(preload);
         paths.addNewPath("collect1");
@@ -110,22 +106,13 @@ public class Close_Auto extends OpModeEX {
 
 
         }
-        if (shootTime.milliseconds() > 1000 && built && state == AutoState.firstShootDone){
-            state = AutoState.driveToCollect;
-            intake.block = true;
-            follow.setPath(paths.returnPath("driveToCollect"));
-            follow.usePathHeadings(true);
-            follow.setHeadingLookAheadDistance(35);
-            turret.spinDown =true;
-            built = false;
-            pathing = true;
-        }
 
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToCollect) {
+        if (shootTime.milliseconds() > 1000 && built && state == AutoState.firstShootDone) {
+            intake.block = true;
+            built = false;
             state = AutoState.collect1;
             follow.setPath(paths.returnPath("collect1"));
-            follow.usePathHeadings(true);
-            follow.setHeadingLookAheadDistance(35);
+            targetHeading = 270;
             state = AutoState.collect1;
             pathing = true;
             Intake = true;
@@ -155,8 +142,7 @@ public class Close_Auto extends OpModeEX {
             Intake = true;
             intake.block = true;
             follow.setPath(paths.returnPath("Collect2"));
-            follow.usePathHeadings(true);
-            follow.setHeadingLookAheadDistance(35);
+            targetHeading = 258;
             pathing = true;
             built = false;
 
