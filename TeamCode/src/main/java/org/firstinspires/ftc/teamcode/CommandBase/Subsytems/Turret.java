@@ -41,23 +41,23 @@ public class Turret extends SubSystem {
 
     public double targetRPM = 2700;
     public double rpm;
-    double mapOfset = 150;
+    double mapOfset = 0;
     public double turretAngle;
     final double gearRatio = 0.7272;
     final double turretLimitAngle =80;
 
 
     public double distance;
-    double distance1 = 91;
-    double distance2 = 222;
-    double distance3 = 301;
+    double distance1 = 120;
+    double distance2 = 193;
+    double distance3 = 344;
     double distance4 = 370;
 
 
 
-    double lowHoodAngle1 = 64;
-    double lowHoodAngle2 = 96;
-    double lowHoodAngle3 = 95;
+    double lowHoodAngle1 = 190;
+    double lowHoodAngle2 = 201;
+    double lowHoodAngle3 = 192;
 
     double mediumHoodAngle1 = 211;
     double mediumHoodAngle2 = 181;
@@ -68,9 +68,9 @@ public class Turret extends SubSystem {
     double highHoodAngle3 = 100;
 
 
-    double lowPower1 = 2389;
-    double lowPower2 = 4560;
-    double lowPower3 = 5250;
+    double lowPower1 = 2350;
+    double lowPower2 = 2623;
+    double lowPower3 = 3055;
 
     double mediumPower1 = 3150;
     double mediumPower2 = 4371;
@@ -81,9 +81,9 @@ public class Turret extends SubSystem {
     double highPower3 = 4840;
 
 
-    double lowPower2NoHood = 4370;
-    double lowPower3NoHood = 5300;
-    double lowPower4NoHood = 5600;
+    double lowPower2NoHood = 2555;
+    double lowPower3NoHood = 3155;
+    double lowPower4NoHood = 3400;
 
     double mediumPower2NoHood = 4608;
     double mediumPower3NoHood = 4800;
@@ -107,6 +107,7 @@ public class Turret extends SubSystem {
     boolean intakeEnter;
     boolean currentSpike = false;
     boolean zoneResetStop = false;
+    public boolean spinDown = false;
 
 
 
@@ -139,8 +140,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(164);
-        turretTurnTwo.setOffset(164);
+        turretTurnOne.setOffset(160);
+        turretTurnTwo.setOffset(160);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
     }
@@ -223,13 +224,13 @@ public class Turret extends SubSystem {
 
                     }
                 }
-//                if (distance >= distance1 && distance < distance2) {
-//                    hoodAdjust.setPosition(lowHoodAngle1);
-//                } else if (distance >= distance2 && distance < distance3) {
-//                    hoodAdjust.setPosition(lowHoodAngle2);
-//                } else if (distance >= distance3) {
-//                    hoodAdjust.setPosition(lowHoodAngle3);
-//                }
+                if (distance >= distance1 && distance < distance2) {
+                    hoodAdjust.setPosition(lowHoodAngle1);
+                } else if (distance >= distance2 && distance < distance3) {
+                    hoodAdjust.setPosition(lowHoodAngle2);
+                } else if (distance >= distance3) {
+                    hoodAdjust.setPosition(lowHoodAngle3);
+                }
 
                 break;
             case medium:
@@ -337,7 +338,9 @@ public class Turret extends SubSystem {
 ////                inZone = false;
 ////            }
 //        if (inZone) {
-////                targetRPM = interpolatePower + mapOfset;
+                if (!spinDown) {
+                    targetRPM = interpolatePower + mapOfset;
+                }
                 shooterMotorOne.update(shootPower);
                 shooterMotorTwo.update(shootPower);
                 turretTurnOne.setPosition(((turretAngle) / gearRatio));

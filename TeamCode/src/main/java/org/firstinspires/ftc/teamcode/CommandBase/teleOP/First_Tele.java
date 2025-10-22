@@ -21,15 +21,15 @@ public class First_Tele extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
- //       driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
-//        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-//            turret.shootingLevel = Turret.LowMediumHigh.medium;
-//        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-//            turret.shootingLevel = Turret.LowMediumHigh.low;
-//        }
-        if (Math.abs(gamepad1.right_stick_y)>0){
-            turret.hoodAdjust.setPosition(hood += gamepad1.right_stick_y);
+        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
+        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
+            turret.shootingLevel = Turret.LowMediumHigh.medium;
+        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
+            turret.shootingLevel = Turret.LowMediumHigh.low;
         }
+//        if (Math.abs(gamepad1.right_stick_y)>0){
+//            turret.hoodAdjust.setPosition(hood += gamepad1.right_stick_y);
+//        }
         if (gamepad1.dpad_up){
             drivepower += 0.01;
         }
@@ -38,7 +38,7 @@ public class First_Tele extends OpModeEX {
         }else {
             driveBase.drivePowers(0,0,0);
         }
-        turret.targetRPM += gamepad1.left_stick_y*7;
+//        turret.targetRPM += gamepad1.left_stick_y*7;
         if (gamepad1.right_bumper){
             intake.intakeMotor.update(-1);
 

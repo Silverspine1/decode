@@ -82,10 +82,10 @@ public class DriveBase extends SubSystem {
     }
 
 
-    public Command drivePowers (double turn, double strafe, double vertical){
+    public Command drivePowers (double vertical, double turn, double strafe){
         this.turn = turn;
-        this.strafe = -strafe;
-        this.vertikal = vertical;
+        this.strafe = strafe;
+        this.vertikal = -vertical;
 
         return driveCommand;
 

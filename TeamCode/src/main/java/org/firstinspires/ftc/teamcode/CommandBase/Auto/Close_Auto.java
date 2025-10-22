@@ -58,7 +58,6 @@ public class Close_Auto extends OpModeEX {
     @Override
     public void initEX() {
         odometry.startPosition(75, 22, 0);
-        odometry.startPosition(0, 0, 0);
 
         paths.addNewPath("driveToCollect");
         paths.buildPath(driveToCollect);
@@ -87,8 +86,7 @@ public class Close_Auto extends OpModeEX {
             targetHeading = 315;
             built = false;
             pathing = true;
-            turret.targetRPM = 2900;
-            turret.hoodAdjust.setPosition(90);
+            turret.spinDown = false;
 
 
         }
@@ -101,11 +99,11 @@ public class Close_Auto extends OpModeEX {
 
 
         }
-        if (shootTime.milliseconds() > 3000 && built && state == AutoState.firstShootDone){
+        if (shootTime.milliseconds() > 1000 && built && state == AutoState.firstShootDone){
             state = AutoState.driveToCollect;
             follow.setPath(paths.returnPath("driveToCollect"));
             intake.intakeMotor.update(0);
-            turret.targetRPM = 0;
+            turret.spinDown =true;
             targetHeading = 270;
             built = false;
             pathing = true;
@@ -125,8 +123,7 @@ public class Close_Auto extends OpModeEX {
             targetHeading = 310;
             pathing = true;
             intake.intakeMotor.update(0);
-            turret.targetRPM = 2900;
-            turret.hoodAdjust.setPosition(90);
+            turret.spinDown = false;
             state = AutoState.driveToShoot1;
 
         }
@@ -138,8 +135,8 @@ public class Close_Auto extends OpModeEX {
 
 
         }
-        if (shootTime.milliseconds() > 3000 && state == AutoState.driveToShoot1 && built){
-            turret.targetRPM = 0;
+        if (shootTime.milliseconds() > 1000 && state == AutoState.driveToShoot1 && built){
+            turret.spinDown = true;
             targetHeading = 270;
             state = AutoState.Collect2;
             follow.setPath(paths.returnPath("Collect2"));
@@ -151,15 +148,14 @@ public class Close_Auto extends OpModeEX {
             state = AutoState.driveToShoot2;
             follow.setPath(paths.returnPath("driveToShoot2"));
             intake.intakeMotor.update(0);
-            turret.targetRPM = 2900;
-            turret.hoodAdjust.setPosition(90);
+            turret.spinDown = false;
             targetHeading = 310;
         }
         if (pathing && follow.isFinished(2, 2) && state == AutoState.driveToShoot2){
             pathing = false;
             intake.intakeMotor.update(-1);
             shootTime.reset();
-            if (shootTime.milliseconds() > 3000){
+            if (shootTime.milliseconds() > 1000){
                 requestOpModeStop();
 
             }
@@ -173,6 +169,9 @@ public class Close_Auto extends OpModeEX {
         }else {
             driveBase.queueCommand(driveBase.drivePowers(0,0,0));
         }
+        System.out.println(odometry.X());
+        System.out.println(odometry.X());
+
 
 
     }
