@@ -95,7 +95,7 @@ public class Turret extends SubSystem {
 
     double interpolatePower;
 
-    ElapsedTime shootingTime = new ElapsedTime();
+    public ElapsedTime shootingTime = new ElapsedTime();
     ElapsedTime intake = new ElapsedTime();
     ElapsedTime currentWait = new ElapsedTime();
 
