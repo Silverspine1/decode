@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Auto;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
@@ -9,7 +10,7 @@ import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
 import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
-
+@Autonomous
 public class Far_Auto extends OpModeEX {
     pathsManager paths = new pathsManager();
 
@@ -48,7 +49,7 @@ public class Far_Auto extends OpModeEX {
     };
     @Override
     public void initEX() {
-        odometry.startPosition(156, 334, 0);
+        odometry.startPosition(160, 342, 0);
         paths.addNewPath("collect1");
         paths.buildPath(collect1);
         paths.addNewPath("driveToShoot1");
@@ -68,20 +69,19 @@ public class Far_Auto extends OpModeEX {
 
         if (built && state == Close_Auto.AutoState.preload) {
             turret.shootingTime.reset();
-            targetHeading = 315;
             built = false;
-            pathing = true;
-            turret.targetRPM = 2900;
-            turret.hoodAdjust.setPosition(90);
+            pathing = false;
+            turret.spinDown=false;
 
 
         }
-        if (pathing && turret.shootingTime.milliseconds() > 800 && state == Close_Auto.AutoState.preload) {
+        if (turret.shootingTime.milliseconds() > 1800 && state == Close_Auto.AutoState.preload) {
             built = true;
             pathing = false;
             shootTime.reset();
             intake.intakeMotor.update(-1);
             state = Close_Auto.AutoState.firstShootDone;
+            turret.spinDown = true;
 
 
         }
@@ -90,6 +90,7 @@ public class Far_Auto extends OpModeEX {
             state = Close_Auto.AutoState.collect1;
             follow.setPath(paths.returnPath("collect1"));
             state = Close_Auto.AutoState.collect1;
+            intake.block = true;
             targetHeading = 270;
             built = false;
             turret.targetRPM = 0;
@@ -100,10 +101,10 @@ public class Far_Auto extends OpModeEX {
             state = Close_Auto.AutoState.driveToShoot1;
             follow.setPath(paths.returnPath("driveToShoot1"));
             targetHeading = 310;
+            intake.block = false;
             pathing = true;
             intake.intakeMotor.update(0);
-            turret.targetRPM = 3900;
-            turret.hoodAdjust.setPosition(110);
+            turret.spinDown = false;
             state = Close_Auto.AutoState.driveToShoot1;
 
         }
@@ -116,8 +117,9 @@ public class Far_Auto extends OpModeEX {
 
         }
         if (shootTime.milliseconds() > 1000 && state == Close_Auto.AutoState.driveToShoot1 && built){
-            turret.targetRPM = 0;
+            turret.spinDown = true;
             targetHeading = 270;
+            intake.block = true;
             state = Close_Auto.AutoState.Collect2;
             follow.setPath(paths.returnPath("Collect2"));
             pathing = true;
@@ -127,9 +129,10 @@ public class Far_Auto extends OpModeEX {
         if (pathing && follow.isFinished(2, 2) && state == Close_Auto.AutoState.Collect2){
             state = Close_Auto.AutoState.driveToShoot2;
             follow.setPath(paths.returnPath("driveToShoot2"));
+            intake.block = false;
             intake.intakeMotor.update(0);
-            turret.targetRPM = 3900;
-            turret.hoodAdjust.setPosition(110);
+            turret.spinDown = false;
+
             targetHeading = 310;
         }
         if (pathing && follow.isFinished(2, 2) && state == Close_Auto.AutoState.driveToShoot2){

@@ -49,9 +49,7 @@ public class First_Tele extends OpModeEX {
         }else {
             intake.intakeMotor.update(0);
         }
-        if (gamepad1.a){
-            intake.trans.setPosition(1);
-        }
+
 
 
         telemetry.addData("in zone",turret.inZone);

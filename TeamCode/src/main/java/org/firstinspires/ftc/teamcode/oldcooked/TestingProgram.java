@@ -78,11 +78,7 @@ public class TestingProgram extends OpModeEX {
         }else {
             intake.intakeMotor.update(0);
         }
-        if (gamepad1.dpad_up){
-            intake.trans.setPosition(1);
-        }else {
-            intake.trans.setPosition(0.5);
-        }
+
         if (gamepad1.dpad_left){
             turret.turretTurnOne.setPosition(0);
             turret.turretTurnTwo.setPosition(0);

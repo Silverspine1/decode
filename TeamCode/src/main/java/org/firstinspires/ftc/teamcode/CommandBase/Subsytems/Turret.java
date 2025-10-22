@@ -51,7 +51,7 @@ public class Turret extends SubSystem {
     double distance1 = 120;
     double distance2 = 193;
     double distance3 = 344;
-    double distance4 = 370;
+    double distance4 = 407;
 
 
 

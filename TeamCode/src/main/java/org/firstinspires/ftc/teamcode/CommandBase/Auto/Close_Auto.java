@@ -18,8 +18,10 @@ public class Close_Auto extends OpModeEX {
     double targetHeading;
     boolean pathing = false;
     boolean built = true;
+    boolean Intake = false;
 
     ElapsedTime shootTime = new ElapsedTime();
+    ElapsedTime intkeTime = new ElapsedTime();
 
 
     enum AutoState {
@@ -29,30 +31,30 @@ public class Close_Auto extends OpModeEX {
         collect1,
         driveToShoot1,
         Collect2,
-        driveToShoot2
+        driveToShoot2,
+        finished
     }
 
     AutoState state = AutoState.preload;
 
     private final sectionBuilder[] preload = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(84, 28), new Vector2D(108, 44), new Vector2D(120, 89)),
+            () -> paths.addPoints(new Vector2D(84, 28), new Vector2D(108, 44), new Vector2D(95, 120)),
     };
-
 
     private final sectionBuilder[] driveToCollect = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(120, 89), new Vector2D(135, 136), new Vector2D(107, 151)),
+            () -> paths.addPoints(new Vector2D(95, 120), new Vector2D(135, 136), new Vector2D(107, 151)),
     };
     private final sectionBuilder[] collect1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(107, 151), new Vector2D(77, 151), new Vector2D(50, 152)),
+            () -> paths.addPoints(new Vector2D(107, 151), new Vector2D(77, 151), new Vector2D(45, 152)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(50, 151), new Vector2D(104, 134), new Vector2D(150, 120)),
+            () -> paths.addPoints(new Vector2D(45, 151), new Vector2D(104, 134), new Vector2D(95, 130)),
     };
     private final sectionBuilder[] Collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 120), new Vector2D(144, 217), new Vector2D(50, 210)),
+            () -> paths.addPoints(new Vector2D(95, 130), new Vector2D(144, 217), new Vector2D(45, 210)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(50, 220), new Vector2D(144, 217), new Vector2D(150, 120)),
+            () -> paths.addPoints(new Vector2D(45, 220), new Vector2D(144, 217), new Vector2D(95, 130)),
     };
 
     @Override
@@ -80,31 +82,41 @@ public class Close_Auto extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
+        if (Intake){
+            intkeTime.reset();
+            intake.intakeMotor.update(-1);
+            if (intkeTime.milliseconds() > 2500){
+                Intake = false;
+            }
+        }else {
+            intake.intakeMotor.update(0);
+        }
 
         if (built && state == AutoState.preload) {
             follow.setPath(paths.returnPath("preload"));
-            targetHeading = 315;
+            targetHeading = 310;
             built = false;
             pathing = true;
             turret.spinDown = false;
 
 
         }
-        if (pathing && follow.isFinished(2, 2) && state == AutoState.preload) {
+        if (pathing && follow.isFinished(5, 5) && state == AutoState.preload && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 8) {
             built = true;
             pathing = false;
             shootTime.reset();
-            intake.intakeMotor.update(-1);
+            Intake = true;
             state = AutoState.firstShootDone;
 
 
         }
         if (shootTime.milliseconds() > 1000 && built && state == AutoState.firstShootDone){
             state = AutoState.driveToCollect;
+            intake.block = true;
             follow.setPath(paths.returnPath("driveToCollect"));
-            intake.intakeMotor.update(0);
+            follow.usePathHeadings(true);
+            follow.setHeadingLookAheadDistance(35);
             turret.spinDown =true;
-            targetHeading = 270;
             built = false;
             pathing = true;
         }
@@ -112,53 +124,60 @@ public class Close_Auto extends OpModeEX {
         if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToCollect) {
             state = AutoState.collect1;
             follow.setPath(paths.returnPath("collect1"));
+            follow.usePathHeadings(true);
+            follow.setHeadingLookAheadDistance(35);
             state = AutoState.collect1;
-            targetHeading = 270;
             pathing = true;
-            intake.intakeMotor.update(-1);
+            Intake = true;
+
         }
         if (pathing && follow.isFinished(2, 2) && state == AutoState.collect1){
             state = AutoState.driveToShoot1;
+            intake.block = false;
             follow.setPath(paths.returnPath("driveToShoot1"));
-            targetHeading = 310;
+            targetHeading = 270;
             pathing = true;
-            intake.intakeMotor.update(0);
             turret.spinDown = false;
             state = AutoState.driveToShoot1;
 
         }
-        if (pathing && follow.isFinished(2, 2) && state == AutoState.driveToShoot1){
+        if (pathing && follow.isFinished(5, 5) && state == AutoState.driveToShoot1 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 8){
             pathing = false;
             shootTime.reset();
-            intake.intakeMotor.update(-1);
+            Intake = true;
             built = true;
 
 
         }
         if (shootTime.milliseconds() > 1000 && state == AutoState.driveToShoot1 && built){
             turret.spinDown = true;
-            targetHeading = 270;
             state = AutoState.Collect2;
+            Intake = true;
+            intake.block = true;
             follow.setPath(paths.returnPath("Collect2"));
+            follow.usePathHeadings(true);
+            follow.setHeadingLookAheadDistance(35);
             pathing = true;
             built = false;
 
         }
         if (pathing && follow.isFinished(2, 2) && state == AutoState.Collect2){
             state = AutoState.driveToShoot2;
+            intake.block = false;
             follow.setPath(paths.returnPath("driveToShoot2"));
-            intake.intakeMotor.update(0);
+            targetHeading = 270;
             turret.spinDown = false;
-            targetHeading = 310;
         }
-        if (pathing && follow.isFinished(2, 2) && state == AutoState.driveToShoot2){
+        if (pathing && follow.isFinished(5, 5) && state == AutoState.driveToShoot2 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 8){
             pathing = false;
-            intake.intakeMotor.update(-1);
+            Intake = true;
             shootTime.reset();
-            if (shootTime.milliseconds() > 1000){
-                requestOpModeStop();
+            state = AutoState.finished;
 
-            }
+
+        }
+        if (shootTime.milliseconds() > 1000 && state == AutoState.finished){
+            requestOpModeStop();
 
         }
         if (pathing){

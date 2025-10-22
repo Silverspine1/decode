@@ -7,12 +7,13 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
+import dev.weaponboy.nexus_command_base.Hardware.ServoDegrees;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Intake extends SubSystem {
     public MotorEx intakeMotor = new MotorEx();
-    public Servo trans;
-    double uselessBob = 3;
+    ServoDegrees intakeBlocker =new ServoDegrees();
+    public boolean block = false;
     public Intake(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
    }
@@ -20,7 +21,10 @@ public class Intake extends SubSystem {
     @Override
     public void init() {
         intakeMotor.initMotor("intakeMotor", getOpMode().hardwareMap);
-        trans = getOpMode().hardwareMap.get(Servo.class,"trans");
+        intakeBlocker.initServo("Blocker",getOpMode().hardwareMap);
+        intakeBlocker.setRange(355);
+        intakeBlocker.setPosition(0);
+        intakeBlocker.setDirection(Servo.Direction.REVERSE);
 
     }
 
@@ -33,6 +37,12 @@ public class Intake extends SubSystem {
     @Override
     public void execute() {
         executeEX();
+        if (block){
+            intakeBlocker.setPosition(0);
+
+        }else {
+            intakeBlocker.setPosition(90);
+        }
 
     }
 }
