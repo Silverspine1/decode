@@ -19,6 +19,8 @@ public class Close_Auto extends OpModeEX {
     boolean pathing = false;
     boolean built = true;
     boolean Intake = false;
+    boolean manuel = true;
+
 
     ElapsedTime shootTime = new ElapsedTime();
     ElapsedTime intkeTime = new ElapsedTime();
@@ -42,16 +44,16 @@ public class Close_Auto extends OpModeEX {
     };
 
     private final sectionBuilder[] collect1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(135, 128), new Vector2D(95, 157), new Vector2D(45, 151)),
+            () -> paths.addPoints(new Vector2D(135, 128), new Vector2D(95, 157), new Vector2D(40, 151)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(45, 151), new Vector2D(99, 152), new Vector2D(150, 150)),
+            () -> paths.addPoints(new Vector2D(40, 151), new Vector2D(99, 152), new Vector2D(145, 150)),
     };
     private final sectionBuilder[] Collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 209), new Vector2D(45, 211)),
+            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 218), new Vector2D(33, 211)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(45, 211), new Vector2D(126, 197), new Vector2D(179, 180)),
+            () -> paths.addPoints(new Vector2D(33, 211), new Vector2D(126, 197), new Vector2D(160, 180)),
     };
 
     @Override
@@ -79,14 +81,20 @@ public class Close_Auto extends OpModeEX {
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
         if (Intake){
-            intkeTime.reset();
+            if (manuel){
+                intkeTime.reset();
+                manuel = false;
+
+            }
             intake.intakeMotor.update(-1);
-            if (intkeTime.milliseconds() > 2500){
+            if (intkeTime.milliseconds() > 2700){
                 Intake = false;
+                manuel = true;
             }
         }else {
             intake.intakeMotor.update(0);
         }
+
 
         if (built && state == AutoState.preload) {
             follow.setPath(paths.returnPath("preload"));
@@ -97,17 +105,20 @@ public class Close_Auto extends OpModeEX {
 
 
         }
-        if (pathing && follow.isFinished(5, 5) && state == AutoState.preload && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 8) {
+        if (pathing && follow.isFinished(10, 10) && state == AutoState.preload && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 5) {
             built = true;
             pathing = false;
             shootTime.reset();
-            Intake = true;
+            intake.block = false;
             state = AutoState.firstShootDone;
 
 
         }
+        if (shootTime.milliseconds() > 75 && built && state == AutoState.firstShootDone){
+            Intake = true;
+        }
 
-        if (shootTime.milliseconds() > 1000 && built && state == AutoState.firstShootDone) {
+        if (shootTime.milliseconds() > 800 && built && state == AutoState.firstShootDone) {
             intake.block = true;
             built = false;
             state = AutoState.collect1;
@@ -118,9 +129,8 @@ public class Close_Auto extends OpModeEX {
             Intake = true;
 
         }
-        if (pathing && follow.isFinished(2, 2) && state == AutoState.collect1){
+        if (pathing && follow.isFinished(1, 1) && state == AutoState.collect1){
             state = AutoState.driveToShoot1;
-            intake.block = false;
             follow.setPath(paths.returnPath("driveToShoot1"));
             targetHeading = 270;
             pathing = true;
@@ -128,41 +138,50 @@ public class Close_Auto extends OpModeEX {
             state = AutoState.driveToShoot1;
 
         }
-        if (pathing && follow.isFinished(5, 5) && state == AutoState.driveToShoot1 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 8){
+        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot1 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 5){
             pathing = false;
             shootTime.reset();
-            Intake = true;
             built = true;
 
 
         }
-        if (shootTime.milliseconds() > 1000 && state == AutoState.driveToShoot1 && built){
-            turret.spinDown = true;
+        if(shootTime.milliseconds() > 25 && state == AutoState.driveToShoot1 && built){
+            Intake = true;
+
+        }
+        if (shootTime.milliseconds() > 800 && state == AutoState.driveToShoot1 && built){
             state = AutoState.Collect2;
             Intake = true;
             intake.block = true;
             follow.setPath(paths.returnPath("Collect2"));
-            targetHeading = 258;
+            targetHeading = 270;
             pathing = true;
             built = false;
 
         }
-        if (pathing && follow.isFinished(2, 2) && state == AutoState.Collect2){
+        if (pathing && follow.isFinished(1, 1) && state == AutoState.Collect2){
             state = AutoState.driveToShoot2;
-            intake.block = false;
             follow.setPath(paths.returnPath("driveToShoot2"));
             targetHeading = 270;
             turret.spinDown = false;
         }
-        if (pathing && follow.isFinished(5, 5) && state == AutoState.driveToShoot2 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 8){
+        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot2 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 5){
             pathing = false;
-            Intake = true;
             shootTime.reset();
             state = AutoState.finished;
 
 
         }
-        if (shootTime.milliseconds() > 1000 && state == AutoState.finished){
+        if(shootTime.milliseconds() > 25 && state == AutoState.finished){
+            Intake = true;
+        }
+        if (state == AutoState.driveToShoot1 && follow.isFinished(15,15)){
+            intake.block = false;
+        }
+        if (state == AutoState.driveToShoot2 && follow.isFinished(15,15)){
+            intake.block = false;
+        }
+        if (shootTime.milliseconds() > 800 && state == AutoState.finished){
             requestOpModeStop();
 
         }

@@ -41,7 +41,7 @@ public class Turret extends SubSystem {
 
     public double targetRPM = 2700;
     public double rpm;
-    double mapOfset = 0;
+    double mapOfset = 80;
     public double turretAngle;
     final double gearRatio = 0.7272;
     final double turretLimitAngle =80;
@@ -140,8 +140,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(160);
-        turretTurnTwo.setOffset(160);
+        turretTurnOne.setOffset(164);
+        turretTurnTwo.setOffset(164);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
     }
