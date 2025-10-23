@@ -9,10 +9,13 @@ import dev.weaponboy.nexus_pathing.Follower.follower;
 import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
 import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
+import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 public class Close_Auto extends OpModeEX {
-    pathsManager paths = new pathsManager();
+    pathsManager paths =new pathsManager(new RobotConfig(0.022, 0.006, 0.028, 0.007, 0.06, 0.005, 0.075, 0.005, 0.022, 0.0005, 0.012, 0.002, 173,200,260,260));
+
+
 
     follower follow = new follower();
     double targetHeading;
@@ -20,6 +23,8 @@ public class Close_Auto extends OpModeEX {
     boolean built = true;
     boolean Intake = false;
     boolean manuel = true;
+    double lookAheadTime = 1;
+
 
 
     ElapsedTime shootTime = new ElapsedTime();
@@ -59,6 +64,7 @@ public class Close_Auto extends OpModeEX {
     @Override
     public void initEX() {
         odometry.startPosition(75, 22, 0);
+        turret.Auto = true;
 
 
         paths.addNewPath("preload");
@@ -77,23 +83,10 @@ public class Close_Auto extends OpModeEX {
 
     @Override
     public void loopEX() {
-        turret.robotX = odometry.X();
-        turret.robotY = odometry.Y();
+        turret.robotX = odometry.X() - odometry.getXVelocity() * lookAheadTime;
+        turret.robotY = odometry.Y() - odometry.getYVelocity() * lookAheadTime;
         turret.robotHeading = odometry.normilised;
-        if (Intake){
-            if (manuel){
-                intkeTime.reset();
-                manuel = false;
 
-            }
-            intake.intakeMotor.update(-1);
-            if (intkeTime.milliseconds() > 2700){
-                Intake = false;
-                manuel = true;
-            }
-        }else {
-            intake.intakeMotor.update(0);
-        }
 
 
         if (built && state == AutoState.preload) {
@@ -105,31 +98,29 @@ public class Close_Auto extends OpModeEX {
 
 
         }
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.preload && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 5) {
+        if (pathing && follow.isFinished(10, 10) && state == AutoState.preload) {
             built = true;
             pathing = false;
-            shootTime.reset();
             intake.block = false;
             state = AutoState.firstShootDone;
+            intake.intakeMotor.update(-1);
+            shootTime.reset();
+
 
 
         }
-        if (shootTime.milliseconds() > 75 && built && state == AutoState.firstShootDone){
-            Intake = true;
-        }
 
-        if (shootTime.milliseconds() > 800 && built && state == AutoState.firstShootDone) {
-            intake.block = true;
+
+        if (built && state == AutoState.firstShootDone && shootTime.milliseconds() > 250) {
             built = false;
             state = AutoState.collect1;
             follow.setPath(paths.returnPath("collect1"));
             targetHeading = 270;
             state = AutoState.collect1;
             pathing = true;
-            Intake = true;
 
         }
-        if (pathing && follow.isFinished(1, 1) && state == AutoState.collect1){
+        if (pathing && follow.isFinished(2, 2) && state == AutoState.collect1){
             state = AutoState.driveToShoot1;
             follow.setPath(paths.returnPath("driveToShoot1"));
             targetHeading = 270;
@@ -138,50 +129,51 @@ public class Close_Auto extends OpModeEX {
             state = AutoState.driveToShoot1;
 
         }
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot1 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 5){
+        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot1){
             pathing = false;
-            shootTime.reset();
             built = true;
+            shootTime.reset();
 
 
-        }
-        if(shootTime.milliseconds() > 25 && state == AutoState.driveToShoot1 && built){
-            Intake = true;
 
         }
-        if (shootTime.milliseconds() > 800 && state == AutoState.driveToShoot1 && built){
+
+        if (state == AutoState.driveToShoot1 && built && shootTime.milliseconds() > 250){
             state = AutoState.Collect2;
-            Intake = true;
-            intake.block = true;
             follow.setPath(paths.returnPath("Collect2"));
             targetHeading = 270;
             pathing = true;
             built = false;
 
         }
-        if (pathing && follow.isFinished(1, 1) && state == AutoState.Collect2){
+        if (pathing && follow.isFinished(2, 2) && state == AutoState.Collect2){
             state = AutoState.driveToShoot2;
             follow.setPath(paths.returnPath("driveToShoot2"));
             targetHeading = 270;
             turret.spinDown = false;
         }
-        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot2 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) < 5){
+        if (pathing && follow.isFinished(10, 10) && state == AutoState.driveToShoot2){
             pathing = false;
-            shootTime.reset();
             state = AutoState.finished;
+            shootTime.reset();
 
 
+
         }
-        if(shootTime.milliseconds() > 25 && state == AutoState.finished){
-            Intake = true;
-        }
-        if (state == AutoState.driveToShoot1 && follow.isFinished(15,15)){
+
+        if (state == AutoState.driveToShoot1 && follow.isFinished(12,12)){
             intake.block = false;
         }
-        if (state == AutoState.driveToShoot2 && follow.isFinished(15,15)){
+        if (state == AutoState.driveToShoot2 && follow.isFinished(12,12)){
             intake.block = false;
         }
-        if (shootTime.milliseconds() > 800 && state == AutoState.finished){
+        if (state == AutoState.Collect2 && odometry.X() < 90){
+            intake.block = true;
+        }
+        if (state == AutoState.Collect2 && odometry.X() < 90) {
+            intake.block = true;
+        }
+        if (state == AutoState.finished && shootTime.milliseconds() >600){
             requestOpModeStop();
 
         }

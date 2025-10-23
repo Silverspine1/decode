@@ -30,14 +30,7 @@ public class First_Tele extends OpModeEX {
 //        if (Math.abs(gamepad1.right_stick_y)>0){
 //            turret.hoodAdjust.setPosition(hood += gamepad1.right_stick_y);
 //        }
-        if (gamepad1.dpad_up){
-            drivepower += 0.01;
-        }
-        if (gamepad1.dpad_left){
-            driveBase.drivePowers(drivepower,0,0);
-        }else {
-            driveBase.drivePowers(0,0,0);
-        }
+
 //        turret.targetRPM += gamepad1.left_stick_y*7;
         if (gamepad1.right_bumper){
             intake.intakeMotor.update(-1);

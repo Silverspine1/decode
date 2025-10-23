@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.GoBildaPinpointDriver.Register;
 
@@ -38,6 +39,7 @@ public class Odometry extends SubSystem {
 
     double XVelocity = 0;
     double YVelocity = 0;
+    double HVelocity = 0;
 
    public Odometry(OpModeEX opModeEX) {
        registerSubsystem(opModeEX, update);
@@ -140,6 +142,10 @@ public class Odometry extends SubSystem {
     public double getXVelocity() {
         return XVelocity;
     }
+    public double getHVelocity() {
+        return HVelocity;
+    }
+
 
     public LambdaCommand update = new LambdaCommand(
             () -> {
@@ -150,6 +156,8 @@ public class Odometry extends SubSystem {
 
                 XVelocity = odo.getVelX(DistanceUnit.CM);
                 YVelocity = odo.getVelY(DistanceUnit.CM);
+                HVelocity = odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
+
 
                 Heading = startHeading + odo.getHeading(AngleUnit.DEGREES);
                 normilised = startHeading + odo.getHeading(AngleUnit.RADIANS);
