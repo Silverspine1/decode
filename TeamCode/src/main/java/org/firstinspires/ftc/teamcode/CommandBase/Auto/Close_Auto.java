@@ -134,8 +134,6 @@ public class Close_Auto extends OpModeEX {
             built = true;
             shootTime.reset();
 
-
-
         }
 
         if (state == AutoState.driveToShoot1 && built && shootTime.milliseconds() > 250){
