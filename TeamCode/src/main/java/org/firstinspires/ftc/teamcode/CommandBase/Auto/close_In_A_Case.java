@@ -13,7 +13,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 public class close_In_A_Case extends OpModeEX {
-    pathsManager paths =new pathsManager(new RobotConfig(0.022, 0.006, 0.028, 0.007, 0.06, 0.005, 0.075, 0.005, 0.022, 0.0005, 0.012, 0.002, 173,200,260,260));
+    pathsManager paths =new pathsManager(new RobotConfig(0.023, 0.007, 0.030, 0.008, 0.065, 0.0055, 0.078, 0.0054, 0.022, 0.0005, 0.012, 0.002, 173,200,260,260));
 
 
 
@@ -24,8 +24,8 @@ public class close_In_A_Case extends OpModeEX {
     boolean Intake = false;
     boolean manuel = true;
     double lookAheadTime = 0;
-    double shootWait = 4500;
-    double velo = 0.5;
+    double shootWait = 3000;
+    double velo = 2;
 
 
 
@@ -55,10 +55,10 @@ public class close_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(40, 151), new Vector2D(99, 152), new Vector2D(145, 150)),
     };
     private final sectionBuilder[] Collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 218), new Vector2D(33, 211)),
+            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 228), new Vector2D(33, 211)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(33, 211), new Vector2D(126, 197), new Vector2D(160, 180)),
+            () -> paths.addPoints(new Vector2D(33, 211), new Vector2D(126, 197), new Vector2D(160, 170)),
     };
     @Override
     public void initEX() {
@@ -95,12 +95,12 @@ public class close_In_A_Case extends OpModeEX {
 
 
                 }
-                if (pathing && follow.isFinished(1, 1) ) {
+                if (pathing && follow.isFinished(3, 3) && Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo) {
                     built = true;
                     pathing = false;
                     intake.block = false;
                     state = Close_Auto.AutoState.firstShootDone;
-                    intake.intakeMotor.update(-0.4);
+                    intake.intakeMotor.update(-1);
                     shootTime.reset();
 
 
@@ -111,7 +111,7 @@ public class close_In_A_Case extends OpModeEX {
                         built = false;
                         state = Close_Auto.AutoState.collect1;
                         follow.setPath(paths.returnPath("collect1"));
-                        intake.block = false;
+                        intake.block = true;
                         targetHeading = 270;
                         state = Close_Auto.AutoState.collect1;
                         pathing = true;
@@ -119,7 +119,7 @@ public class close_In_A_Case extends OpModeEX {
                     }
                     break;
                     case collect1:
-                        if (pathing && follow.isFinished(0.1, 0.1)){
+                        if (pathing && follow.isFinished(7, 7)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
                             state = Close_Auto.AutoState.driveToShoot1;
                             follow.setPath(paths.returnPath("driveToShoot1"));
                             targetHeading = 270;
@@ -130,7 +130,7 @@ public class close_In_A_Case extends OpModeEX {
                         }
                         break;
                         case driveToShoot1:
-                            if (pathing && follow.isFinished(0.5, 0.5)) {
+                            if (pathing && follow.isFinished(5, 5)) {
                                 pathing = false;
                                 built = true;
                                 shootTime.reset();
@@ -141,17 +141,17 @@ public class close_In_A_Case extends OpModeEX {
                                 state = Close_Auto.AutoState.Collect2;
                                 follow.setPath(paths.returnPath("Collect2"));
                                 targetHeading = 270;
-                                intake.block = false;
+                                intake.block = true;
                                 pathing = true;
                                 built = false;
 
                             }
-                            if (state == Close_Auto.AutoState.driveToShoot1 && follow.isFinished(12,12)){
+                            if (state == Close_Auto.AutoState.driveToShoot1 && follow.isFinished(12,12)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
                                 intake.block = false;
                             }
                             break;
                             case Collect2:
-                                if (pathing && follow.isFinished(0.5, 0.5) ){
+                                if (pathing && follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo ){
                                     state = Close_Auto.AutoState.driveToShoot2;
                                     follow.setPath(paths.returnPath("driveToShoot2"));
                                     targetHeading = 270;
@@ -159,13 +159,13 @@ public class close_In_A_Case extends OpModeEX {
                                 }
                                 break;
                                 case driveToShoot2:
-                                    if (pathing && follow.isFinished(0.5, 0.5) ){
+                                    if (pathing && follow.isFinished(4, 4)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo ){
                                         pathing = false;
                                         state = Close_Auto.AutoState.finished;
                                         shootTime.reset();
 
                                     }
-                                    if (state == Close_Auto.AutoState.driveToShoot2 && follow.isFinished(12,12)){
+                                    if (state == Close_Auto.AutoState.driveToShoot2 && follow.isFinished(12,12) && Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
                                         intake.block = false;
                                     }
                                     break;

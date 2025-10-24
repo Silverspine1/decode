@@ -68,7 +68,7 @@ public class Turret extends SubSystem {
     double highHoodAngle3 = 100;
 
 
-    double lowPower1 = 2350;
+    double lowPower1 = 2300;
     double lowPower2 = 2623;
     double lowPower3 = 3055;
 
@@ -164,17 +164,17 @@ public class Turret extends SubSystem {
         }else {
             shootPower = shootPID.calculate(targetRPM,rpm);
         }
-        if (inZone && !zoneResetStop){
-            shootingTime.reset();
-            zoneResetStop = true;
-        }else if (inZone && shootingTime.milliseconds() > 1800){
-            spunUp = true;
-            intakeEnter = true;
-            zoneResetStop = false;
-
-        }else if(!inZone) {
-            spunUp = false;
-        }
+//        if (inZone && !zoneResetStop){
+//            shootingTime.reset();
+//            zoneResetStop = true;
+//        }else if (inZone && shootingTime.milliseconds() > 1800){
+//            spunUp = true;
+//            intakeEnter = true;
+//            zoneResetStop = false;
+//
+//        }else if(!inZone) {
+//            spunUp = false;
+//        }
 //        if (spunUp && turretInRange && intakeEnter){
 //            intake.reset();
 //            intakeEnter = false;
@@ -183,14 +183,14 @@ public class Turret extends SubSystem {
 //        }else {
 //            intakeTime = false;
 //        }
-        if (spunUp && Math.abs(targetRPM - rpm )> 620){
-            currentWait.reset();
-            currentSpike = true;
-            shootingLevel = LowMediumHigh.low;
-        } else if (currentSpike && currentWait.milliseconds() > 1500) {
-            currentSpike = false;
-            shootingLevel = LowMediumHigh.medium;
-        }
+//        if (spunUp && Math.abs(targetRPM - rpm )> 620){
+//            currentWait.reset();
+//            currentSpike = true;
+//            shootingLevel = LowMediumHigh.low;
+//        } else if (currentSpike && currentWait.milliseconds() > 1500) {
+//            currentSpike = false;
+//            shootingLevel = LowMediumHigh.medium;
+//        }
 
 
         switch (shootingLevel) {
@@ -333,7 +333,7 @@ public class Turret extends SubSystem {
             turretInRange = false;
         }
 //
-            if ( (robotX > 100 && robotX < 180 && robotY > 260) || ((robotY + Yoffset < 180)&& (robotX + Xoffset < 180) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 180) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
+            if ( (robotX > 100 && robotX < 180 && robotY > 260) || ((robotY + Yoffset < 190)&& (robotX + Xoffset < 190) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 190) && (robotX + Xoffset > 190) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
                 inZone = true;
             }else {
                 inZone = false;

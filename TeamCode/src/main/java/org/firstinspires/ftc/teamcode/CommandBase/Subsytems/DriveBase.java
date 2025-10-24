@@ -103,7 +103,7 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
-                 double denominator = Math.max(4, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+                 double denominator = Math.max(2.5, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
                 LF.update((vertikal-(strafe)-turn)/denominator);
                 RF.update((vertikal+(strafe)+turn)/denominator);
