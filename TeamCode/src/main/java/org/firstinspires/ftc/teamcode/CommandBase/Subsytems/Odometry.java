@@ -18,7 +18,7 @@ import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Odometry extends SubSystem {
 
-    GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
+    public GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
 
     double oldTime = 0;
 

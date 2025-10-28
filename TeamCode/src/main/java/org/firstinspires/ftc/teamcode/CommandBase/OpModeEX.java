@@ -5,12 +5,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.AprilTag_Input;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.DriveBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Odometry;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
-import org.firstinspires.ftc.teamcode.oldcooked.AprilTags;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.AprilTags;
 
 import dev.weaponboy.nexus_command_base.OpmodeEX.Scheduler;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
@@ -29,10 +28,9 @@ public abstract class OpModeEX extends OpMode {
     public AprilTags Apriltag = new AprilTags(this);
 
     public Intake intake = new Intake(this);
-    public AprilTag_Input aprilTagInput = new AprilTag_Input(this);
 
 
-    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,turret,intake});
+    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,turret,intake,Apriltag});
 
     List<LynxModule> allHubs;
 

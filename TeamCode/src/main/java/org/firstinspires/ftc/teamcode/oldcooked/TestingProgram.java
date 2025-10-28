@@ -95,7 +95,6 @@ public class TestingProgram extends OpModeEX {
         telemetry.addData("shoot zone",turret.inZone);
         telemetry.update();
 
-telemetry.addData("tc",aprilTagInput.limelight.getLatestResult());
 
 
     }

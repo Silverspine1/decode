@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.CommandBase.teleOP;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 
@@ -11,8 +14,14 @@ public class First_Tele extends OpModeEX {
     double hood = 168;
     @Override
     public void initEX() {
-        odometry.startPosition(75, 139, 0);
+        turret.toggle = false;
+       Apriltag.limelight.pipelineSwitch(0);
 
+    }
+        @Override
+    public void start() {
+
+        Apriltag.limelight.start();
 
     }
 
@@ -22,37 +31,67 @@ public class First_Tele extends OpModeEX {
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
         driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
-        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-            turret.shootingLevel = Turret.LowMediumHigh.medium;
-        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-            turret.shootingLevel = Turret.LowMediumHigh.low;
-        }
+//        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
+//            turret.shootingLevel = Turret.LowMediumHigh.medium;
+//        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
+//            turret.shootingLevel = Turret.LowMediumHigh.low;
+//        }
 //        if (Math.abs(gamepad1.right_stick_y)>0){
 //            turret.hoodAdjust.setPosition(hood += gamepad1.right_stick_y);
 //        }
-
+//
 //        turret.targetRPM += gamepad1.left_stick_y*7;
+
         if (gamepad1.right_bumper){
+            intake.block = true;
             intake.intakeMotor.update(-1);
 
         }else if (gamepad1.left_bumper){
-            intake.intakeMotor.update(1);
+            intake.intakeMotor.update(-1);
+            intake.block = false;
         }else if(turret.intakeTime){
             intake.intakeMotor.update(-1);
         }else {
             intake.intakeMotor.update(0);
         }
+        if (!lastGamepad1.a && currentGamepad1.a){
+            turret.toggle = true;
+            odometry.odo.setPosX(Apriltag.llResult.getBotpose().getPosition().x +38, DistanceUnit.CM);
+            odometry.odo.setPosY(Apriltag.llResult.getBotpose().getPosition().y -35,DistanceUnit.CM);
+            odometry.odo.setHeading(180 - Apriltag.llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES), AngleUnit.DEGREES);
+        }
+        if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left){
+            turret.turrofset += -3;
+        }
+        if (!lastGamepad2.dpad_right && currentGamepad2.dpad_right){
+            turret.turrofset += 3;
+        }
+        if (!lastGamepad2.dpad_up && currentGamepad2.dpad_up){
+            turret.mapOfset += -20;
+        }
+        if (!lastGamepad2.dpad_up && currentGamepad2.dpad_up){
+            turret.mapOfset += 20;
+        }
 
 
 
+
+
+
+        if (Apriltag.limelight.isConnected()) {
+            telemetry.addData("con", "connected");
+        }
         telemetry.addData("in zone",turret.inZone);
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
+        telemetry.addData("6767676767y",Apriltag.llResult.getBotpose_MT2());
         telemetry.addData("Heading",odometry.Heading());
         telemetry.addData("target",turret.targetRPM);
         telemetry.addData("ditance",turret.distance);
-        telemetry.addData("hood angle",hood);
-        telemetry.addData("drive",drivepower);
+
+        telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().x);
+        telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().y);
+
         telemetry.update();
 
 

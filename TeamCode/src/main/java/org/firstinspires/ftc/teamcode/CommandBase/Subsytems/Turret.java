@@ -41,7 +41,8 @@ public class Turret extends SubSystem {
 
     public double targetRPM = 2700;
     public double rpm;
-    double mapOfset = 80;
+    public double mapOfset = 80;
+    public double turrofset= 0;
     public double turretAngle;
     final double gearRatio = 0.7272;
     final double turretLimitAngle =80;
@@ -109,6 +110,7 @@ public class Turret extends SubSystem {
     boolean zoneResetStop = false;
     public boolean spinDown = false;
     public boolean Auto = false;
+    public boolean toggle = true;
 
 
 
@@ -141,8 +143,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(160);
-        turretTurnTwo.setOffset(160);
+        turretTurnOne.setOffset(163);
+        turretTurnTwo.setOffset(163);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
     }
@@ -333,23 +335,20 @@ public class Turret extends SubSystem {
             turretInRange = false;
         }
 //
-            if ( (robotX > 100 && robotX < 180 && robotY > 260) || ((robotY + Yoffset < 190)&& (robotX + Xoffset < 190) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 190) && (robotX + Xoffset > 190) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
+            if ( (robotX > 130 && robotX < 240 && robotY > 260) || ((robotY + Yoffset < 200)&& (robotX + Xoffset < 200) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 108) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
                 inZone = true;
             }else {
                 inZone = false;
     }
-        if (inZone) {
-                if (!spinDown) {
-                    targetRPM = interpolatePower + mapOfset;
-                }
+        if (inZone && toggle) {
+                targetRPM = interpolatePower + mapOfset;
+
                 shooterMotorOne.update(shootPower);
                 shooterMotorTwo.update(shootPower);
-                turretTurnOne.setPosition(((turretAngle) / gearRatio));
-                turretTurnTwo.setPosition(((turretAngle) / gearRatio));
+                turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
+                turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto) {
-            if (!spinDown) {
-                targetRPM = interpolatePower + mapOfset;
-            }
+            targetRPM = interpolatePower + mapOfset;
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle) / gearRatio));

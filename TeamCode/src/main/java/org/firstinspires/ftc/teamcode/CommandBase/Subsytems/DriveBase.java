@@ -27,6 +27,7 @@ public class DriveBase extends SubSystem {
     public MotorEx RB = new MotorEx();
     public MotorEx LB = new MotorEx();
     public TouchSensor intakeSensor;
+    double speed = 1;
 
 
 
@@ -39,6 +40,7 @@ public class DriveBase extends SubSystem {
     double vertikal ;
     double turn ;
     double strafe;
+    public boolean tele = true;
 
 
     public DriveBase(OpModeEX opModeEX){
@@ -79,6 +81,11 @@ public class DriveBase extends SubSystem {
     @Override
     public void execute() {
         executeEX();
+        if (!tele){
+            speed = 2.5;
+        }else {
+            speed = 1;
+        }
     }
 
 
@@ -103,7 +110,7 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
-                 double denominator = Math.max(2.5, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+                 double denominator = Math.max(speed, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
                 LF.update((vertikal-(strafe)-turn)/denominator);
                 RF.update((vertikal+(strafe)+turn)/denominator);

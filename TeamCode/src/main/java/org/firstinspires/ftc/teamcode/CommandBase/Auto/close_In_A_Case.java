@@ -55,7 +55,7 @@ public class close_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(40, 151), new Vector2D(99, 152), new Vector2D(145, 150)),
     };
     private final sectionBuilder[] Collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 228), new Vector2D(33, 211)),
+            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 228), new Vector2D(28, 207)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(33, 211), new Vector2D(126, 197), new Vector2D(160, 170)),
@@ -64,6 +64,7 @@ public class close_In_A_Case extends OpModeEX {
     public void initEX() {
         odometry.startPosition(75, 22, 0);
         turret.Auto = true;
+        driveBase.tele= false;
 
 
         paths.addNewPath("preload");
@@ -100,7 +101,7 @@ public class close_In_A_Case extends OpModeEX {
                     pathing = false;
                     intake.block = false;
                     state = Close_Auto.AutoState.firstShootDone;
-                    intake.intakeMotor.update(-1);
+                    intake.intakeMotor.update(-0.75);
                     shootTime.reset();
 
 
@@ -160,13 +161,11 @@ public class close_In_A_Case extends OpModeEX {
                                 break;
                                 case driveToShoot2:
                                     if (pathing && follow.isFinished(4, 4)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo ){
+                                        intake.block = false;
                                         pathing = false;
                                         state = Close_Auto.AutoState.finished;
                                         shootTime.reset();
 
-                                    }
-                                    if (state == Close_Auto.AutoState.driveToShoot2 && follow.isFinished(12,12) && Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
-                                        intake.block = false;
                                     }
                                     break;
                                     case finished:

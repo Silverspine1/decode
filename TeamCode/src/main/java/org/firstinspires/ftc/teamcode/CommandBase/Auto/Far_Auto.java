@@ -61,6 +61,9 @@ public class Far_Auto extends OpModeEX {
         paths.buildPath(Collect2);
         paths.addNewPath("driveToShoot2");
         paths.buildPath(driveToShoot2);
+        turret.Auto = true;
+        driveBase.tele= false;
+
 
     }
 

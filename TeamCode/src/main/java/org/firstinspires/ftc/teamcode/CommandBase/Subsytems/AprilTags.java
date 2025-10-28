@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.oldcooked;
+package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -17,7 +17,8 @@ import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class AprilTags extends SubSystem {
-        Limelight3A limelight;
+   public LLResult llResult;
+    public Limelight3A limelight;
    public IMU imu;
    public JSONObject jsonData;
            public java.util.List<LLResultTypes.FiducialResult> fiducialResults;
@@ -27,7 +28,7 @@ public class AprilTags extends SubSystem {
        this.fiducialResults = new ArrayList<>();
 
    }
-    LLResult llResult;
+
    Pose3D botPose;
 
    public AprilTags(OpModeEX opModeEX) {
@@ -75,8 +76,7 @@ RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot
     );
     @Override
     public void execute() {
-
-LLResult llResult = limelight.getLatestResult();
+        LLResult llResult = limelight.getLatestResult();
 this.llResult = llResult;
     }
 }
