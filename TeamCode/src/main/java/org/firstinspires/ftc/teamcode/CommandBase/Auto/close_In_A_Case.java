@@ -60,6 +60,15 @@ public class close_In_A_Case extends OpModeEX {
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(33, 211), new Vector2D(126, 197), new Vector2D(160, 170)),
     };
+    private final sectionBuilder[] collect3 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(160, 180), new Vector2D(148, 278), new Vector2D(40, 270)),
+    };
+    private final sectionBuilder[] gate = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(40, 270), new Vector2D(110, 170), new Vector2D(40, 181)),
+    };
+    private final sectionBuilder[] driveToShoot3 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(40, 270), new Vector2D(148, 278), new Vector2D(160, 180)),
+    };
     @Override
     public void initEX() {
         odometry.startPosition(75, 22, 0);
@@ -77,6 +86,14 @@ public class close_In_A_Case extends OpModeEX {
         paths.buildPath(Collect2);
         paths.addNewPath("driveToShoot2");
         paths.buildPath(driveToShoot2);
+        paths.addNewPath("collect3");
+        paths.buildPath(collect3);
+        paths.addNewPath("gate");
+        paths.buildPath(gate);
+        paths.addNewPath("driveToShoot3");
+        paths.buildPath(driveToShoot3);
+
+
 
     }
 

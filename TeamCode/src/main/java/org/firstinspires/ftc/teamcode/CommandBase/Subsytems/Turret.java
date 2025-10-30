@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -99,6 +98,12 @@ public class Turret extends SubSystem {
     public ElapsedTime shootingTime = new ElapsedTime();
     ElapsedTime lookAhead = new ElapsedTime();
     ElapsedTime currentWait = new ElapsedTime();
+    final double R1 = 183.286;
+    final double R2 = 80.4;
+    final double R3 = 80;
+    final double R4 = 173.2;
+    public double hoodTarget = 30;
+    public double theta_4 = 30;
 
 
     public boolean inZone = false;
@@ -147,6 +152,23 @@ public class Turret extends SubSystem {
         turretTurnTwo.setOffset(163);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
+        hoodAdjust.setPosition(0);
+    }
+    public double hoodDegreesToServoPoz(double theta_4){
+        double K1 = R1 /R2;
+        double K2 = R1 /R4;
+        double K = (R1 * R1 + R2 * R2 + R4 * R4 - R3 * R3) / (2 * R2 * R4);
+        double U = Math.max(54,Math.min(22,theta_4)) - 5.3;
+        double A =  Math.sin(U);
+        double B = K2 - Math.cos(U);
+        double C = K1 * Math.cos(U) - K;
+        double R = Math.sqrt(A * A + B * B);
+        double psi = Math.atan2(A,B);
+        double T2 = psi - Math.acos(-C/R) + 0.4;
+
+        return Math.toDegrees(T2);
+
+
     }
 
 
@@ -228,11 +250,13 @@ public class Turret extends SubSystem {
                     }
                 }
                 if (distance >= distance1 && distance < distance2) {
-                    hoodAdjust.setPosition(lowHoodAngle1);
+                   hoodTarget = hoodDegreesToServoPoz(lowHoodAngle1);
+
                 } else if (distance >= distance2 && distance < distance3) {
-                    hoodAdjust.setPosition(lowHoodAngle2);
+                    hoodTarget = hoodDegreesToServoPoz(lowHoodAngle2);
+
                 } else if (distance >= distance3) {
-                    hoodAdjust.setPosition(lowHoodAngle3);
+                    hoodTarget = hoodDegreesToServoPoz(lowHoodAngle3);
                 }
 
                 break;
@@ -348,17 +372,19 @@ public class Turret extends SubSystem {
                 turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
                 turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto) {
-            targetRPM = interpolatePower + mapOfset;
+            targetRPM = interpolatePower;
+            hoodTarget = hoodDegreesToServoPoz(theta_4);
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle) / gearRatio));
+            hoodAdjust.setPosition(hoodTarget);
 
         } else {
             shooterMotorTwo.update(0);
             shooterMotorOne.update(0);
 
-            }
+        }
 
 
 

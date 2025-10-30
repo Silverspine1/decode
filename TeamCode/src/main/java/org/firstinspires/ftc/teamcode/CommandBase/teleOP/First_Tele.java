@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 @TeleOp
 public class First_Tele extends OpModeEX {
     double drivepower = 0.5;
-    double hood = 168;
     @Override
     public void initEX() {
         turret.toggle = false;
@@ -27,6 +26,7 @@ public class First_Tele extends OpModeEX {
 
     @Override
     public void loopEX() {
+        turret.Auto = true;
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
@@ -36,11 +36,12 @@ public class First_Tele extends OpModeEX {
 //        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.low;
 //        }
-//        if (Math.abs(gamepad1.right_stick_y)>0){
-//            turret.hoodAdjust.setPosition(hood += gamepad1.right_stick_y);
-//        }
+        if (Math.abs(gamepad1.right_stick_y)>0){
+            turret.theta_4 += gamepad1.right_stick_y;
+
+        }
 //
-//        turret.targetRPM += gamepad1.left_stick_y*7;
+ //        turret.targetRPM += gamepad1.left_stick_y*7;
 
         if (gamepad1.right_bumper){
             intake.block = true;
@@ -56,8 +57,8 @@ public class First_Tele extends OpModeEX {
         }
         if (!lastGamepad1.a && currentGamepad1.a){
             turret.toggle = true;
-            odometry.odo.setPosX(Apriltag.llResult.getBotpose().getPosition().x +38, DistanceUnit.CM);
-            odometry.odo.setPosY(Apriltag.llResult.getBotpose().getPosition().y -35,DistanceUnit.CM);
+            odometry.odo.setPosX(Apriltag.llResult.getBotpose().getPosition().y - 180 +38, DistanceUnit.CM);
+            odometry.odo.setPosY( Apriltag.llResult.getBotpose().getPosition().x-180 -35,DistanceUnit.CM);
             odometry.odo.setHeading(180 - Apriltag.llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES), AngleUnit.DEGREES);
         }
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left){
@@ -78,16 +79,14 @@ public class First_Tele extends OpModeEX {
 
 
 
-        if (Apriltag.limelight.isConnected()) {
-            telemetry.addData("con", "connected");
-        }
+
         telemetry.addData("in zone",turret.inZone);
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
-        telemetry.addData("6767676767y",Apriltag.llResult.getBotpose_MT2());
         telemetry.addData("Heading",odometry.Heading());
         telemetry.addData("target",turret.targetRPM);
         telemetry.addData("ditance",turret.distance);
+        telemetry.addData("angle",turret.theta_4 - 5.3 );
 
         telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().x);
         telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().y);
