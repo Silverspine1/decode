@@ -102,8 +102,8 @@ public class Turret extends SubSystem {
     final double R2 = 80.4;
     final double R3 = 80;
     final double R4 = 173.2;
-    public double hoodTarget = 30;
-    public double theta_4 = 30;
+    public double hoodTarget = 40;
+    public double theta_4 = 40;
 
 
     public boolean inZone = false;
@@ -116,6 +116,21 @@ public class Turret extends SubSystem {
     public boolean spinDown = false;
     public boolean Auto = false;
     public boolean toggle = true;
+
+    double K1 = R1 /R2;
+    double K2 = R1 /R4;
+    double K = (R1 * R1 + R2 * R2 + R4 * R4 - R3 * R3) / (2 * R2 * R4);
+
+    public double U;
+    public double U2;
+
+    double A;
+    double B;
+    double C;
+    double R;
+    double psi;
+    public double T2;
+
 
 
 
@@ -155,23 +170,34 @@ public class Turret extends SubSystem {
         hoodAdjust.setPosition(0);
     }
     public double hoodDegreesToServoPoz(double theta_4){
-        double K1 = R1 /R2;
-        double K2 = R1 /R4;
-        double K = (R1 * R1 + R2 * R2 + R4 * R4 - R3 * R3) / (2 * R2 * R4);
-        double U = Math.max(54,Math.min(22,theta_4)) - 5.3;
-        double A =  Math.sin(U);
-        double B = K2 - Math.cos(U);
-        double C = K1 * Math.cos(U) - K;
-        double R = Math.sqrt(A * A + B * B);
-        double psi = Math.atan2(A,B);
-        double T2 = psi - Math.acos(-C/R) + 0.4;
+
+        U = Math.toRadians( Math.max(54,Math.min(22,theta_4)) - 5.3);
+        A =  Math.sin(U);
+        B = K2 - Math.cos(U);
+        C = K1 * Math.cos(U) - K;
+        R = Math.sqrt(A * A + B * B);
+        psi = Math.atan2(A,B);
+        T2 = psi - Math.acos(-C/R) + 0.4;
 
         return Math.toDegrees(T2);
 
 
     }
 
+    public void setHoodDegrees(double theta){
 
+        U2 = Math.toRadians(theta-14);
+        A =  Math.sin(U2);
+        B = K2 - Math.cos(U2);
+        C = K1 * Math.cos(U2) - K;
+        R = Math.sqrt(A * A + B * B);
+        psi = Math.atan2(A,B);
+        T2 = psi - Math.acos(-C/R) + 0.4;
+
+        hoodAdjust.setPosition(Math.toDegrees(T2));
+
+
+    }
 
 
 
@@ -371,14 +397,14 @@ public class Turret extends SubSystem {
                 shooterMotorTwo.update(shootPower);
                 turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
                 turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
-        } else if (Auto) {
+        } else if (Auto && toggle) {
             targetRPM = interpolatePower;
             hoodTarget = hoodDegreesToServoPoz(theta_4);
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle) / gearRatio));
-            hoodAdjust.setPosition(hoodTarget);
+//            hoodAdjust.setPosition(hoodTarget);
 
         } else {
             shooterMotorTwo.update(0);

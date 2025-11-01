@@ -11,6 +11,8 @@ import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 @TeleOp
 public class First_Tele extends OpModeEX {
     double drivepower = 0.5;
+    double targetHood = 25;
+
     @Override
     public void initEX() {
         turret.toggle = false;
@@ -30,15 +32,15 @@ public class First_Tele extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
+      //  driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.medium;
 //        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.low;
 //        }
         if (Math.abs(gamepad1.right_stick_y)>0){
-            turret.theta_4 += gamepad1.right_stick_y;
-
+            targetHood += gamepad1.right_stick_y/8;
+            turret.setHoodDegrees(targetHood);
         }
 //
  //        turret.targetRPM += gamepad1.left_stick_y*7;
@@ -88,8 +90,13 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("ditance",turret.distance);
         telemetry.addData("angle",turret.theta_4 - 5.3 );
 
-        telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().x);
-        telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().y);
+        telemetry.addData("Total Pose",-Apriltag.llResult.getBotpose().getPosition().x * 100 + 180 -38);
+        telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().y * 100 +180 +35);
+
+        telemetry.addData("hood U",turret.U2);
+        telemetry.addData("hood T2",targetHood);
+
+
 
         telemetry.update();
 
