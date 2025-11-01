@@ -18,9 +18,16 @@ import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class AprilTags extends SubSystem {
    public LLResult llResult;
-    public Limelight3A limelight;
+   public Limelight3A limelight;
    public IMU imu;
-   public JSONObject jsonData;
+   public double theata4;
+   double cameraOffset = 0.2;
+   double YOffset = 0;
+   double XOffset = 0;
+   double X;
+   double Y;
+
+    public JSONObject jsonData;
            public java.util.List<LLResultTypes.FiducialResult> fiducialResults;
            public java.util.List<LLResultTypes.DetectorResult> detectorResults;
    public AprilTags(JSONObject json) throws JSONException{
@@ -51,19 +58,15 @@ RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot
         limelight.start();
     }
 
-   public double getTx() {
+   public double getX() {
 
-        return (llResult != null && llResult.isValid()) ? llResult.getTx() : 0.0;
-    }
-   public double getTy() {
-
-        return (llResult != null && llResult.isValid()) ? llResult.getTy() : 0.0;
+        return X;
    }
+    public double getY() {
 
-  public double getTa() {
-
-        return (llResult != null && llResult.isValid()) ? llResult.getTa() : 0.0;
+        return Y;
     }
+
 
 
 
@@ -74,8 +77,18 @@ RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot
             },
             () -> true
     );
+
     @Override
     public void execute() {
+        theata4 = 90 - llResult.getTx();
+        YOffset = cameraOffset * Math.sin(Math.toRadians(theata4));
+        XOffset = cameraOffset * Math.cos(Math.toRadians(theata4));
+        X = llResult.getBotpose().getPosition().y + 180 + XOffset;
+        Y = llResult.getBotpose().getPosition().x + 180 + YOffset;
+
+
+
+
         LLResult llResult = limelight.getLatestResult();
 this.llResult = llResult;
     }

@@ -59,8 +59,8 @@ public class First_Tele extends OpModeEX {
         }
         if (!lastGamepad1.a && currentGamepad1.a){
             turret.toggle = true;
-            odometry.odo.setPosX(Apriltag.llResult.getBotpose().getPosition().y - 180 +38, DistanceUnit.CM);
-            odometry.odo.setPosY( Apriltag.llResult.getBotpose().getPosition().x-180 -35,DistanceUnit.CM);
+            odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
+            odometry.odo.setPosY( Apriltag.getY(),DistanceUnit.CM);
             odometry.odo.setHeading(180 - Apriltag.llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES), AngleUnit.DEGREES);
         }
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left){
@@ -90,8 +90,8 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("ditance",turret.distance);
         telemetry.addData("angle",turret.theta_4 - 5.3 );
 
-        telemetry.addData("Total Pose",-Apriltag.llResult.getBotpose().getPosition().x * 100 + 180 -38);
-        telemetry.addData("Total Pose",Apriltag.llResult.getBotpose().getPosition().y * 100 +180 +35);
+        telemetry.addData("Total x",Apriltag.getX());
+        telemetry.addData("Total y",Apriltag.getY());
 
         telemetry.addData("hood U",turret.U2);
         telemetry.addData("hood T2",targetHood);
