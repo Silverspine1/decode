@@ -43,7 +43,7 @@ public class First_Tele extends OpModeEX {
             turret.setHoodDegrees(targetHood);
         }
 //
- //        turret.targetRPM += gamepad1.left_stick_y*7;
+        turret.targetRPM += gamepad1.left_stick_y*7;
 
         if (gamepad1.right_bumper){
             intake.block = true;
@@ -88,13 +88,8 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("Heading",odometry.Heading());
         telemetry.addData("target",turret.targetRPM);
         telemetry.addData("ditance",turret.distance);
-        telemetry.addData("angle",turret.theta_4 - 5.3 );
+        telemetry.addData("angle",targetHood);
 
-        telemetry.addData("Total x",Apriltag.getX());
-        telemetry.addData("Total y",Apriltag.getY());
-
-        telemetry.addData("hood U",turret.U2);
-        telemetry.addData("hood T2",targetHood);
 
 
 
