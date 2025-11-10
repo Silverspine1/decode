@@ -44,7 +44,7 @@ public class Turret extends SubSystem {
     public double turrofset= 0;
     public double turretAngle;
     final double gearRatio = 0.7272;
-    final double turretLimitAngle =80;
+    final double turretLimitAngle =68;
 
 
     public double distance;
@@ -56,20 +56,20 @@ public class Turret extends SubSystem {
 
 
     // Low power settings
-    double lowHoodAngle1 = 190;
-    double lowHoodAngle2 = 201;
-    double lowHoodAngle3 = 192;
-    double lowPower1 = 2300;
-    double lowPower2 = 2623;
-    double lowPower3 = 3055;
+    double lowHoodAngle1 = 24.6;
+    double lowHoodAngle2 = 37.6;
+    double lowHoodAngle3 = 40;
+    double lowPower1 = 2273;
+    double lowPower2 = 2812;
+    double lowPower3 = 3274;
 
     // Medium power settings
-    double mediumHoodAngle1 = 211;
-    double mediumHoodAngle2 = 181;
-    double mediumHoodAngle3 = 156;
-    double mediumPower1 = 3150;
-    double mediumPower2 = 4371;
-    double mediumPower3 = 4780;
+    double mediumHoodAngle1 = 20;
+    double mediumHoodAngle2 = 20;
+    double mediumHoodAngle3 = 22;
+    double mediumPower1 = 2306;
+    double mediumPower2 = 2683;
+    double mediumPower3 = 3451;
 
 
     double interpolatedPower;
@@ -88,7 +88,7 @@ public class Turret extends SubSystem {
 
 
     public boolean inZone = false;
-    boolean spunUp = false;
+    boolean spunUp = true;
     public boolean intakeTime;
     boolean turretInRange = false;
     boolean intakeEnter;
@@ -111,12 +111,13 @@ public class Turret extends SubSystem {
     double R;
     double psi;
     public double T2;
+    public double diff = 0;
 
 
 
 
 
-    public PIDController shootPID = new PIDController(0.013,0,0.00045);
+    public PIDController shootPID = new PIDController(0.006,0,0.00035);
     public Turret(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
     }
@@ -146,6 +147,7 @@ public class Turret extends SubSystem {
 
         turretTurnOne.setOffset(163);
         turretTurnTwo.setOffset(163);
+        hoodAdjust.setOffset(-3);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
         hoodAdjust.setPosition(0);
@@ -202,40 +204,41 @@ public class Turret extends SubSystem {
         }else {
             shootPower = shootPID.calculate(targetRPM,rpm);
         }
-        if (inZone && !zoneResetStop || Auto){
-            shootingTime.reset();
-            zoneResetStop = true;
-        }else if (inZone && shootingTime.milliseconds() > 1800 || Auto){
-            spunUp = true;
-            intakeEnter = true;
-            zoneResetStop = false;
+        diff = Math.abs(targetRPM - rpm);
+//        if (inZone && !zoneResetStop || Auto){
+//            shootingTime.reset();
+//            zoneResetStop = true;
+//        }else if (inZone && shootingTime.milliseconds() > 1800 || Auto){
+//            spunUp = true;
+//            intakeEnter = true;
+//            zoneResetStop = false;
+//
+//        }else if(!inZone && !Auto) {
+//            spunUp = false;
+//        }
 
-        }else if(!inZone && !Auto) {
-            spunUp = false;
-        }
-
-        if (spunUp && Math.abs(targetRPM - rpm )> 620){
-            currentWait.reset();
-            currentSpike = true;
-            shootingLevel = LowMediumHigh.low;
-        } else if (currentSpike && currentWait.milliseconds() > 1500) {
-            currentSpike = false;
-            shootingLevel = LowMediumHigh.medium;
-        }
+//        if (spunUp && diff> 260){
+//            currentWait.reset();
+//            currentSpike = true;
+//            shootingLevel = LowMediumHigh.low;
+//        } else if (currentSpike && currentWait.milliseconds() > 1000) {
+//            currentSpike = false;
+//            shootingLevel = LowMediumHigh.medium;
+//        }
 
 
         switch (shootingLevel) {
             case low:
                 // Interpolate power for the 'low' setting
-                interpolatedPower = interpolateValue(distance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3);
+//                interpolatedPower = interpolateValue(distance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3);
                 // Interpolate hood angle for the 'low' setting
-                interpolatedHoodAngle = interpolateValue(distance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3);
+//                interpolatedHoodAngle = interpolateValue(distance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3);
                 break;
             case medium:
                 // Interpolate power for the 'medium' setting
-                interpolatedPower = interpolateValue(distance, distance1, mediumPower1, distance2, mediumPower2, distance3, mediumPower3);
+//                interpolatedPower = interpolateValue(distance, distance1, mediumPower1, distance2, mediumPower2, distance3, mediumPower3);
                 // Interpolate hood angle for the 'medium' setting
-                interpolatedHoodAngle = interpolateValue(distance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3);
+//                interpolatedHoodAngle = interpolateValue(distance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3);
                 break;
             case high:
 
@@ -263,16 +266,16 @@ public class Turret extends SubSystem {
         }
 
         if (inZone && toggle) {
-            targetRPM = interpolatedPower + mapOfset;
-            setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
+            //targetRPM = interpolatedPower + mapOfset;
+            //setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto && toggle) {
-            targetRPM = interpolatedPower;
-            setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
+            //targetRPM = interpolatedPower;
+            //setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);

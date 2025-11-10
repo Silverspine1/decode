@@ -8,10 +8,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 
+import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
+
 @TeleOp
 public class First_Tele extends OpModeEX {
-    double drivepower = 0.5;
-    double targetHood = 25;
+    double heading;
+    boolean captureLastHeading = false;
+    boolean brake = false;
+    double targetHood;
+    PIDController headingPID = new PIDController(0.018,0,0.0035);
 
     @Override
     public void initEX() {
@@ -21,6 +26,8 @@ public class First_Tele extends OpModeEX {
     }
         @Override
     public void start() {
+        odometry.startPosition(75, 139, 0);
+
 
         Apriltag.limelight.start();
 
@@ -32,26 +39,48 @@ public class First_Tele extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-      //  driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
-//        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-//            turret.shootingLevel = Turret.LowMediumHigh.medium;
-//        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-//            turret.shootingLevel = Turret.LowMediumHigh.low;
-//        }
-        if (Math.abs(gamepad1.right_stick_y)>0){
-            targetHood += gamepad1.right_stick_y/8;
-            turret.setHoodDegrees(targetHood);
-        }
-//
-        turret.targetRPM += gamepad1.left_stick_y*7;
+//        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
 
-        if (gamepad1.right_bumper){
-            intake.block = true;
-            intake.intakeMotor.update(-1);
+        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
+            turret.shootingLevel = Turret.LowMediumHigh.medium;
+        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
+            turret.shootingLevel = Turret.LowMediumHigh.low;
+        }
+            targetHood = targetHood + gamepad1.right_stick_y/8;
+            turret.setHoodDegrees(targetHood);
+
+
+        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
+
+        if (tracking.validFlag ==1 && captureLastHeading) {
+            captureLastHeading = false;
+            heading = odometry.Heading() + tracking.GetAngle() ;
+
+        }
+
+        if (gamepad1.right_bumper ){
+
+                intake.block = true;
+                intake.intakeMotor.update(-1);
+
+
+
+//                if (tracking.validFlag ==1) {
+//                    captureLastHeading = false;
+//                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetAngle()), -gamepad1.right_stick_x);
+//                } else if (Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()-7 && !captureLastHeading|| Math.abs(tracking.GetLastH()) < 0.1 && heading > odometry.Heading()+7 && !captureLastHeading) {
+//                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetLastH()), -gamepad1.right_stick_x);
+//                }
+//                if (Math.abs(tracking.GetLastH()) > 0.1 && heading > odometry.Heading()-7 && !captureLastHeading || Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()+7 && !captureLastHeading){
+//                    captureLastHeading = true;
+//                }
+//                //&&Math.abs(Math.abs(heading)-Math.abs(odometry.Heading())) < Math.abs(tracking.GetLastH() ) +8
+
 
         }else if (gamepad1.left_bumper){
             intake.intakeMotor.update(-1);
             intake.block = false;
+
         }else if(turret.intakeTime){
             intake.intakeMotor.update(-1);
         }else {
@@ -59,12 +88,12 @@ public class First_Tele extends OpModeEX {
         }
         if (!lastGamepad1.a && currentGamepad1.a){
             turret.toggle = true;
-            odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
-            odometry.odo.setPosY( Apriltag.getY(),DistanceUnit.CM);
-            odometry.odo.setHeading(180 - Apriltag.llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES), AngleUnit.DEGREES);
+//            odometry.odo.setPosX(Apriltag.getX() + 180, DistanceUnit.CM);
+//            odometry.odo.setPosY( Apriltag.getY() +180,DistanceUnit.CM);
+//            odometry.odo.setHeading(180 - Apriltag.llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES), AngleUnit.DEGREES);
         }
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left){
-            turret.turrofset += -3;
+            turret.turrofset -= 3;
         }
         if (!lastGamepad2.dpad_right && currentGamepad2.dpad_right){
             turret.turrofset += 3;
@@ -87,8 +116,11 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("odometry y", odometry.Y());
         telemetry.addData("Heading",odometry.Heading());
         telemetry.addData("target",turret.targetRPM);
-        telemetry.addData("ditance",turret.distance);
-        telemetry.addData("angle",targetHood);
+        telemetry.addData("ditance",tracking.GetDistance());
+        telemetry.addData("angle",tracking.GetAngle());
+
+
+
 
 
 

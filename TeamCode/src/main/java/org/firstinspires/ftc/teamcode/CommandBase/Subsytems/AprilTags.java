@@ -58,10 +58,10 @@ RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot
         limelight.start();
     }
 
-   public double getX() {
+    public double getX() {
 
         return X;
-   }
+    }
     public double getY() {
 
         return Y;
@@ -80,16 +80,15 @@ RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot
 
     @Override
     public void execute() {
-        theata4 = 90 - llResult.getTx();
-        YOffset = cameraOffset * Math.sin(Math.toRadians(theata4));
-        XOffset = cameraOffset * Math.cos(Math.toRadians(theata4));
-        X = llResult.getBotpose().getPosition().y + 180 + XOffset;
-        Y = llResult.getBotpose().getPosition().x + 180 + YOffset;
+
+
 
 
 
 
         LLResult llResult = limelight.getLatestResult();
-this.llResult = llResult;
+        this.llResult = llResult;
+        X = llResult.getBotpose().getPosition().y*100;
+        Y = llResult.getBotpose().getPosition().x*100;
     }
 }
