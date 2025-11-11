@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 
@@ -15,21 +16,23 @@ public class First_Tele extends OpModeEX {
     double heading;
     boolean captureLastHeading = false;
     boolean brake = false;
-    double targetHood;
+    double targetHood = 25;
     PIDController headingPID = new PIDController(0.018,0,0.0035);
 
     @Override
     public void initEX() {
         turret.toggle = false;
-       Apriltag.limelight.pipelineSwitch(0);
+        Apriltag.limelight.pipelineSwitch(0);
+
+
 
     }
         @Override
     public void start() {
-        odometry.startPosition(75, 139, 0);
+            odometry.startPosition(75, 139, 0);
 
 
-        Apriltag.limelight.start();
+            Apriltag.limelight.start();
 
     }
 
@@ -39,7 +42,7 @@ public class First_Tele extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-//        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
+        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
 
         if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
             turret.shootingLevel = Turret.LowMediumHigh.medium;
@@ -65,16 +68,16 @@ public class First_Tele extends OpModeEX {
 
 
 
-//                if (tracking.validFlag ==1) {
-//                    captureLastHeading = false;
-//                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetAngle()), -gamepad1.right_stick_x);
-//                } else if (Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()-7 && !captureLastHeading|| Math.abs(tracking.GetLastH()) < 0.1 && heading > odometry.Heading()+7 && !captureLastHeading) {
-//                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetLastH()), -gamepad1.right_stick_x);
-//                }
-//                if (Math.abs(tracking.GetLastH()) > 0.1 && heading > odometry.Heading()-7 && !captureLastHeading || Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()+7 && !captureLastHeading){
-//                    captureLastHeading = true;
-//                }
-//                //&&Math.abs(Math.abs(heading)-Math.abs(odometry.Heading())) < Math.abs(tracking.GetLastH() ) +8
+                if (tracking.validFlag ==1) {
+                    captureLastHeading = false;
+                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetAngle()), -gamepad1.right_stick_x);
+                } else if (Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()-7 && !captureLastHeading|| Math.abs(tracking.GetLastH()) < 0.1 && heading > odometry.Heading()+7 && !captureLastHeading) {
+                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetLastH()), -gamepad1.right_stick_x);
+                }
+                if (Math.abs(tracking.GetLastH()) > 0.1 && heading > odometry.Heading()-7 && !captureLastHeading || Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()+7 && !captureLastHeading){
+                    captureLastHeading = true;
+                }
+                //&&Math.abs(Math.abs(heading)-Math.abs(odometry.Heading())) < Math.abs(tracking.GetLastH() ) +8
 
 
         }else if (gamepad1.left_bumper){
@@ -107,23 +110,33 @@ public class First_Tele extends OpModeEX {
 
 
 
+        AdafruitSensorDriver.Reading lower = intake.lowerSensor.read();
+        AdafruitSensorDriver.Reading upper = intake.upperSensor.read();
 
-
-
-
-        telemetry.addData("in zone",turret.inZone);
+        telemetry.addData("in zone", turret.inZone);
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
-        telemetry.addData("Heading",odometry.Heading());
-        telemetry.addData("target",turret.targetRPM);
-        telemetry.addData("ditance",tracking.GetDistance());
-        telemetry.addData("angle",tracking.GetAngle());
+        telemetry.addData("Heading", odometry.Heading());
 
+        if (upper != null) {
+            telemetry.addData("Upper CRGB",
+                    "C=%d R=%d G=%d B=%d",
+                    upper.clear, upper.red, upper.green, upper.blue);
+        } else {
+            telemetry.addLine("Upper CRGB: null");
+        }
 
+        if (lower != null) {
+            telemetry.addData("Lower CRGB",
+                    "C=%d R=%d G=%d B=%d",
+                    lower.clear, lower.red, lower.green, lower.blue);
+        } else {
+            telemetry.addLine("Lower CRGB: null");
+        }
 
-
-
-
+        intake.classifyBalls(upper, lower);
+        telemetry.addData("Upper Ball", intake.upperBall);
+        telemetry.addData("Lower Ball", intake.lowerBall);
 
         telemetry.update();
 

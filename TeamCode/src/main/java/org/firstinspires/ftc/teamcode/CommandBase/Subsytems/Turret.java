@@ -230,15 +230,15 @@ public class Turret extends SubSystem {
         switch (shootingLevel) {
             case low:
                 // Interpolate power for the 'low' setting
-//                interpolatedPower = interpolateValue(distance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3);
+                interpolatedPower = interpolateValue(distance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3);
                 // Interpolate hood angle for the 'low' setting
-//                interpolatedHoodAngle = interpolateValue(distance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3);
+                interpolatedHoodAngle = interpolateValue(distance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3);
                 break;
             case medium:
                 // Interpolate power for the 'medium' setting
-//                interpolatedPower = interpolateValue(distance, distance1, mediumPower1, distance2, mediumPower2, distance3, mediumPower3);
+                interpolatedPower = interpolateValue(distance, distance1, mediumPower1, distance2, mediumPower2, distance3, mediumPower3);
                 // Interpolate hood angle for the 'medium' setting
-//                interpolatedHoodAngle = interpolateValue(distance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3);
+                interpolatedHoodAngle = interpolateValue(distance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3);
                 break;
             case high:
 
@@ -266,16 +266,16 @@ public class Turret extends SubSystem {
         }
 
         if (inZone && toggle) {
-            //targetRPM = interpolatedPower + mapOfset;
-            //setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
+            targetRPM = interpolatedPower + mapOfset;
+            setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto && toggle) {
-            //targetRPM = interpolatedPower;
-            //setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
+            targetRPM = interpolatedPower;
+            setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);

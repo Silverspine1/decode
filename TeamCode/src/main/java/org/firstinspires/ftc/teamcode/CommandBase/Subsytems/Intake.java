@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
+import org.firstinspires.ftc.teamcode.CommandBase.ColourSensorEx;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
 import dev.weaponboy.nexus_command_base.Commands.Command;
@@ -14,14 +18,25 @@ public class Intake extends SubSystem {
     public MotorEx intakeMotor = new MotorEx();
     ServoDegrees intakeBlocker =new ServoDegrees();
     public boolean block = false;
+    public ColourSensorEx lowerSensor = new ColourSensorEx();
+    public ColourSensorEx upperSensor = new ColourSensorEx();
     public Intake(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
    }
+
+    public BallColor upperBall = BallColor.NONE;
+    public BallColor lowerBall = BallColor.NONE;
+
+    private static final double COLOR_DOMINANCE_RATIO = 1.08;
+    private static final int MIN_CLEAR_FOR_BALL = 300;
 
     @Override
     public void init() {
         intakeMotor.initMotor("intakeMotor", getOpMode().hardwareMap);
         intakeBlocker.initServo("Blocker",getOpMode().hardwareMap);
+        lowerSensor.initSensor("LowerSensor",getOpMode().hardwareMap);
+        upperSensor.initSensor("UpperSensor",getOpMode().hardwareMap);
+
         intakeBlocker.setRange(355);
         intakeBlocker.setPosition(0);
         intakeBlocker.setDirection(Servo.Direction.REVERSE);
@@ -33,6 +48,38 @@ public class Intake extends SubSystem {
             () -> {},
             () -> true
     );
+    public enum BallColor {
+        NONE,
+        GREEN,
+        PURPLE
+    }
+    public void classifyBalls(AdafruitSensorDriver.Reading upperReading,
+                              AdafruitSensorDriver.Reading lowerReading) {
+        upperBall = classifySingle(upperReading);
+        lowerBall = classifySingle(lowerReading);
+    }
+
+    private BallColor classifySingle(AdafruitSensorDriver.Reading r) {
+        if (r == null || r.clear < MIN_CLEAR_FOR_BALL) return BallColor.NONE;
+
+        double red = r.red;
+        double green = r.green;
+        double blue = r.blue;
+
+        // prevent false classification when all colors are similar
+        double max = Math.max(red, Math.max(green, blue));
+        double min = Math.min(red, Math.min(green, blue));
+        if (max - min < 100) return BallColor.NONE;
+
+        boolean redHigh = red >= COLOR_DOMINANCE_RATIO * green &&
+                red >= COLOR_DOMINANCE_RATIO * blue;
+        boolean greenHigh = green >= COLOR_DOMINANCE_RATIO * red &&
+                green >= COLOR_DOMINANCE_RATIO * blue;
+
+        if (greenHigh) return BallColor.GREEN;
+        if (redHigh) return BallColor.PURPLE;
+        return BallColor.NONE;
+    }
 
     @Override
     public void execute() {
