@@ -35,7 +35,7 @@ public class DriveBase extends SubSystem {
     PIDController headingPID = new PIDController(0.025,0,0.0003);
 
     public IMU imu;
-    public double strafeExtra = 1.2;
+    public double strafeExtra = 1.01;
 
     double vertikal ;
     double turn ;
@@ -81,11 +81,7 @@ public class DriveBase extends SubSystem {
     @Override
     public void execute() {
         executeEX();
-        if (!tele){
-            speed = 2.5;
-        }else {
-            speed = 1;
-        }
+
     }
 
 
@@ -110,7 +106,7 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
-                 double denominator = Math.max(speed, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+                 double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
                 LF.update((vertikal-(strafe)-turn)/denominator);
                 RF.update((vertikal+(strafe)+turn)/denominator);
