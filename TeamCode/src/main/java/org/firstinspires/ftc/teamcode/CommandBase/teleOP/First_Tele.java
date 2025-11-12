@@ -95,11 +95,7 @@ public class First_Tele extends OpModeEX {
 
         turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
 
-        if (tracking.validFlag ==1 && captureLastHeading) {
-            captureLastHeading = false;
-            heading = odometry.Heading() + tracking.GetAngle() ;
 
-        }
 
         if (gamepad1.right_bumper ){
 
@@ -108,16 +104,9 @@ public class First_Tele extends OpModeEX {
 
 
 
-                if (tracking.validFlag ==1) {
-                    captureLastHeading = false;
-                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetAngle()), -gamepad1.right_stick_x);
-                } else if (Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()-7 && !captureLastHeading|| Math.abs(tracking.GetLastH()) < 0.1 && heading > odometry.Heading()+7 && !captureLastHeading) {
-                    driveBase.drivePowers(-gamepad1.right_stick_y + tracking.GetDistance() / 50, headingPID.calculate(-tracking.GetLastH()), -gamepad1.right_stick_x);
+                if (processor.hasTarget) {
+                    driveBase.drivePowers(-gamepad1.right_stick_y + processor.distanceCm / 50, headingPID.calculate(-processor.hAngleDeg), -gamepad1.right_stick_x);
                 }
-                if (Math.abs(tracking.GetLastH()) > 0.1 && heading > odometry.Heading()-7 && !captureLastHeading || Math.abs(tracking.GetLastH()) > 0.1 && heading < odometry.Heading()+7 && !captureLastHeading){
-                    captureLastHeading = true;
-                }
-                //&&Math.abs(Math.abs(heading)-Math.abs(odometry.Heading())) < Math.abs(tracking.GetLastH() ) +8
 
 
         }else if (gamepad1.left_bumper){
