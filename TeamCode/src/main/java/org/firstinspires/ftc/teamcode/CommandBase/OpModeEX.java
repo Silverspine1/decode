@@ -19,7 +19,6 @@ import java.util.List;
 
 public abstract class OpModeEX extends OpMode {
 
-   public ExampleSubsystem exampleSubsystem = new ExampleSubsystem(this);
 
    public DriveBase driveBase = new DriveBase(this);
 

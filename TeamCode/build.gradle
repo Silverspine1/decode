@@ -25,4 +25,5 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
+    implementation 'com.android.extensions.xr:extensions-xr:1.1.0'
 }

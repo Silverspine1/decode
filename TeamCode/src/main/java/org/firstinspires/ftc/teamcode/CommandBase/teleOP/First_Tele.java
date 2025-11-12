@@ -1,18 +1,29 @@
 package org.firstinspires.ftc.teamcode.CommandBase.teleOP;
 
+import android.util.Size;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
+import org.firstinspires.ftc.vision.VisionPortal;
 
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 
 @TeleOp
+
+
 public class First_Tele extends OpModeEX {
+    private VisionPortal visionPortal;
+    private LocalVision processor;
     double heading;
     boolean captureLastHeading = false;
     boolean brake = false;
@@ -23,9 +34,38 @@ public class First_Tele extends OpModeEX {
     public void initEX() {
         turret.toggle = false;
         Apriltag.limelight.pipelineSwitch(0);
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        processor = new LocalVision(LocalVision.TargetColor.PURPLE);
+
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Camera + settings BEFORE build()
+        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+
+        // Set lower resolution here
+        builder.setCameraResolution(new Size(640, 480));   // or 640x480 if you want
+
+        builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
+
+        // Optional: disable RC live view to save CPU
+        builder.enableLiveView(false);
+
+        builder.addProcessor(processor);
+
+        // Now actually create the portal
+        visionPortal = builder.build();
+
+        // Dashboard camera stream
+        dashboard.startCameraStream(visionPortal, 15);
 
 
 
+
+    }
+    @Override public void stop() {
+        if (visionPortal != null) visionPortal.close();
     }
         @Override
     public void start() {
@@ -137,6 +177,13 @@ public class First_Tele extends OpModeEX {
         intake.classifyBalls(upper, lower);
         telemetry.addData("Upper Ball", intake.upperBall);
         telemetry.addData("Lower Ball", intake.lowerBall);
+
+
+        telemetry.addData("vision hasTarget", processor.hasTarget);
+        telemetry.addData("vision X cm", processor.xPosCm);
+        telemetry.addData("vision Y cm", processor.yPosCm);
+        telemetry.addData("vision Y cm", processor.distanceCm);
+        telemetry.addData("vision Y cm", processor.angleToBallDeg);
 
         telemetry.update();
 
