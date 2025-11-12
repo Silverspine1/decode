@@ -182,8 +182,8 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("vision hasTarget", processor.hasTarget);
         telemetry.addData("vision X cm", processor.xPosCm);
         telemetry.addData("vision Y cm", processor.yPosCm);
-        telemetry.addData("vision Y cm", processor.distanceCm);
-        telemetry.addData("vision Y cm", processor.angleToBallDeg);
+        telemetry.addData("vision Total Distance cm", processor.distanceCm);
+        telemetry.addData("vision Angle cm", processor.hAngleDeg);
 
         telemetry.update();
 
