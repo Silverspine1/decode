@@ -189,7 +189,7 @@ public class close_In_A_Case extends OpModeEX {
                     pathing = false;
                     intake.block = false;
                     state = AutoState.firstShootDone;
-                    intake.intakeMotor.update(-0.75);
+                    intake.intake=true;
                     shootTime.reset();
 
 

@@ -15,9 +15,12 @@ import dev.weaponboy.nexus_command_base.Hardware.ServoDegrees;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Intake extends SubSystem {
-    public MotorEx intakeMotor = new MotorEx();
-    ServoDegrees intakeBlocker =new ServoDegrees();
+    MotorEx intakeMotor = new MotorEx();
+    Servo intakeBlocker;
+    Servo intakePTO;
     public boolean block = false;
+    public boolean intake = false;
+
     public ColourSensorEx lowerSensor = new ColourSensorEx();
     public ColourSensorEx upperSensor = new ColourSensorEx();
     public Intake(OpModeEX opModeEX){
@@ -33,11 +36,11 @@ public class Intake extends SubSystem {
     @Override
     public void init() {
         intakeMotor.initMotor("intakeMotor", getOpMode().hardwareMap);
-        intakeBlocker.initServo("Blocker",getOpMode().hardwareMap);
+        intakePTO = getOpMode().hardwareMap.get(Servo.class, "intakePTO");
+        intakeBlocker = getOpMode().hardwareMap.get(Servo.class, "intakeBlocker");
         lowerSensor.initSensor("LowerSensor",getOpMode().hardwareMap);
         upperSensor.initSensor("UpperSensor",getOpMode().hardwareMap);
 
-        intakeBlocker.setRange(355);
         intakeBlocker.setPosition(0);
         intakeBlocker.setDirection(Servo.Direction.REVERSE);
 
@@ -85,10 +88,17 @@ public class Intake extends SubSystem {
     public void execute() {
         executeEX();
         if (block){
-            intakeBlocker.setPosition(0);
+            intakeBlocker.setPosition(0.55);
+            intakePTO.setPosition(0.5);
 
         }else {
-            intakeBlocker.setPosition(90);
+            intakeBlocker.setPosition(0.38);
+            intakePTO.setPosition(0.4);
+        }
+        if (intake && intakeMotor.getCurrentDraw() < 3500 || intake && !block){
+            intakeMotor.update(1);
+        }else {
+            intakeMotor.update(0);
         }
 
     }
