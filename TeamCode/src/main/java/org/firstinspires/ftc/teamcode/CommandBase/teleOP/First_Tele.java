@@ -100,7 +100,7 @@ public class First_Tele extends OpModeEX {
         if (gamepad1.right_bumper ){
 
                 intake.block = true;
-                intake.intakeMotor.update(-1);
+                intake.intake = true;
 
 
 
@@ -110,13 +110,13 @@ public class First_Tele extends OpModeEX {
 
 
         }else if (gamepad1.left_bumper){
-            intake.intakeMotor.update(-1);
+            intake.intake = true;
             intake.block = false;
 
         }else if(turret.intakeTime){
-            intake.intakeMotor.update(-1);
+            intake.intake = true;
         }else {
-            intake.intakeMotor.update(0);
+            intake.intake = false;
         }
         if (!lastGamepad1.a && currentGamepad1.a){
             turret.toggle = true;

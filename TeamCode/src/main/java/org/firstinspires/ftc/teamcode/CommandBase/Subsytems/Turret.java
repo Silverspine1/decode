@@ -46,7 +46,7 @@ public class Turret extends SubSystem {
     public double mapOfset = -60;
     public double turrofset= 0;
     public double turretAngle;
-    final double gearRatio = 0.7272;
+    final double gearRatio = 0.4348;
     final double turretLimitAngle =68;
 
 

@@ -190,7 +190,7 @@ public class close_In_A_Case extends OpModeEX {
                     pathing = false;
                     intake.block = false;
                     state = AutoState.firstShootDone;
-                    intake.intakeMotor.update(-1);
+                    intake.intake=true;
                     shootTime.reset();
 
 
@@ -348,8 +348,6 @@ public class close_In_A_Case extends OpModeEX {
                                                         }
                                                         if (built && shootTime.milliseconds() > shootWait){
                                                             state = AutoState.backCollect;
-                                                            maxWait.reset();
-
                                                         }
 
 
@@ -383,7 +381,7 @@ public class close_In_A_Case extends OpModeEX {
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));
 
-        }else if(!pathing&&!processor.hasTarget) {
+        }else {
             driveBase.queueCommand(driveBase.drivePowers(0,0,0));
         }
         System.out.println(odometry.X());
