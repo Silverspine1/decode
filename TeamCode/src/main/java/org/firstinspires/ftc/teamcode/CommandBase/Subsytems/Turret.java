@@ -37,10 +37,13 @@ public class Turret extends SubSystem {
     public double robotX;
     public double robotY;
     public double robotHeading;
+    public double shootCount = 0;
+    double dropSize = 215;
+    public double setDropSize = 215;
 
     public double targetRPM = 2700;
     public double rpm;
-    public double mapOfset = 80;
+    public double mapOfset = -60;
     public double turrofset= 0;
     public double turretAngle;
     final double gearRatio = 0.7272;
@@ -51,17 +54,17 @@ public class Turret extends SubSystem {
     // Common distance points for interpolation
     double distance1 = 120;
     double distance2 = 193;
-    double distance3 = 344;
+    double distance3 = 343;
     double distance4 = 407; // This can be used for extrapolation endpoint
 
 
     // Low power settings
-    double lowHoodAngle1 = 24.6;
-    double lowHoodAngle2 = 37.6;
-    double lowHoodAngle3 = 40;
-    double lowPower1 = 2273;
-    double lowPower2 = 2812;
-    double lowPower3 = 3274;
+    double lowHoodAngle1 = 32;
+    double lowHoodAngle2 = 48;
+    double lowHoodAngle3 = 53.3;
+    double lowPower1 = 2200;
+    double lowPower2 = 2570;
+    double lowPower3 = 3460;
 
     // Medium power settings
     double mediumHoodAngle1 = 20;
@@ -79,10 +82,10 @@ public class Turret extends SubSystem {
     public ElapsedTime shootingTime = new ElapsedTime();
     ElapsedTime lookAhead = new ElapsedTime();
     ElapsedTime currentWait = new ElapsedTime();
-    final double R1 = 183.286;
-    final double R2 = 80.4;
-    final double R3 = 80;
-    final double R4 = 173.2;
+    final double R1 = 210;
+    final double R2 = 72;
+    final double R3 = 113;
+    final double R4 = 200;
     public double hoodTarget = 40;
     public double theta_4 = 40;
 
@@ -100,7 +103,7 @@ public class Turret extends SubSystem {
 
     double K1 = R1 /R2;
     double K2 = R1 /R4;
-    double K = (R1 * R1 + R2 * R2 + R4 * R4 - R3 * R3) / (2 * R2 * R4);
+    public double K = (R1 * R1 + R2 * R2 + R4 * R4 - R3 * R3) / (2 * R2 * R4);
 
     public double U;
     public double U2;
@@ -145,26 +148,33 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(163);
-        turretTurnTwo.setOffset(163);
-        hoodAdjust.setOffset(-3);
+        turretTurnOne.setOffset(160);
+        turretTurnTwo.setOffset(160);
+        hoodAdjust.setDirection(Servo.Direction.REVERSE);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
-        hoodAdjust.setPosition(0);
+        hoodAdjust.setOffset(60);
+        setHoodDegrees(25);
+
+
+
     }
 
 
     public void setHoodDegrees(double theta){
 
-        U2 = Math.toRadians(theta-14);
-        A =  Math.sin(U2);
+        double U2 = Math.toRadians(theta);
+        A = Math.sin(U2);
         B = K2 - Math.cos(U2);
         C = K1 * Math.cos(U2) - K;
         R = Math.sqrt(A * A + B * B);
-        psi = Math.atan2(A,B);
-        T2 = psi - Math.acos(-C/R) + 0.4;
+        psi = Math.atan2(A, B);
 
-        hoodAdjust.setPosition(Math.toDegrees(T2));
+        double ratio = -C / R;
+        ratio = Math.max(-1, Math.min(1, ratio));
+        T2 = Math.toDegrees(psi - Math.acos(ratio));
+
+        hoodAdjust.setPosition(T2-8);
 
 
     }
@@ -217,14 +227,16 @@ public class Turret extends SubSystem {
 //            spunUp = false;
 //        }
 
-//        if (spunUp && diff> 260){
-//            currentWait.reset();
-//            currentSpike = true;
-//            shootingLevel = LowMediumHigh.low;
-//        } else if (currentSpike && currentWait.milliseconds() > 1000) {
-//            currentSpike = false;
-//            shootingLevel = LowMediumHigh.medium;
-//        }
+        if (spunUp && diff> dropSize ){
+            currentWait.reset();
+            shootCount = shootCount +1;
+            dropSize = setDropSize * shootCount+1;
+            currentSpike = true;
+        } else if (currentSpike && currentWait.milliseconds() > 1800) {
+            shootCount = 0;
+            dropSize = setDropSize;
+            currentSpike = false;
+        }
 
 
         switch (shootingLevel) {
@@ -274,7 +286,7 @@ public class Turret extends SubSystem {
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto && toggle) {
-            targetRPM = interpolatedPower;
+            targetRPM = interpolatedPower ;
             setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
