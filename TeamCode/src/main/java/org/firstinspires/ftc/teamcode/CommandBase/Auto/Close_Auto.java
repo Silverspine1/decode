@@ -103,7 +103,7 @@ public class Close_Auto extends OpModeEX {
             pathing = false;
             intake.block = false;
             state = AutoState.firstShootDone;
-            intake.intake = true;
+            intake.InTake = true;
             shootTime.reset();
 
 

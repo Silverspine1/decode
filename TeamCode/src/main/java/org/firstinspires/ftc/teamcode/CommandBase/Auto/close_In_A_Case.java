@@ -8,9 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
-import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
 
@@ -41,8 +39,8 @@ public class close_In_A_Case extends OpModeEX {
     boolean Intake = false;
     boolean manuel = true;
     double lookAheadTime = 0;
-    double shootWait = 900 ;
-    double velo = 3;
+    double shootWait = 1800 ;
+    double velo = 2;
     double cycleTarget = 4;
     double cycle ;
 
@@ -84,10 +82,10 @@ public class close_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(40, 151), new Vector2D(99, 152), new Vector2D(145, 150)),
     };
     private final sectionBuilder[] Collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 215), new Vector2D(26, 205)),
+            () -> paths.addPoints(new Vector2D(150 , 150), new Vector2D(117, 215), new Vector2D(36, 205)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(33, 211), new Vector2D(160, 170)),
+            () -> paths.addPoints(new Vector2D(33, 211), new Vector2D(160, 150)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(160, 180), new Vector2D(148, 270), new Vector2D(30, 265)),
@@ -190,7 +188,7 @@ public class close_In_A_Case extends OpModeEX {
                     pathing = false;
                     intake.block = false;
                     state = AutoState.firstShootDone;
-                    intake.intake=true;
+                    intake.InTake =true;
                     shootTime.reset();
 
 
@@ -262,8 +260,8 @@ public class close_In_A_Case extends OpModeEX {
                                         intake.block = false;
                                     }
                                     if ( built && shootTime.milliseconds() > shootWait){
-                                        state = AutoState.collect3;
-                                        follow.setPath(paths.returnPath("collect3"));
+                                        state = AutoState.finished;
+//                                        follow.setPath(paths.returnPath("collect3"));
                                         follow.usePathHeadings(true);
                                         follow.setHeadingLookAheadDistance(130);
                                         intake.block = true;
@@ -317,7 +315,7 @@ public class close_In_A_Case extends OpModeEX {
                                                         pathing = false;
                                                         built = true;
                                                         if (processor.hasTarget) {
-                                                            intake.intakeMotor.update(-1);
+                                                            intake.InTake =true;
                                                             intake.block= true;
                                                             driveBase.drivePowers(-gamepad1.right_stick_y + processor.distanceCm / 70, headingPID.calculate(-processor.hAngleDeg), -gamepad1.right_stick_x);
                                                             maxWait.reset();

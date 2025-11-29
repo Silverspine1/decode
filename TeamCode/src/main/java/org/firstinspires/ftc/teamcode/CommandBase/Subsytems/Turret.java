@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -43,11 +44,11 @@ public class Turret extends SubSystem {
 
     public double targetRPM = 2700;
     public double rpm;
-    public double mapOfset = -60;
+    public double mapOfset = -50;
     public double turrofset= 0;
     public double turretAngle;
-    final double gearRatio = 0.4348;
-    final double turretLimitAngle =68;
+    final double gearRatio = 0.8116;
+    final double turretLimitAngle =80;
 
 
     public double distance;
@@ -59,12 +60,12 @@ public class Turret extends SubSystem {
 
 
     // Low power settings
-    double lowHoodAngle1 = 32;
-    double lowHoodAngle2 = 48;
-    double lowHoodAngle3 = 53.3;
-    double lowPower1 = 2200;
-    double lowPower2 = 2570;
-    double lowPower3 = 3460;
+    double lowHoodAngle1 = 25;
+    double lowHoodAngle2 = 44;
+    double lowHoodAngle3 = 53.6;
+    double lowPower1 = 1480;
+    double lowPower2 = 1664;
+    double lowPower3 = 2114;
 
     // Medium power settings
     double mediumHoodAngle1 = 20;
@@ -82,10 +83,10 @@ public class Turret extends SubSystem {
     public ElapsedTime shootingTime = new ElapsedTime();
     ElapsedTime lookAhead = new ElapsedTime();
     ElapsedTime currentWait = new ElapsedTime();
-    final double R1 = 210;
-    final double R2 = 72;
-    final double R3 = 113;
-    final double R4 = 200;
+    final double R1 = 182.5;
+    final double R2 = 80;
+    final double R3 = 80;
+    final double R4 = 173;
     public double hoodTarget = 40;
     public double theta_4 = 40;
 
@@ -143,18 +144,19 @@ public class Turret extends SubSystem {
         turretTurnTwo.setRange(355);
         turretTurnOne.setRange(355);
         hoodAdjust.setRange(355);
-        turretTurnTwo.setDirection(Servo.Direction.REVERSE);
-        turretTurnOne.setDirection(Servo.Direction.REVERSE);
+        shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
 
-        turretTurnOne.setOffset(160);
-        turretTurnTwo.setOffset(160);
-        hoodAdjust.setDirection(Servo.Direction.REVERSE);
+
+        turretTurnOne.setOffset(180);
+        turretTurnTwo.setOffset(180);
+        hoodAdjust.setDirection(Servo.Direction.FORWARD);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
         hoodAdjust.setOffset(60);
-        setHoodDegrees(25);
+        setHoodDegrees(31);
 
 
 
@@ -163,7 +165,7 @@ public class Turret extends SubSystem {
 
     public void setHoodDegrees(double theta){
 
-        double U2 = Math.toRadians(theta);
+        double U2 = Math.toRadians(theta-8);
         A = Math.sin(U2);
         B = K2 - Math.cos(U2);
         C = K1 * Math.cos(U2) - K;
@@ -174,7 +176,7 @@ public class Turret extends SubSystem {
         ratio = Math.max(-1, Math.min(1, ratio));
         T2 = Math.toDegrees(psi - Math.acos(ratio));
 
-        hoodAdjust.setPosition(T2-8);
+        hoodAdjust.setPosition(T2);
 
 
     }
@@ -277,7 +279,7 @@ public class Turret extends SubSystem {
             inZone = false;
         }
 
-        if (inZone && toggle) {
+        if (toggle&&inZone){
             targetRPM = interpolatedPower + mapOfset;
             setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
 

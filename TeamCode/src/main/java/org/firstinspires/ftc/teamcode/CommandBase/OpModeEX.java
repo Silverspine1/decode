@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.DriveBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Odometry;
-import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Tracking;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.AprilTags;
 
@@ -28,10 +27,9 @@ public abstract class OpModeEX extends OpMode {
     public AprilTags Apriltag = new AprilTags(this);
 
     public Intake intake = new Intake(this);
-    public Tracking tracking = new Tracking(this);
 
 
-    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,turret,intake,Apriltag,tracking});
+    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,turret,intake,Apriltag});
 
     List<LynxModule> allHubs;
 

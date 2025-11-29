@@ -9,11 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
-import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
@@ -69,7 +67,6 @@ public class First_Tele extends OpModeEX {
     }
         @Override
     public void start() {
-            odometry.startPosition(75, 139, 0);
 
 
             Apriltag.limelight.start();
@@ -78,7 +75,6 @@ public class First_Tele extends OpModeEX {
 
     @Override
     public void loopEX() {
-        turret.Auto = true;
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
@@ -91,8 +87,8 @@ public class First_Tele extends OpModeEX {
 //        }
 //            targetHood = targetHood + gamepad1.right_stick_y/8;
 //            turret.setHoodDegrees(targetHood);
-//
-//
+////
+////
 //        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
 
 
@@ -100,7 +96,7 @@ public class First_Tele extends OpModeEX {
         if (gamepad1.right_bumper ){
 
                 intake.block = true;
-                intake.intake = true;
+                intake.InTake = true;
 
 
 
@@ -110,19 +106,21 @@ public class First_Tele extends OpModeEX {
 
 
         }else if (gamepad1.left_bumper){
-            intake.intake = true;
+            intake.InTake = true;
             intake.block = false;
 
         }else if(turret.intakeTime){
-            intake.intake = true;
+            intake.InTake = true;
         }else {
-            intake.intake = false;
+            intake.InTake = false;
         }
-        if (!lastGamepad1.a && currentGamepad1.a){
+        if (!lastGamepad1.a && currentGamepad1.a && Apriltag.getValid()){
             turret.toggle = true;
-//            odometry.odo.setPosX(Apriltag.getX() + 180, DistanceUnit.CM);
-//            odometry.odo.setPosY( Apriltag.getY() +180,DistanceUnit.CM);
-//            odometry.odo.setHeading(180 - Apriltag.llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES), AngleUnit.DEGREES);
+
+
+            odometry.odo.setPosX(Apriltag.getX() , DistanceUnit.CM);
+            odometry.odo.setPosY( Apriltag.getY() ,DistanceUnit.CM);
+            odometry.odo.setHeading(Apriltag.getH(),AngleUnit.DEGREES);
         }
         if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left){
             turret.turrofset -= 3;
@@ -149,8 +147,12 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("distance", turret.distance);
         telemetry.addData("target", turret.targetRPM);
         telemetry.addData("hood", targetHood);
-        telemetry.addData("count", turret.shootCount);
-        telemetry.addData("T2", turret.T2);
+        telemetry.addData("limeX",Apriltag.getX());
+        telemetry.addData("limeY",Apriltag.getY());
+        telemetry.addData("limeH",Apriltag.getH());
+
+
+
 
 
 

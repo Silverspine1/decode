@@ -85,7 +85,7 @@
 //            built = true;
 //            pathing = false;
 //            shootTime.reset();
-//            intake.intake = true;
+//            Intake.Intake = true;
 //            state = AutoState.firstShootDone;
 //            turret.spinDown = true;
 //
@@ -95,20 +95,20 @@
 //        if (shootTime.milliseconds() > 2500 && built && state == AutoState.firstShootDone) {
 //            state = AutoState.collect1;
 //            follow.setPath(paths.returnPath("collect1"));
-//            intake.block = true;
+//            Intake.block = true;
 //            targetHeading = 270;
 //            built = false;
 //            turret.targetRPM = 0;
 //            pathing = true;
-//            intake.intakeMotor.update(-1);
+//            Intake.intakeMotor.update(-1);
 //        }
 //        if (pathing && follow.isFinished(4, 4) && state == AutoState.collect1 && Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
 //            state = AutoState.driveToShoot1;
 //            follow.setPath(paths.returnPath("driveToShoot1"));
 //            targetHeading = 310;
-//            intake.block = false;
+//            Intake.block = false;
 //            pathing = true;
-//            intake.intakeMotor.update(0);
+//            Intake.intakeMotor.update(0);
 //            turret.spinDown = false;
 //            state = AutoState.driveToShoot1;
 //
@@ -116,7 +116,7 @@
 //        if (pathing && follow.isFinished(4, 4) && state == AutoState.driveToShoot1  && Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
 //            pathing = false;
 //            shootTime.reset();
-//            intake.intakeMotor.update(-0.7);
+//            Intake.intakeMotor.update(-0.7);
 //            built = true;
 //
 //
@@ -124,10 +124,10 @@
 //        if (shootTime.milliseconds() > 2500 && state == AutoState.driveToShoot1 && built){
 //            turret.spinDown = true;
 //            targetHeading = 270;
-//            intake.block = true;
+//            Intake.block = true;
 //            state = AutoState.Collect2;
 //            follow.setPath(paths.returnPath("Collect2"));
-//            intake.intakeMotor.update(-1);
+//            Intake.intakeMotor.update(-1);
 //
 //            pathing = true;
 //            built = false;
@@ -136,15 +136,15 @@
 //        if (pathing && follow.isFinished(4, 4) && state == AutoState.Collect2  && Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
 //            state = AutoState.driveToShoot2;
 //            follow.setPath(paths.returnPath("driveToShoot2"));
-//            intake.block = false;
-//            intake.intakeMotor.update(0);
+//            Intake.block = false;
+//            Intake.intakeMotor.update(0);
 //            turret.spinDown = false;
 //
 //            targetHeading = 310;
 //        }
 //        if (pathing && follow.isFinished(4, 4) && state == AutoState.driveToShoot2 && Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< velo){
 //            pathing = false;
-//            intake.intakeMotor.update(-0.7);
+//            Intake.intakeMotor.update(-0.7);
 //            shootTime.reset();
 //            state = AutoState.finished;
 //

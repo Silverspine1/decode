@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
@@ -11,7 +9,6 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
-import dev.weaponboy.nexus_command_base.Hardware.ServoDegrees;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Intake extends SubSystem {
@@ -19,7 +16,8 @@ public class Intake extends SubSystem {
     Servo intakeBlocker;
     Servo intakePTO;
     public boolean block = false;
-    public boolean intake = false;
+    public boolean InTake = false;
+    private boolean intakeTogle;
 
     public ColourSensorEx lowerSensor = new ColourSensorEx();
     public ColourSensorEx upperSensor = new ColourSensorEx();
@@ -41,8 +39,6 @@ public class Intake extends SubSystem {
         lowerSensor.initSensor("LowerSensor",getOpMode().hardwareMap);
         upperSensor.initSensor("UpperSensor",getOpMode().hardwareMap);
 
-        intakeBlocker.setPosition(0);
-        intakeBlocker.setDirection(Servo.Direction.REVERSE);
 
     }
 
@@ -88,15 +84,15 @@ public class Intake extends SubSystem {
     public void execute() {
         executeEX();
         if (block){
-            intakeBlocker.setPosition(0.55);
-            intakePTO.setPosition(0.5);
+            intakeBlocker.setPosition(0.57);
+            intakePTO.setPosition(0.4);
 
         }else {
-            intakeBlocker.setPosition(0.38);
-            intakePTO.setPosition(0.4);
+            intakeBlocker.setPosition(0.40);
+            intakePTO.setPosition(0.5);
         }
-        if (intake && intakeMotor.getCurrentDraw() < 3500 || intake && !block){
-            intakeMotor.update(1);
+        if (InTake){
+            intakeMotor.update(-1);
         }else {
             intakeMotor.update(0);
         }
