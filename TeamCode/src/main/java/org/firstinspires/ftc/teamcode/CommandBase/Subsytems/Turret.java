@@ -38,13 +38,10 @@ public class Turret extends SubSystem {
     public double robotX;
     public double robotY;
     public double robotHeading;
-    public double shootCount = 0;
-    double dropSize = 215;
-    public double setDropSize = 215;
 
-    public double targetRPM = 2700;
+    public double targetRPM = 0;
     public double rpm;
-    public double mapOfset = -50;
+    public double mapOfset = 0;
     public double turrofset= 0;
     public double turretAngle;
     final double gearRatio = 0.8116;
@@ -52,6 +49,8 @@ public class Turret extends SubSystem {
 
 
     public double distance;
+
+    double hoodRpmDropCompensation = 0;
     // Common distance points for interpolation
     double distance1 = 120;
     double distance2 = 193;
@@ -121,7 +120,7 @@ public class Turret extends SubSystem {
 
 
 
-    public PIDController shootPID = new PIDController(0.006,0,0.00035);
+    public PIDController shootPID = new PIDController(0.009,0,0.0004);
     public Turret(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
     }
@@ -207,8 +206,8 @@ public class Turret extends SubSystem {
     @Override
     public void execute() {
         executeEX();
-        double deltaX = robotX;
-        double deltaY = robotY;
+        double deltaX = robotX - targetX;
+        double deltaY = robotY - targetY;
         distance = Math.hypot(deltaY,deltaX);
         rpm = ((shooterMotorOne.getVelocity()/28)*60);
         if (shootPID.calculate(targetRPM,rpm) <0){
@@ -217,6 +216,8 @@ public class Turret extends SubSystem {
             shootPower = shootPID.calculate(targetRPM,rpm);
         }
         diff = Math.abs(targetRPM - rpm);
+        hoodRpmDropCompensation = (((lowHoodAngle2 - lowHoodAngle1 + lowHoodAngle3 - lowHoodAngle2)/2)/ ((lowPower2 - lowPower1 + lowPower3 - lowPower2 )/2)) * -diff;
+
 //        if (inZone && !zoneResetStop || Auto){
 //            shootingTime.reset();
 //            zoneResetStop = true;
@@ -229,16 +230,7 @@ public class Turret extends SubSystem {
 //            spunUp = false;
 //        }
 
-        if (spunUp && diff> dropSize ){
-            currentWait.reset();
-            shootCount = shootCount +1;
-            dropSize = setDropSize * shootCount+1;
-            currentSpike = true;
-        } else if (currentSpike && currentWait.milliseconds() > 1800) {
-            shootCount = 0;
-            dropSize = setDropSize;
-            currentSpike = false;
-        }
+
 
 
         switch (shootingLevel) {
@@ -280,7 +272,7 @@ public class Turret extends SubSystem {
         }
 
         if (toggle&&inZone){
-            targetRPM = interpolatedPower + mapOfset;
+            targetRPM = interpolatedPower + mapOfset ;
             setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
@@ -288,8 +280,8 @@ public class Turret extends SubSystem {
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto && toggle) {
-            targetRPM = interpolatedPower ;
-            setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
+            targetRPM = interpolatedPower  ;
+            setHoodDegrees(interpolatedHoodAngle ); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
