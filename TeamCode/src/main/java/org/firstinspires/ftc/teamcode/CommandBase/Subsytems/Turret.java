@@ -50,7 +50,7 @@ public class Turret extends SubSystem {
 
     public double distance;
 
-    double hoodRpmDropCompensation = 0;
+    public double hoodRpmDropCompensation = 0;
     // Common distance points for interpolation
     double distance1 = 120;
     double distance2 = 193;
@@ -62,13 +62,12 @@ public class Turret extends SubSystem {
     double lowHoodAngle1 = 25;
     double lowHoodAngle2 = 44;
     double lowHoodAngle3 = 53.6;
-    double lowPower1 = 1480;
-    double lowPower2 = 1664;
-    double lowPower3 = 2114;
-
+    double lowPower1 = 1489;
+    double lowPower2 = 1710;
+    double lowPower3 = 2305;
     // Medium power settings
-    double mediumHoodAngle1 = 20;
-    double mediumHoodAngle2 = 20;
+    double mediumHoodAngle1 = 21;
+    double mediumHoodAngle2 = 45;
     double mediumHoodAngle3 = 22;
     double mediumPower1 = 2306;
     double mediumPower2 = 2683;
@@ -91,7 +90,7 @@ public class Turret extends SubSystem {
 
 
     public boolean inZone = false;
-    boolean spunUp = true;
+    boolean spunUp = false;
     public boolean intakeTime;
     boolean turretInRange = false;
     boolean intakeEnter;
@@ -149,8 +148,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(180);
-        turretTurnTwo.setOffset(180);
+        turretTurnOne.setOffset(187);
+        turretTurnTwo.setOffset(187);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
@@ -206,8 +205,8 @@ public class Turret extends SubSystem {
     @Override
     public void execute() {
         executeEX();
-        double deltaX = robotX - targetX;
-        double deltaY = robotY - targetY;
+        double deltaX = robotX  - targetX;
+        double deltaY = robotY  - targetY;
         distance = Math.hypot(deltaY,deltaX);
         rpm = ((shooterMotorOne.getVelocity()/28)*60);
         if (shootPID.calculate(targetRPM,rpm) <0){
@@ -216,8 +215,11 @@ public class Turret extends SubSystem {
             shootPower = shootPID.calculate(targetRPM,rpm);
         }
         diff = Math.abs(targetRPM - rpm);
-        hoodRpmDropCompensation = (((lowHoodAngle2 - lowHoodAngle1 + lowHoodAngle3 - lowHoodAngle2)/2)/ ((lowPower2 - lowPower1 + lowPower3 - lowPower2 )/2)) * -diff;
-
+        if (hoodRpmDropCompensation<6) {
+            hoodRpmDropCompensation =  (((lowHoodAngle2 - lowHoodAngle1 + lowHoodAngle3 - lowHoodAngle2) / 2) / ((lowPower2 - lowPower1 + lowPower3 - lowPower2) / 2)) * -diff / 2;
+        }else {
+            hoodRpmDropCompensation = 0;
+        }
 //        if (inZone && !zoneResetStop || Auto){
 //            shootingTime.reset();
 //            zoneResetStop = true;
@@ -265,23 +267,27 @@ public class Turret extends SubSystem {
             turretInRange = false;
         }
 
-        if ( (robotX > 130 && robotX < 240 && robotY > 260) || ((robotY + Yoffset < 200)&& (robotX + Xoffset < 200) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 108) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
+        if ( (robotX > 160 && robotX < 260 && robotY > 270) || ((robotY + Yoffset < 180)&& (robotX + Xoffset < 180) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 180) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
             inZone = true;
         }else {
             inZone = false;
         }
 
-        if (toggle&&inZone){
+        if (toggle){
             targetRPM = interpolatedPower + mapOfset ;
-            setHoodDegrees(interpolatedHoodAngle); // Set hood based on interpolation
+            setHoodDegrees(interpolatedHoodAngle ); // Set hood based on interpolation
+
+
+
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto && toggle) {
-            targetRPM = interpolatedPower  ;
-            setHoodDegrees(interpolatedHoodAngle ); // Set hood based on interpolation
+            targetRPM = interpolatedPower +mapOfset ;
+            setHoodDegrees(Math.min(lowHoodAngle1,  interpolatedHoodAngle )); // Set hood based on interpolation
+
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);

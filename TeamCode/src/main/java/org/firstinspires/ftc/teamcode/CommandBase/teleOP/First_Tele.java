@@ -5,6 +5,7 @@ import android.util.Size;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -26,6 +27,7 @@ public class First_Tele extends OpModeEX {
     boolean captureLastHeading = false;
     boolean brake = false;
     double targetHood = 25;
+    boolean blue = true;
     PIDController headingPID = new PIDController(0.013,0,0.0032);
 
     @Override
@@ -87,13 +89,13 @@ public class First_Tele extends OpModeEX {
 //        }
 //            targetHood = targetHood + gamepad1.right_stick_y/8;
 //            turret.setHoodDegrees(targetHood);
-////
-////
+//////
+//////
 //        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
 
 
 
-        if (gamepad1.right_bumper ){
+        if (currentGamepad1.right_bumper  && !intake.InTake ){
 
                 intake.block = true;
                 intake.InTake = true;
@@ -105,35 +107,50 @@ public class First_Tele extends OpModeEX {
                 }
 
 
-        }else if (gamepad1.left_bumper){
+        }else if (currentGamepad1.left_bumper && !intake.InTake){
             intake.InTake = true;
             intake.block = false;
 
         }else if(turret.intakeTime){
             intake.InTake = true;
-        }else {
+        }else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper){
             intake.InTake = false;
         }
-        if (!lastGamepad1.a && currentGamepad1.a && Apriltag.getValid()){
+
+        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
             turret.toggle = true;
 
 
-            odometry.odo.setPosX(Apriltag.getX() , DistanceUnit.CM);
-            odometry.odo.setPosY( Apriltag.getY() ,DistanceUnit.CM);
-            odometry.odo.setHeading(Apriltag.getH(),AngleUnit.DEGREES);
+            odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
+            odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
+            odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
+
         }
-        if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left){
-            turret.turrofset -= 3;
+        if (!lastGamepad1.back && currentGamepad1.back && blue){
+            blue = false;
+            turret.targetX = 360;
+            gamepad1.rumble(800);
+
+        } else if (!lastGamepad1.back && currentGamepad1.back && !blue){
+            blue = true;
+            turret.targetX = 0;
+            gamepad1.rumble(800);
+
+
         }
-        if (!lastGamepad1.dpad_right && currentGamepad1.dpad_right){
-            turret.turrofset += 3;
+
+
+
+        if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down && turret.toggle){
+            turret.toggle = false;
+            gamepad1.rumble(800);
+        }else if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down&& !turret.toggle){
+            turret.toggle = true;
+            gamepad1.rumble(800);
+
         }
-        if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up){
-            turret.mapOfset += -20;
-        }
-        if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up){
-            turret.mapOfset += 20;
-        }
+
+
 
 
 
@@ -145,11 +162,16 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("odometry y", odometry.Y());
         telemetry.addData("Heading", odometry.Heading());
         telemetry.addData("distance", turret.distance);
-        telemetry.addData("target", turret.targetRPM);
+        telemetry.addData("diff", turret.diff);
         telemetry.addData("hood", targetHood);
+        telemetry.addData("rpm", turret.targetRPM);
         telemetry.addData("limeX",Apriltag.getX());
         telemetry.addData("limeY",Apriltag.getY());
         telemetry.addData("limeH",Apriltag.getH());
+        System.out.println("X: " + odometry.X());
+        System.out.println("Y: " + odometry.Y());
+
+
 
 
 

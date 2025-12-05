@@ -15,8 +15,8 @@
             <Servo name="intakeBlocker" port="2" />
             <Servo name="intakePTO" port="3" />
             <Servo name="hoodAdjust " port="1" />
-            <Servo name="turretTurnOne " port="4" />
-            <Servo name="turretTurnTwo " port="5" />
+            <Servo name="turretTurnOne " port="5" />
+            <Servo name="turretTurnTwo " port="0" />
         </ServoHub>
 
         <LynxModule name="Control Hub" port="173">

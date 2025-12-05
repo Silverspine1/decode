@@ -15,7 +15,7 @@ public class Intake extends SubSystem {
     MotorEx intakeMotor = new MotorEx();
     Servo intakeBlocker;
     Servo intakePTO;
-    public boolean block = false;
+    public boolean block = true;
     public boolean InTake = false;
     private boolean intakeTogle;
 
@@ -85,11 +85,11 @@ public class Intake extends SubSystem {
         executeEX();
         if (block){
             intakeBlocker.setPosition(0.57);
-            intakePTO.setPosition(0.4);
+            intakePTO.setPosition(0.5);
 
         }else {
             intakeBlocker.setPosition(0.40);
-            intakePTO.setPosition(0.5);
+            intakePTO.setPosition(0.4);
         }
         if (InTake){
             intakeMotor.update(-1);

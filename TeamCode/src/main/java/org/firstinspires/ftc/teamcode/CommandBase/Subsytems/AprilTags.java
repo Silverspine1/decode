@@ -64,8 +64,7 @@ public class AprilTags extends SubSystem {
         return Y  + 180;
     }
     public double getH() {
-
-        return 180 + H;
+        return  H;
     }
     public boolean getValid() {
 
@@ -98,6 +97,9 @@ public class AprilTags extends SubSystem {
         H = llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES);
         if (llResult.isValid()){
             valid = true;
+        }
+        if (H<0) {
+            H = 180 - H;
         }
 
     }
