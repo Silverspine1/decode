@@ -12,7 +12,7 @@ import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Intake extends SubSystem {
-    MotorEx intakeMotor = new MotorEx();
+    public MotorEx intakeMotor = new MotorEx();
     Servo intakeBlocker;
     Servo intakePTO;
     public boolean block = true;
