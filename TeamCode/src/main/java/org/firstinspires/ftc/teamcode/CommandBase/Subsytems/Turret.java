@@ -33,7 +33,7 @@ public class Turret extends SubSystem {
     double shootPower;
 
 
-    public double targetX = 0;
+    public double targetX =  360;
     public double targetY = 0;
     public double robotX;
     public double robotY;
@@ -59,12 +59,12 @@ public class Turret extends SubSystem {
 
 
     // Low power settings
-    double lowHoodAngle1 = 25;
-    double lowHoodAngle2 = 44;
-    double lowHoodAngle3 = 53.6;
-    double lowPower1 = 1489;
-    double lowPower2 = 1710;
-    double lowPower3 = 2305;
+    double lowHoodAngle1 = 24.8;
+    double lowHoodAngle2 = 33.5;
+    double lowHoodAngle3 = 59;
+    double lowPower1 = 2460;
+    double lowPower2 = 2880;
+    double lowPower3 = 4060;
     // Medium power settings
     double mediumHoodAngle1 = 21;
     double mediumHoodAngle2 = 45;
@@ -277,7 +277,7 @@ public class Turret extends SubSystem {
             targetRPM = interpolatedPower + mapOfset ;
             setHoodDegrees(interpolatedHoodAngle ); // Set hood based on interpolation
 
-
+//
 
 
             shooterMotorOne.update(shootPower);

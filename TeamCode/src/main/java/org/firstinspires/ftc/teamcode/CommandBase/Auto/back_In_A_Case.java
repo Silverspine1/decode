@@ -75,10 +75,10 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(33, 270), new Vector2D(104, 261), new Vector2D(145, 310)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(128, 195), new Vector2D(26, 212)),
+            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(128, 195), new Vector2D(26, 218)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(70, 210), new Vector2D(100, 215), new Vector2D(35, 180)),
+            () -> paths.addPoints(new Vector2D(70, 218), new Vector2D(100, 215), new Vector2D(35, 180)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(35, 210), new Vector2D(140, 165)),

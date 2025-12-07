@@ -81,6 +81,9 @@ public class DriveBase extends SubSystem {
     @Override
     public void execute() {
         executeEX();
+        if (!tele){
+            speed = 2.2;
+        }
 
     }
 
@@ -106,7 +109,7 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
-                 double denominator = Math.max(2.3, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+                 double denominator = Math.max(speed, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
                 LF.update((vertikal-(strafe)-turn)/denominator);
                 RF.update((vertikal+(strafe)+turn)/denominator);
