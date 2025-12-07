@@ -108,13 +108,13 @@ public class back_In_A_Case_Red extends OpModeEX {
     };
     @Override
     public void initEX() {
-        // Mirrored start position: x -> 360-x, heading -> 180 (opposite direction)
-        odometry.startPosition(360 - 163, 344, 180);
+        // Mirrored start position: x -> 360-x. HEADING REMAINS THE SAME.
+        odometry.startPosition(360 - 163, 344, 0); // Corrected heading to 0
         turret.Auto = true;
         driveBase.tele= false;
 
-        // MIRRORED HEADING: For Red side, shooting towards 0y, 360x goal means heading should be 90 degrees.
-        follow.setHeadingOffset(-90);
+        // HEADING OFFSET REMAINS THE SAME as the blue auto.
+        follow.setHeadingOffset(90);
 
         // Path building logic remains the same
         paths.addNewPath("collect1");
@@ -161,10 +161,8 @@ public class back_In_A_Case_Red extends OpModeEX {
             intakeOff = false;
         }
 
-        // MIRRORED HEADING TARGETS
-        double mirroredTargetHeading = 90; // The primary shooting heading on the Red side is 90 degrees.
-
-        // The state machine flow remains the same, but target headings are mirrored.
+        // The state machine flow remains the same.
+        // Target Headings remain the same as blue side because the world coordinate system doesn't change.
         switch (state) {
             case preLoad:
                 if (!Preload){
@@ -189,7 +187,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 break;
             case collect1:
                 if (pathing && follow.isFinished(15,15)){
-                    targetHeading = mirroredTargetHeading; // Set mirrored heading
+                    targetHeading = 270; // Remains 270
                 }
                 if (pathing && follow.isFinished(10, 10)){
                     intakeoff.reset();
@@ -197,7 +195,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     state = AutoState.driveToShoot1;
                     follow.setPath(paths.returnPath("driveToShoot1"));
                     follow.usePathHeadings(true);
-                    follow.setHeadingOffset(90); // Original was -90, becomes +90 for red
+                    follow.setHeadingOffset(-90); // Remains -90
                     follow.setHeadingLookAheadDistance(100);
                 }
                 break;
@@ -213,7 +211,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     follow.setPath(paths.returnPath("collect2"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
-                    follow.setHeadingOffset(-90); // Original was +90, becomes -90 for red
+                    follow.setHeadingOffset(90); // Remains 90
                     pathing = true;
                     intake.InTake = true;
                     built = true;
@@ -223,14 +221,14 @@ public class back_In_A_Case_Red extends OpModeEX {
                 break;
             case collect2:
                 if (pathing && follow.isFinished(15,15)){
-                    targetHeading = mirroredTargetHeading;
+                    targetHeading = 270; // Remains 270
                 }
 
                 if (pathing && follow.isFinished(10, 10)){
                     state = AutoState.driveToShoot2;
                     follow.setPath(paths.returnPath("driveToShoot2"));
                     follow.usePathHeadings(false);
-                    targetHeading = mirroredTargetHeading;
+                    targetHeading = 270; // Remains 270
                     built = true;
                 }
                 break;
@@ -238,7 +236,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 if (follow.isFinished(8,8)){
                     state = AutoState.driveToShoot2;
                     follow.setPath(paths.returnPath("driveToShoot2"));
-                    follow.setHeadingOffset(90); // Original was -90, becomes +90 for red
+                    follow.setHeadingOffset(-90); // Remains -90
                 }
                 break;
             case driveToShoot2:
@@ -254,21 +252,21 @@ public class back_In_A_Case_Red extends OpModeEX {
                     follow.usePathHeadings(false);
                     pathing = true;
                     built = true;
-                    targetHeading = mirroredTargetHeading;
+                    targetHeading = 270; // Remains 270
                     intake.block = true;
                     state = AutoState.collect3;
                 }
                 break;
             case collect3:
                 if (pathing && follow.isFinished(15,15)){
-                    targetHeading = mirroredTargetHeading;
+                    targetHeading = 270; // Remains 270
                 }
                 if (pathing && follow.isFinished(10, 10)){
                     intakeoff.reset();
                     intakeOff = true;
                     state = AutoState.driveToShoot3;
                     follow.setPath(paths.returnPath("driveToShoot3"));
-                    targetHeading = mirroredTargetHeading;
+                    targetHeading = 270; // Remains 270
                 }
                 break;
             case driveToShoot3:
@@ -284,7 +282,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     follow.usePathHeadings(false);
                     pathing = true;
                     built = true;
-                    targetHeading = mirroredTargetHeading;
+                    targetHeading = 270; // Remains 270
                     intake.block = true;
                     state = AutoState.finished;
                 }
@@ -304,7 +302,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 if (built && maxWait.milliseconds() > 1500 || !(intake.upperBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE) && !(intake.lowerBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE)){
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath("driveToShootBack"));
-                    targetHeading = mirroredTargetHeading;
+                    targetHeading = 270; // Remains 270
                     pathing = true;
                     built = false;
                 }
@@ -321,6 +319,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 }
                 if (cycle > cycleTarget){
                     state = AutoState.finished;
+
                 }
                 if (built && shootTime.milliseconds() > shootWait){
                     state = AutoState.backCollect;
@@ -356,4 +355,3 @@ public class back_In_A_Case_Red extends OpModeEX {
         telemetry.update();
     }
 }
-
