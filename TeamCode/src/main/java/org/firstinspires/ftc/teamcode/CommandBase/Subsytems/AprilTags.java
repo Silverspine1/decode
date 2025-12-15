@@ -98,9 +98,8 @@ public class AprilTags extends SubSystem {
         if (llResult.isValid()){
             valid = true;
         }
-        if (H<0) {
-            H = 180 - H;
-        }
+        H = 180 - H;
+
 
     }
 }

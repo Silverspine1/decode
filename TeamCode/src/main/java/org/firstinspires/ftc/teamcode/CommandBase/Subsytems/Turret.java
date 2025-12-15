@@ -72,6 +72,7 @@ public class Turret extends SubSystem {
     double mediumPower1 = 2306;
     double mediumPower2 = 2683;
     double mediumPower3 = 3451;
+    double turretLast = 0;
 
 
     double interpolatedPower;
@@ -81,24 +82,22 @@ public class Turret extends SubSystem {
     public ElapsedTime shootingTime = new ElapsedTime();
     ElapsedTime lookAhead = new ElapsedTime();
     ElapsedTime currentWait = new ElapsedTime();
+    ElapsedTime turretToCenter = new ElapsedTime();
+
     final double R1 = 182.5;
     final double R2 = 80;
     final double R3 = 80;
     final double R4 = 173;
-    public double hoodTarget = 40;
-    public double theta_4 = 40;
 
 
     public boolean inZone = false;
-    boolean spunUp = false;
+
     public boolean intakeTime;
     boolean turretInRange = false;
-    boolean intakeEnter;
-    boolean currentSpike = false;
-    boolean zoneResetStop = false;
     public boolean spinDown = false;
     public boolean Auto = false;
     public boolean toggle = true;
+
 
     double K1 = R1 /R2;
     double K2 = R1 /R4;
@@ -257,16 +256,18 @@ public class Turret extends SubSystem {
 
         // *** Turret angle adjustment
         turretAngle = Math.toDegrees(-Math.atan2(deltaX,deltaY) + robotHeading);
-        if ((turretAngle) > turretLimitAngle) {
-            turretInRange = true;
-            turretAngle = turretLimitAngle;
-
-        } else if ((turretAngle) < -turretLimitAngle) {
-            turretInRange = true;
-            turretAngle = -turretLimitAngle;
-
-        }else{
+        if ((turretAngle) > turretLimitAngle ) {
             turretInRange = false;
+            turretAngle = 0;
+            turretToCenter.reset();
+
+        } else if ((turretAngle) < -turretLimitAngle ) {
+            turretInRange = false;
+            turretAngle = 0;
+            turretToCenter.reset();
+
+        }else if (turretToCenter.milliseconds() > 500) {
+            turretInRange = true;
         }
 
         if ( (robotX > 160 && robotX < 260 && robotY > 270) || ((robotY + Yoffset < 180)&& (robotX + Xoffset < 180) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 180) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
