@@ -69,13 +69,13 @@ public class back_In_A_Case extends OpModeEX {
 
 
     private final sectionBuilder[] collect1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(120, 258), new Vector2D(33, 270)),
+            () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(120, 258), new Vector2D(33, 274)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(33, 270), new Vector2D(104, 261), new Vector2D(145, 310)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(128, 195), new Vector2D(26, 218)),
+            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(128, 195), new Vector2D(26, 222)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(70, 218), new Vector2D(100, 215), new Vector2D(35, 180)),
@@ -84,7 +84,7 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(35, 210), new Vector2D(140, 165)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(140, 155), new Vector2D(30, 150)),
+            () -> paths.addPoints(new Vector2D(140, 155), new Vector2D(30, 154)),
     };
     private final sectionBuilder[] driveToShoot3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(40, 150), new Vector2D(140, 150)),
@@ -155,7 +155,7 @@ public class back_In_A_Case extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-        if (intakeOff && intakeoff.milliseconds() > 600){
+        if (intakeOff && intakeoff.milliseconds() > 850){
             intake.InTake = false;
             intakeOff = false;
 
@@ -166,7 +166,7 @@ public class back_In_A_Case extends OpModeEX {
                     preload.reset();
                     Preload = true;
                 }
-                if (built && preload.milliseconds() >2500){
+                if (built && preload.milliseconds() >2900 || built && turret.diff < 140){
                     intake.InTake = true;
                     built = false;
                     intake.block = false;

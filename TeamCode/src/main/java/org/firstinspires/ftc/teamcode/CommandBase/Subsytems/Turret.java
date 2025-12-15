@@ -33,7 +33,7 @@ public class Turret extends SubSystem {
     double shootPower;
 
 
-    public double targetX =  360;
+    public double targetX =  0;
     public double targetY = 0;
     public double robotX;
     public double robotY;
@@ -61,7 +61,7 @@ public class Turret extends SubSystem {
     // Low power settings
     double lowHoodAngle1 = 24.8;
     double lowHoodAngle2 = 33.5;
-    double lowHoodAngle3 = 59;
+    double lowHoodAngle3 = 57;
     double lowPower1 = 2460;
     double lowPower2 = 2880;
     double lowPower3 = 4060;
@@ -139,6 +139,8 @@ public class Turret extends SubSystem {
         turretTurnOne.initServo("turretTurnOne", getOpMode().hardwareMap);
         turretTurnTwo.initServo("turretTurnTwo", getOpMode().hardwareMap);
         hoodAdjust.initServo("hoodAdjust", getOpMode().hardwareMap);
+        turretTurnOne.setDirection(Servo.Direction.REVERSE);
+        turretTurnTwo.setDirection(Servo.Direction.REVERSE);
         turretTurnTwo.setRange(355);
         turretTurnOne.setRange(355);
         hoodAdjust.setRange(355);
@@ -148,8 +150,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(187);
-        turretTurnTwo.setOffset(187);
+        turretTurnOne.setOffset(186.5);
+        turretTurnTwo.setOffset(186.5);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);

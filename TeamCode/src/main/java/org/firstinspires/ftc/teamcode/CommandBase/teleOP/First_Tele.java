@@ -63,6 +63,7 @@ public class First_Tele extends OpModeEX {
 
 
 
+
     }
     @Override public void stop() {
         if (visionPortal != null) visionPortal.close();
@@ -80,7 +81,10 @@ public class First_Tele extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.right_trigger + gamepad1.left_trigger, -gamepad1.right_stick_x);
+        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+
+//        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+
 
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.medium;
@@ -107,7 +111,7 @@ public class First_Tele extends OpModeEX {
                 }
 
 
-        }else if (currentGamepad1.left_bumper && !intake.InTake){
+        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 140){
             intake.InTake = true;
             intake.block = false;
 
@@ -119,6 +123,8 @@ public class First_Tele extends OpModeEX {
 
         if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
             turret.toggle = true;
+            gamepad1.rumble(800);
+
 
 
             odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
@@ -126,8 +132,21 @@ public class First_Tele extends OpModeEX {
             odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
 
         }
+        if (!lastGamepad1.back && currentGamepad1.back && blue){
+            blue = false;
+            turret.targetX = 360;
+            gamepad1.rumble(800);
+            turret.turrofset = 0;
 
 
+        } else if (!lastGamepad1.back && currentGamepad1.back && !blue){
+            blue = true;
+            turret.targetX = 0;
+            gamepad1.rumble(800);
+            turret.turrofset = - 4;
+
+
+        }
 
         if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down && turret.toggle){
             turret.toggle = false;
