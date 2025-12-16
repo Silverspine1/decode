@@ -6,6 +6,9 @@ import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
 import org.firstinspires.ftc.teamcode.CommandBase.ColourSensorEx;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
@@ -21,9 +24,19 @@ public class Intake extends SubSystem {
 
     public ColourSensorEx lowerSensor = new ColourSensorEx();
     public ColourSensorEx upperSensor = new ColourSensorEx();
+
+
+    public int ballCount = 0;
+
+    public List<BallColor> ballOrder = new ArrayList<>();
+
+    private boolean isBallCurrentlyDetected = false;
+    private static final int MAX_BALLS = 3;
+
+
     public Intake(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
-   }
+    }
 
     public BallColor upperBall = BallColor.NONE;
     public BallColor lowerBall = BallColor.NONE;
@@ -37,9 +50,7 @@ public class Intake extends SubSystem {
         intakePTO = getOpMode().hardwareMap.get(Servo.class, "intakePTO");
         intakeBlocker = getOpMode().hardwareMap.get(Servo.class, "intakeBlocker");
         lowerSensor.initSensor("LowerSensor",getOpMode().hardwareMap);
-        upperSensor.initSensor("UpperSensor",getOpMode().hardwareMap);
-
-
+        upperSensor.initSensor("UpperSensor", getOpMode().hardwareMap); // Init the second sensor
     }
 
     public Command defaultCommand = new LambdaCommand(
@@ -52,6 +63,42 @@ public class Intake extends SubSystem {
         GREEN,
         PURPLE
     }
+
+    /**
+     * Resets the ball counter and the stored order of colors.
+     * Call this at the start of a match or after purging the intake.
+     */
+    public void resetIntakeCounter() {
+        ballCount = 0;
+        ballOrder.clear();
+        isBallCurrentlyDetected = false;
+    }
+
+    /**
+     * Processes the reading from the lower sensor to detect and classify a new ball.
+     * This method implements a rising-edge detector.
+     * @param lowerReading The latest reading from the lower Adafruit sensor.
+     */
+    public void classifyAndCountLowerBall(AdafruitSensorDriver.Reading lowerReading) {
+        // First, classify the color of whatever is in front of the sensor right now.
+        BallColor currentlySeenColor = classifySingle(lowerReading);
+        boolean isBallNowPresent = currentlySeenColor != BallColor.NONE;
+
+        // RISING-EDGE LOGIC: Check if a ball just appeared when there wasn't one before.
+        if (isBallNowPresent && !isBallCurrentlyDetected) {
+            // A new ball has entered the sensor's range.
+            // Only count and add if we haven't reached the max capacity.
+            if (ballCount < MAX_BALLS) {
+                ballCount++;
+                ballOrder.add(currentlySeenColor); // Add the detected color to our list
+            }
+        }
+
+        // Update the state for the next loop cycle.
+        this.isBallCurrentlyDetected = isBallNowPresent;
+    }
+
+    // This method is now used for the upper sensor or for general-purpose classification
     public void classifyBalls(AdafruitSensorDriver.Reading upperReading,
                               AdafruitSensorDriver.Reading lowerReading) {
         upperBall = classifySingle(upperReading);
@@ -76,6 +123,8 @@ public class Intake extends SubSystem {
                 green >= COLOR_DOMINANCE_RATIO * blue;
 
         if (greenHigh) return BallColor.GREEN;
+        // For purple, you might check if blue is high or if red and blue dominate green.
+        // I'm assuming your redHigh check correctly identifies purple.
         if (redHigh) return BallColor.PURPLE;
         return BallColor.NONE;
     }
