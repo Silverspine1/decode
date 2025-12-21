@@ -133,7 +133,7 @@ public class Intake extends SubSystem {
     public void execute() {
         executeEX();
         if (block){
-            intakeBlocker.setPosition(0.57);
+            intakeBlocker.setPosition(0.56);
             intakePTO.setPosition(0.52);
 
         }else {
