@@ -13,6 +13,8 @@ import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Intake extends SubSystem {
     public MotorEx intakeMotor = new MotorEx();
+    public MotorEx secondIntakeMotor = new MotorEx();
+
     Servo intakeBlocker;
     Servo intakePTO;
     public boolean block = true;
@@ -34,6 +36,8 @@ public class Intake extends SubSystem {
     @Override
     public void init() {
         intakeMotor.initMotor("intakeMotor", getOpMode().hardwareMap);
+        intakeMotor.initMotor("intakeMotor", getOpMode().hardwareMap);
+
         intakePTO = getOpMode().hardwareMap.get(Servo.class, "intakePTO");
         intakeBlocker = getOpMode().hardwareMap.get(Servo.class, "intakeBlocker");
         lowerSensor.initSensor("LowerSensor",getOpMode().hardwareMap);
