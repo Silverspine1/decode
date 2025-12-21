@@ -103,15 +103,15 @@ public class back_In_A_Case extends OpModeEX {
         follow.setHeadingOffset(90);
 
         paths.addNewPath("collect1");
-        paths.buildPath(collect1);
+        paths.buildPath(collect1,1000);
         paths.addNewPath("driveToShoot1");
         paths.buildPath(driveToShoot1);
         paths.addNewPath("collect2");
-        paths.buildPath(collect2);
+        paths.buildPath(collect2,1000);
         paths.addNewPath("driveToShoot2");
         paths.buildPath(driveToShoot2);
         paths.addNewPath("collect3");
-        paths.buildPath(collect3);
+        paths.buildPath(collect3,1000);
         paths.addNewPath("gate");
         paths.buildPath(gate);
         paths.addNewPath("driveToShoot3");
@@ -155,7 +155,7 @@ public class back_In_A_Case extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-        if (intakeOff && intakeoff.milliseconds() > 850){
+        if (intakeOff && intakeoff.milliseconds() > 850 || intakeOff && intake.ballCount >2){
             intake.InTake = false;
             intakeOff = false;
 
@@ -176,6 +176,7 @@ public class back_In_A_Case extends OpModeEX {
                     follow.setPath(paths.returnPath("collect1"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
+                    intake.resetIntakeCounter();
                     pathing = true;
                     built = true;
                     intake.block = true;
@@ -207,6 +208,7 @@ public class back_In_A_Case extends OpModeEX {
                 if (follow.isFinished(10,10) && !built && shootTime.milliseconds() > shootWait && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo){
                 follow.setPath(paths.returnPath("collect2"));
                 follow.usePathHeadings(true);
+                intake.resetIntakeCounter();
                 follow.setHeadingLookAheadDistance(100);
                 follow.setHeadingOffset(90);
                 pathing = true;
@@ -250,6 +252,7 @@ public class back_In_A_Case extends OpModeEX {
                 if (follow.isFinished(10,10) && !built && shootTime.milliseconds() > shootWait && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo) {
                     follow.setPath(paths.returnPath("collect3"));
                     follow.usePathHeadings(false);
+                    intake.resetIntakeCounter();
                     pathing = true;
                     built = true;
                     targetHeading = 270;
@@ -281,7 +284,8 @@ public class back_In_A_Case extends OpModeEX {
                 }
 
                 if (follow.isFinished(10,10) && !built && shootTime.milliseconds() > shootWait && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo) {
-                    follow.setPath(paths.returnPath("collect3"));
+                    follow.setPath(paths.returnPath("firstBackCollect"));
+                    intake.resetIntakeCounter();
                     follow.usePathHeadings(false);
                     pathing = true;
                     built = true;
@@ -334,10 +338,13 @@ public class back_In_A_Case extends OpModeEX {
                 if (processor.hasTarget  ) {
                     driveBase.drivePowers(-gamepad1.right_stick_y + processor.distanceCm / 60, headingPID.calculate(-processor.hAngleDeg), -gamepad1.right_stick_x);
                     intake.block = true;
+                    intake.resetIntakeCounter();
+
                 }
                 if (built && maxWait.milliseconds() > 1500 || !(intake.upperBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE) && !(intake.lowerBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE)){
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath("driveToShootBack"));
+
                     pathing = true;
                     built = false;
                 }
