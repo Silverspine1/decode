@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -69,13 +71,13 @@ public class back_In_A_Case extends OpModeEX {
 
 
     private final sectionBuilder[] collect1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(120, 258), new Vector2D(33, 274)),
+            () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(126, 254), new Vector2D(48, 268)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(33, 270), new Vector2D(104, 261), new Vector2D(145, 310)),
+            () -> paths.addPoints(new Vector2D(43, 270), new Vector2D(104, 261), new Vector2D(145, 310)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(128, 195), new Vector2D(26, 222)),
+            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 190), new Vector2D(50, 216)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(70, 218), new Vector2D(100, 215), new Vector2D(35, 180)),
@@ -84,7 +86,7 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(35, 210), new Vector2D(140, 165)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(140, 155), new Vector2D(30, 154)),
+            () -> paths.addPoints(new Vector2D(140, 155), new Vector2D(53, 148)),
     };
     private final sectionBuilder[] driveToShoot3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(40, 150), new Vector2D(140, 150)),
@@ -97,7 +99,7 @@ public class back_In_A_Case extends OpModeEX {
     };
     @Override
     public void initEX() {
-        odometry.startPosition(163, 344, 0);
+        odometry.startPosition(172, 350, 358);
         turret.Auto = true;
         driveBase.tele= false;
         follow.setHeadingOffset(90);
@@ -155,6 +157,12 @@ public class back_In_A_Case extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
+        if (Apriltag.getH() != 0 && Apriltag.getH() !=180 && velo < 2 ) {
+            odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
+            odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
+            odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
+
+        }
         if (intakeOff && intakeoff.milliseconds() > 850 || intakeOff && intake.ballCount >2){
             intake.InTake = false;
             intakeOff = false;
@@ -166,7 +174,7 @@ public class back_In_A_Case extends OpModeEX {
                     preload.reset();
                     Preload = true;
                 }
-                if (built && preload.milliseconds() >2900 || built && turret.diff < 140){
+                if (built && preload.milliseconds() >2900){
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -228,7 +236,7 @@ public class back_In_A_Case extends OpModeEX {
                 state = AutoState.driveToShoot2;
                 follow.setPath(paths.returnPath("driveToShoot2"));
                 follow.usePathHeadings(false);
-                targetHeading = 270;
+                targetHeading = 305;
                 built = true;
             }
         break;

@@ -27,7 +27,11 @@ public class DriveBase extends SubSystem {
     public MotorEx RB = new MotorEx();
     public MotorEx LB = new MotorEx();
     public TouchSensor intakeSensor;
+    Servo pto1;
+    Servo pto2;
+
     double speed = 1;
+    public boolean engage = false;
 
 
 
@@ -53,6 +57,9 @@ public class DriveBase extends SubSystem {
         RF.initMotor("RF", getOpMode().hardwareMap);
         LB.initMotor("LB", getOpMode().hardwareMap);
         RB.initMotor("RB", getOpMode().hardwareMap);
+        pto1 = getOpMode().hardwareMap.get(Servo.class, "pto1");
+        pto2 = getOpMode().hardwareMap.get(Servo.class, "pto2");
+
 
 
         intakeSensor = getOpMode().hardwareMap.get(TouchSensor.class, "intakeSensor");
@@ -82,7 +89,15 @@ public class DriveBase extends SubSystem {
     public void execute() {
         executeEX();
         if (!tele){
-            speed = 2.2;
+            speed = 1.6;
+        }
+        if (engage){
+            pto1.setPosition(0.65);
+            pto2.setPosition(0.35);
+        } else {
+            pto1.setPosition(0.5);
+            pto2.setPosition(0.5);
+
         }
 
     }
@@ -91,7 +106,7 @@ public class DriveBase extends SubSystem {
     public Command drivePowers (double vertical, double turn, double strafe){
         this.turn = turn;
         this.strafe = strafe;
-        this.vertikal = -vertical;
+        this.vertikal = vertical;
 
         return driveCommand;
 
@@ -100,7 +115,7 @@ public class DriveBase extends SubSystem {
     public Command drivePowers (RobotPower power){
         this.turn = power.getPivot();
         this.strafe = -power.getVertical();
-        this.vertikal = power.getHorizontal();
+        this.vertikal = -power.getHorizontal();
 
         return driveCommand;
     }

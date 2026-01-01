@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
@@ -49,8 +50,8 @@ public class Intake extends SubSystem {
     @Override
     public void init() {
         intakeMotor.initMotor("intakeMotor", getOpMode().hardwareMap);
-        intakeMotor.initMotor("intakeMotor", getOpMode().hardwareMap);
-
+        secondIntakeMotor.initMotor("intakeMotor2", getOpMode().hardwareMap);
+        secondIntakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakePTO = getOpMode().hardwareMap.get(Servo.class, "intakePTO");
         intakeBlocker = getOpMode().hardwareMap.get(Servo.class, "intakeBlocker");
         lowerSensor.initSensor("LowerSensor",getOpMode().hardwareMap);
@@ -137,17 +138,23 @@ public class Intake extends SubSystem {
     public void execute() {
         executeEX();
         if (block){
-            intakeBlocker.setPosition(0.56);
+            intakeBlocker.setPosition(0.53);
             intakePTO.setPosition(0.52);
 
         }else {
-            intakeBlocker.setPosition(0.36);
+            intakeBlocker.setPosition(0.39);
             intakePTO.setPosition(0.43);
         }
         if (InTake){
             intakeMotor.update(-1);
+            secondIntakeMotor.update(-0.6);
+
         }else {
             intakeMotor.update(0);
+            secondIntakeMotor.update(0);
+        }
+        if (InTake && !block){
+            secondIntakeMotor.update(-1);
         }
 
     }

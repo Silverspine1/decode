@@ -159,6 +159,11 @@ public class First_Tele extends OpModeEX {
         if (gamepad1.dpad_left){
             intake.intakeMotor.update(1);
         }
+        if (!lastGamepad1.a && currentGamepad1.a && !driveBase.engage){
+            driveBase.engage = true;
+        }else  if (!lastGamepad1.a && currentGamepad1.a && driveBase.engage){
+            driveBase.engage = false;
+        }
 
 
 
@@ -168,6 +173,7 @@ public class First_Tele extends OpModeEX {
         AdafruitSensorDriver.Reading lower = intake.lowerSensor.read();
         AdafruitSensorDriver.Reading upper = intake.upperSensor.read();
 
+        telemetry.addData("Intake Rpm", intake.secondIntakeMotor.getVelocity());
         telemetry.addData("in zone", turret.inZone);
         telemetry.addData("odometry x", odometry.X());
         telemetry.addData("odometry y", odometry.Y());
@@ -181,6 +187,9 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("limeH",Apriltag.getH());
         System.out.println("X: " + odometry.X());
         System.out.println("Y: " + odometry.Y());
+        telemetry.addData("ball",intake.ballCount);
+
+
 
 
 
