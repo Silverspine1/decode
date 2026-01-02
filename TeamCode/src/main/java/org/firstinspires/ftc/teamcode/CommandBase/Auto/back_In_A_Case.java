@@ -68,6 +68,9 @@ public class back_In_A_Case extends OpModeEX {
     ElapsedTime intakeoff = new ElapsedTime();
     ElapsedTime maxWait = new ElapsedTime();
     ElapsedTime preload = new ElapsedTime();
+    private final sectionBuilder[] shoot = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(155, 330),  new Vector2D(155, 320)),
+    };
 
 
     private final sectionBuilder[] collect1 = new sectionBuilder[]{
@@ -99,11 +102,13 @@ public class back_In_A_Case extends OpModeEX {
     };
     @Override
     public void initEX() {
-        odometry.startPosition(172, 350, 358);
+        odometry.startPosition(169, 346, 359);
         turret.Auto = true;
         driveBase.tele= false;
         follow.setHeadingOffset(90);
 
+        paths.addNewPath("shoot");
+        paths.buildPath(shoot);
         paths.addNewPath("collect1");
         paths.buildPath(collect1,1000);
         paths.addNewPath("driveToShoot1");
@@ -173,6 +178,9 @@ public class back_In_A_Case extends OpModeEX {
                 if (!Preload){
                     preload.reset();
                     Preload = true;
+                    follow.setPath(paths.returnPath("shoot"));
+                    pathing = true;
+
                 }
                 if (built && preload.milliseconds() >2900){
                     intake.InTake = true;
@@ -265,7 +273,7 @@ public class back_In_A_Case extends OpModeEX {
                     built = true;
                     targetHeading = 270;
                     intake.block = true;
-                    state = AutoState.collect3;
+                    state = AutoState.finished;
                 }
 
 

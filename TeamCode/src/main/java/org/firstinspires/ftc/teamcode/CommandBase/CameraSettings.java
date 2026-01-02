@@ -6,8 +6,8 @@ import com.acmerobotics.dashboard.config.Config;
 public class CameraSettings {
 
     // Pose (tune on Dashboard)
-    public static double CAMERA_HEIGHT_CM = 31.0;
-    public static double TILT_DOWN_DEG   = 31.0;   // positive means pitched down
+    public static double CAMERA_HEIGHT_CM = 26.5;
+    public static double TILT_DOWN_DEG   = 38.8;   // positive means pitched down
 
     // Hikvision DS-U12 FOV
     public static double H_FOV_DEG = 81.0;
@@ -15,7 +15,7 @@ public class CameraSettings {
 
     // Principal-point offsets (px)
     public static double X_OFFSET_CM = 5.0; // +right
-    public static double Y_OFFSET_CM = -9.0; // +forward
+    public static double Y_OFFSET_CM = -7.0; // +forward
 
     // Optional scaling
     public static double X_SCALE = 1.0;

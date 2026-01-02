@@ -96,7 +96,7 @@ public class First_Tele extends OpModeEX {
 ////////
 ////////
 //        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
-
+//
 
 
         if (currentGamepad1.right_bumper  && !intake.InTake ){
@@ -111,7 +111,7 @@ public class First_Tele extends OpModeEX {
                 }
 
 
-        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 140){
+        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170){
             intake.InTake = true;
             intake.block = false;
 
@@ -185,6 +185,10 @@ public class First_Tele extends OpModeEX {
         telemetry.addData("limeX",Apriltag.getX());
         telemetry.addData("limeY",Apriltag.getY());
         telemetry.addData("limeH",Apriltag.getH());
+        telemetry.addData("ball x ",processor.xPosCm);
+        telemetry.addData("ball y ",processor.yPosCm);
+
+
         System.out.println("X: " + odometry.X());
         System.out.println("Y: " + odometry.Y());
         telemetry.addData("ball",intake.ballCount);
