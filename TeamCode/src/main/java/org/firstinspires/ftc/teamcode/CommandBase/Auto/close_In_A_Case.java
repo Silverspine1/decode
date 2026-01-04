@@ -322,7 +322,7 @@ public class close_In_A_Case extends OpModeEX {
                                                         }
 
                                                     }
-                                                    if (built && maxWait.milliseconds() > 1500 || !(intake.upperBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE) && !(intake.lowerBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE)){
+                                                    if (built && maxWait.milliseconds() > 1500 ){
                                                         state = AutoState.driveToShootBack;
                                                         follow.setPath(paths.returnPath("driveToShootBack"));
                                                         targetHeading = 270;
@@ -355,7 +355,7 @@ public class close_In_A_Case extends OpModeEX {
                                                                 driveBase.drivePowers(-gamepad1.right_stick_y + processor.distanceCm / 60, headingPID.calculate(-processor.hAngleDeg), -gamepad1.right_stick_x);
                                                                 intake.block = true;
                                                             }
-                                                            if (built && maxWait.milliseconds() > 1500 || !(intake.upperBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE) && !(intake.lowerBall == org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake.BallColor.NONE)){
+                                                            if (built && maxWait.milliseconds() > 1500 ){
                                                                 state = AutoState.driveToShootBack;
                                                                 follow.setPath(paths.returnPath("driveToShootBack"));
                                                                 pathing = true;

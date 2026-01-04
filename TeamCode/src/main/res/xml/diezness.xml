@@ -8,6 +8,8 @@
             <goBILDA5201SeriesMotor name="intakeMotor" port="2" />
             <goBILDA5201SeriesMotor name="shooterMotorTwo" port="3" />
             <RevTouchSensor name="intakeSensor" port="0" />
+            <DigitalDevice name="sensor1" port="6"  />
+
         </LynxModule>
         <ServoHub name="Servo Hub 4" port="4">
             <Servo name="turretTurnOne" port="0" />
@@ -25,8 +27,10 @@
             <Servo name="pto2" port="1" />
             <goBILDAPinpoint name="odo" port="0" bus="0" />
             <RevExternalImu name="imu" port="0" bus="1" />
-            <TcsSensor name="LowerSensor" port="0" bus="2" />
-            <TcsSensor name="UpperSensor" port="0" bus="3" />
+            <DigitalDevice name="sensor2" port="3"  />
+            <DigitalDevice name="sensor3" port="6"  />
+
+
         </LynxModule>
     </LynxUsbDevice>
 

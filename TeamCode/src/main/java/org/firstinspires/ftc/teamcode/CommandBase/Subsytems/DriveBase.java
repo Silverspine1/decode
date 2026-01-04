@@ -39,7 +39,6 @@ public class DriveBase extends SubSystem {
     PIDController headingPID = new PIDController(0.025,0,0.0003);
 
     public IMU imu;
-    public double strafeExtra = 1.0;
 
     double vertikal ;
     double turn ;
@@ -89,11 +88,11 @@ public class DriveBase extends SubSystem {
     public void execute() {
         executeEX();
         if (!tele){
-            speed = 1.6;
+            speed = 2;
         }
         if (engage){
-            pto1.setPosition(0.65);
-            pto2.setPosition(0.35);
+            pto1.setPosition(0.64);
+            pto2.setPosition(0.32);
         } else {
             pto1.setPosition(0.5);
             pto2.setPosition(0.5);
@@ -125,11 +124,15 @@ public class DriveBase extends SubSystem {
             },
             () -> {
                  double denominator = Math.max(speed, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
-
-                LF.update((vertikal-(strafe)-turn)/denominator);
-                RF.update((vertikal+(strafe)+turn)/denominator);
-                LB.update((vertikal+(strafe*strafeExtra)-turn)/denominator);
-                RB.update((vertikal-(strafe*strafeExtra)+turn)/denominator);
+            if (!engage) {
+                LF.update((vertikal - (strafe) - turn) / denominator);
+                RF.update((vertikal + (strafe) + turn) / denominator);
+                LB.update((vertikal + (strafe ) - turn) / denominator);
+                RB.update((vertikal - (strafe ) + turn) / denominator);
+            }else {
+//                LF.update((vertikal - (strafe) - turn) / denominator);
+//                RF.update((vertikal + (strafe) + turn) / denominator);
+            }
 
 //                System.out.println("vertikal power" + vertikal);
 //                System.out.println("Left front power" + LF.getPower());

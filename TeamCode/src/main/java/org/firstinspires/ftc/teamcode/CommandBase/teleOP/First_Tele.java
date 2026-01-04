@@ -28,7 +28,11 @@ public class First_Tele extends OpModeEX {
     boolean brake = false;
     double targetHood = 25;
     boolean blue = true;
+    boolean togle = false;
+    double lastBallCount = 0;
+    double currentBallCount = 0;
     PIDController headingPID = new PIDController(0.013,0,0.0032);
+    ElapsedTime shooterOffWait = new ElapsedTime();
 
     @Override
     public void initEX() {
@@ -78,12 +82,14 @@ public class First_Tele extends OpModeEX {
 
     @Override
     public void loopEX() {
+        lastBallCount = currentBallCount;
+        currentBallCount = intake.ballCount;
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
-
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+
+        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger-gamepad1.right_trigger), -gamepad1.right_stick_x);
 
 
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
@@ -96,10 +102,23 @@ public class First_Tele extends OpModeEX {
 ////////
 ////////
 //        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
+//        if (!intake.InTake && intake.ballCount >2){
+//            intake.reverse = true;
+//        }
 //
+        if (intake.ballCount >2){
+            if (togle){
+                turret.toggle = true;
+            }
+            shooterOffWait.reset();
+
+            gamepad1.rumble(400);
+        }else if(intake.ballCount < 1 ){
+            turret.toggle = false;
+        }
 
 
-        if (currentGamepad1.right_bumper  && !intake.InTake ){
+        if (gamepad1.right_bumper ){
 
                 intake.block = true;
                 intake.InTake = true;
@@ -121,8 +140,8 @@ public class First_Tele extends OpModeEX {
             intake.InTake = false;
         }
 
-        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
-            turret.toggle = true;
+        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180 || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
+            togle = true;
             gamepad1.rumble(800);
 
 
@@ -149,7 +168,7 @@ public class First_Tele extends OpModeEX {
         }
 
         if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down && turret.toggle){
-            turret.toggle = false;
+            togle = false;
             gamepad1.rumble(800);
         }else if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down&& !turret.toggle){
             turret.toggle = true;
@@ -170,8 +189,6 @@ public class First_Tele extends OpModeEX {
 
 
 
-        AdafruitSensorDriver.Reading lower = intake.lowerSensor.read();
-        AdafruitSensorDriver.Reading upper = intake.upperSensor.read();
 
         telemetry.addData("Intake Rpm", intake.secondIntakeMotor.getVelocity());
         telemetry.addData("in zone", turret.inZone);
