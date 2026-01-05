@@ -39,32 +39,32 @@ public class Turret extends SubSystem {
     public double robotY;
     public double robotHeading;
 
-    public double targetRPM = 0;
+    public double targetRPM = 1500;
     public double rpm;
-    public double mapOfset = -20;
+    public double mapOfset = 0;
     public double turrofset= 0;
     public double turretAngle;
-    final double gearRatio = 0.73;
-    final double turretLimitAngle =120;
+    final double gearRatio = 0.8116;
+    final double turretLimitAngle =80;
 
 
     public double distance;
 
     public double hoodRpmDropCompensation = 0;
     // Common distance points for interpolation
-    double distance1 = 126;
-    double distance2 = 234;
+    double distance1 = 120;
+    double distance2 = 193;
     double distance3 = 343;
     double distance4 = 407; // This can be used for extrapolation endpoint
 
 
     // Low power settings
-    double lowHoodAngle1 = 27.7;
-    double lowHoodAngle2 = 38.4;
-    double lowHoodAngle3 = 42.6;
-    double lowPower1 = 2039;
-    double lowPower2 = 2533;
-    double lowPower3 = 3067;
+    double lowHoodAngle1 = 24.8;
+    double lowHoodAngle2 = 33.5;
+    double lowHoodAngle3 = 57;
+    double lowPower1 = 2460;
+    double lowPower2 = 2880;
+    double lowPower3 = 4060;
     // Medium power settings
     double mediumHoodAngle1 = 21;
     double mediumHoodAngle2 = 45;
@@ -84,10 +84,10 @@ public class Turret extends SubSystem {
     ElapsedTime currentWait = new ElapsedTime();
     ElapsedTime turretToCenter = new ElapsedTime();
 
-    final double R1 = 183;
-    final double R2 = 63;
-    final double R3 = 63;
-    final double R4 = 153;
+    final double R1 = 182.5;
+    final double R2 = 80;
+    final double R3 = 80;
+    final double R4 = 173;
 
 
     public boolean inZone = false;
@@ -149,8 +149,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(189);
-        turretTurnTwo.setOffset(189);
+        turretTurnOne.setOffset(186.5);
+        turretTurnTwo.setOffset(186.5);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
@@ -164,7 +164,7 @@ public class Turret extends SubSystem {
 
     public void setHoodDegrees(double theta){
 
-        double U2 = Math.toRadians(theta-5);
+        double U2 = Math.toRadians(theta-8);
         A = Math.sin(U2);
         B = K2 - Math.cos(U2);
         C = K1 * Math.cos(U2) - K;
@@ -216,7 +216,7 @@ public class Turret extends SubSystem {
             shootPower = shootPID.calculate(targetRPM,rpm);
         }
         diff = Math.abs(targetRPM - rpm);
-        if (hoodRpmDropCompensation<6 && diff >160) {
+        if (hoodRpmDropCompensation<6) {
             hoodRpmDropCompensation =  (((lowHoodAngle2 - lowHoodAngle1 + lowHoodAngle3 - lowHoodAngle2) / 2) / ((lowPower2 - lowPower1 + lowPower3 - lowPower2) / 2)) * -diff / 2;
         }else {
             hoodRpmDropCompensation = 0;
@@ -253,10 +253,6 @@ public class Turret extends SubSystem {
 
                 break;
         }
-        if(robotY>220){
-            turrofset = 2.5;
-
-        }
 
         // *** Turret angle adjustment
         turretAngle = Math.toDegrees(-Math.atan2(deltaX,deltaY) + robotHeading);
@@ -281,22 +277,25 @@ public class Turret extends SubSystem {
         }
 
         if (toggle){
-            targetRPM = interpolatedPower + mapOfset ;
-            setHoodDegrees(Math.max(25, interpolatedHoodAngle + hoodRpmDropCompensation/0.7 )); // Set hood based on interpolation
+//            targetRPM = interpolatedPower + mapOfset ;
+//            setHoodDegrees(interpolatedHoodAngle ); // Set hood based on interpolation
+
+//
+
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
-        } else if (Auto) {
-            targetRPM = interpolatedPower = mapOfset;
-            setHoodDegrees( Math.max(25, interpolatedHoodAngle + hoodRpmDropCompensation/0.7)); // Set hood based on interpolation
+        } else if (Auto && toggle) {
+//            targetRPM = interpolatedPower +mapOfset ;
+//            setHoodDegrees(Math.min(lowHoodAngle1,  interpolatedHoodAngle )); // Set hood based on interpolation
 
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
-            turretTurnOne.setPosition(((turretAngle+ turrofset) / gearRatio));
-            turretTurnTwo.setPosition(((turretAngle+ turrofset) / gearRatio));
+            turretTurnOne.setPosition(((turretAngle) / gearRatio));
+            turretTurnTwo.setPosition(((turretAngle) / gearRatio));
 
         } else {
             shooterMotorTwo.update(0);
