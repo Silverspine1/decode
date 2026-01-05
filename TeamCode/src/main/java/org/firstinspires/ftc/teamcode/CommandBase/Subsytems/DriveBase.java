@@ -104,6 +104,18 @@ public class DriveBase extends SubSystem {
 
         return driveCommand;
     }
+    public void driveFieldCentric(double drive, double strafe, double turn, double robotHeading) {
+        // Standard rotation matrix formula to rotate translation into field space
+        // x' = x cos θ - y sin θ
+        // y' = x sin θ + y cos θ
+        // Note: We use -robotHeading to convert robot-space to field-space
+        double rotX = strafe * Math.cos(-robotHeading) - drive * Math.sin(-robotHeading);
+        double rotY = strafe * Math.sin(-robotHeading) + drive * Math.cos(-robotHeading);
+
+        // Pass the rotated values to your existing drive powers method
+        // Assuming your drivePowers method takes (y, turn, x)
+        drivePowers(rotY, turn, rotX);
+    }
 
     LambdaCommand driveCommand = new LambdaCommand(
             () -> {

@@ -39,7 +39,7 @@ public class Turret extends SubSystem {
     public double robotY;
     public double robotHeading;
 
-    public double targetRPM = 0;
+    public double targetRPM = 1500;
     public double rpm;
     public double mapOfset = 0;
     public double turrofset= 0;
@@ -277,8 +277,8 @@ public class Turret extends SubSystem {
         }
 
         if (toggle){
-            targetRPM = interpolatedPower + mapOfset ;
-            setHoodDegrees(interpolatedHoodAngle ); // Set hood based on interpolation
+//            targetRPM = interpolatedPower + mapOfset ;
+//            setHoodDegrees(interpolatedHoodAngle ); // Set hood based on interpolation
 
 //
 
@@ -288,8 +288,8 @@ public class Turret extends SubSystem {
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto && toggle) {
-            targetRPM = interpolatedPower +mapOfset ;
-            setHoodDegrees(Math.min(lowHoodAngle1,  interpolatedHoodAngle )); // Set hood based on interpolation
+//            targetRPM = interpolatedPower +mapOfset ;
+//            setHoodDegrees(Math.min(lowHoodAngle1,  interpolatedHoodAngle )); // Set hood based on interpolation
 
 
             shooterMotorOne.update(shootPower);
