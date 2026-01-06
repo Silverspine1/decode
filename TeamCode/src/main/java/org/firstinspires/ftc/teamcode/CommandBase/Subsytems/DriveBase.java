@@ -109,12 +109,12 @@ public class DriveBase extends SubSystem {
         // x' = x cos θ - y sin θ
         // y' = x sin θ + y cos θ
         // Note: We use -robotHeading to convert robot-space to field-space
-        double rotX = strafe * Math.cos(-robotHeading) - drive * Math.sin(-robotHeading);
-        double rotY = strafe * Math.sin(-robotHeading) + drive * Math.cos(-robotHeading);
+        double rotX = strafe * Math.cos(robotHeading) - drive * Math.sin(robotHeading);
+        double rotY = strafe * Math.sin(robotHeading) + drive * Math.cos(robotHeading);
 
         // Pass the rotated values to your existing drive powers method
         // Assuming your drivePowers method takes (y, turn, x)
-        drivePowers(rotY, turn, rotX);
+        drivePowers(-rotY, turn, rotX);
     }
 
     LambdaCommand driveCommand = new LambdaCommand(
@@ -134,13 +134,7 @@ public class DriveBase extends SubSystem {
             () -> true
     );
 
-    public Command driveFieldCentric(double vertical, double turn, double strafe){
-        this.vertikal = -vertical;
-        this.strafe = strafe;
-        this.turn = turn;
 
-        return driveField;
-    }
 
     public void setAll(double power){
         LF.update(power);
@@ -149,30 +143,7 @@ public class DriveBase extends SubSystem {
         RB.update(power);
     }
 
-    LambdaCommand driveField = new LambdaCommand(
-            () -> {
-            },
-            () -> {
-                double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
-
-                double heading = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.RADIANS);
-
-                double rotX = vertikal * Math.cos(-heading) - strafe * Math.sin(-heading);
-                double rotY = vertikal * Math.sin(-heading) + strafe * Math.cos(-heading);
-
-
-                LF.update((rotX-rotY-turn)/denominator);
-                RF.update((rotX+rotY+turn)/denominator);
-                LB.update((rotX+rotY-turn)/denominator);
-                RB.update((rotX-rotY+turn)/denominator);
-
-
-            },
-            () -> true
-
-
-    );
 
 
 
