@@ -87,9 +87,9 @@ public class First_Tele extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-//        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
 
-        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger-gamepad1.right_trigger), -gamepad1.right_stick_x);
+//        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger-gamepad1.right_trigger), -gamepad1.right_stick_x);
 
 
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){

@@ -88,7 +88,7 @@ public class DriveBase extends SubSystem {
     public void execute() {
         executeEX();
         if (!tele){
-            speed = 2;
+            speed = 1.6;
         }
         if (engage){
             pto1.setPosition(0.64);

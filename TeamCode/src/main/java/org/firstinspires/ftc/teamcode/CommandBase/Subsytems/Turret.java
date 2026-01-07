@@ -64,14 +64,14 @@ public class Turret extends SubSystem {
     double lowHoodAngle3 = 42.6;
     double lowPower1 = 2039;
     double lowPower2 = 2533;
-    double lowPower3 = 3067;
+    double lowPower3 = 3127;
     // Medium power settings
     double mediumHoodAngle1 = 21;
     double mediumHoodAngle2 = 45;
     double mediumHoodAngle3 = 22;
     double mediumPower1 = 2306;
     double mediumPower2 = 2683;
-    double mediumPower3 = 3451;
+    double mediumPower3 = 3401;
     double turretLast = 0;
 
 
@@ -216,7 +216,7 @@ public class Turret extends SubSystem {
             shootPower = shootPID.calculate(targetRPM,rpm);
         }
         diff = Math.abs(targetRPM - rpm);
-        if (hoodRpmDropCompensation<6 && diff >160) {
+        if (hoodRpmDropCompensation<6 && diff >130) {
             hoodRpmDropCompensation =  (((lowHoodAngle2 - lowHoodAngle1 + lowHoodAngle3 - lowHoodAngle2) / 2) / ((lowPower2 - lowPower1 + lowPower3 - lowPower2) / 2)) * -diff / 2;
         }else {
             hoodRpmDropCompensation = 0;
@@ -254,7 +254,7 @@ public class Turret extends SubSystem {
                 break;
         }
         if(robotY>220){
-            turrofset = 2.5;
+            turrofset = 4;
 
         }
 
@@ -282,7 +282,7 @@ public class Turret extends SubSystem {
 
         if (toggle){
             targetRPM = interpolatedPower + mapOfset ;
-            setHoodDegrees(Math.max(25, interpolatedHoodAngle + hoodRpmDropCompensation/0.7 )); // Set hood based on interpolation
+            setHoodDegrees(Math.max(25, interpolatedHoodAngle  )); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
@@ -290,7 +290,7 @@ public class Turret extends SubSystem {
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto) {
             targetRPM = interpolatedPower = mapOfset;
-            setHoodDegrees( Math.max(25, interpolatedHoodAngle + hoodRpmDropCompensation/0.7)); // Set hood based on interpolation
+            setHoodDegrees( Math.max(25, interpolatedHoodAngle + hoodRpmDropCompensation/0.4)); // Set hood based on interpolation
 
 
             shooterMotorOne.update(shootPower);
