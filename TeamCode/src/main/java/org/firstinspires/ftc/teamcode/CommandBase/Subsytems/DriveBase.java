@@ -140,13 +140,7 @@ public class DriveBase extends SubSystem {
             () -> true
     );
 
-    public Command driveFieldCentric(double vertical, double turn, double strafe){
-        this.vertikal = -vertical;
-        this.strafe = strafe;
-        this.turn = turn;
 
-        return driveField;
-    }
 
     public void setAll(double power){
         LF.update(power);
@@ -155,30 +149,15 @@ public class DriveBase extends SubSystem {
         RB.update(power);
     }
 
-    LambdaCommand driveField = new LambdaCommand(
-            () -> {
-            },
-            () -> {
-                double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+    public void driveFieldCentric(double drive, double strafe, double turn, double robotHeading) {
+        // Rotate the movement direction counter to the robot's rotation
+        // to make it field-centric (relative to driver, not robot)
+        double rotatedStrafe = strafe * Math.cos(-robotHeading) - drive * Math.sin(-robotHeading);
+        double rotatedDrive = strafe * Math.sin(-robotHeading) + drive * Math.cos(-robotHeading);
 
-
-                double heading = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.RADIANS);
-
-                double rotX = vertikal * Math.cos(-heading) - strafe * Math.sin(-heading);
-                double rotY = vertikal * Math.sin(-heading) + strafe * Math.cos(-heading);
-
-
-                LF.update((rotX-rotY-turn)/denominator);
-                RF.update((rotX+rotY+turn)/denominator);
-                LB.update((rotX+rotY-turn)/denominator);
-                RB.update((rotX-rotY+turn)/denominator);
-
-
-            },
-            () -> true
-
-
-    );
+        // Pass the rotated values to the robot-centric drive command
+        drivePowers(rotatedDrive, turn, rotatedStrafe);
+    }
 
 
 
