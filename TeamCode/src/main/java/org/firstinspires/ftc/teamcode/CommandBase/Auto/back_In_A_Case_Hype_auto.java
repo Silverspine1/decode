@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -21,9 +19,10 @@ import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
+
 @Autonomous
 
-public class back_In_A_Case extends OpModeEX {
+public class back_In_A_Case_Hype_auto extends OpModeEX {
     pathsManager paths =new pathsManager(new RobotConfig(0.022, 0.006, 0.028, 0.007, 0.06, 0.005, 0.075, 0.005, 0.022, 0.0005, 0.012, 0.002, 200, 173, 120, 280));
 
 
@@ -238,16 +237,14 @@ public class back_In_A_Case extends OpModeEX {
                 }
 
                 if (follow.isFinished(10,10) && !built && shootTime.milliseconds() > shootWait && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo || follow.isFinished(10,10) && !built && ballShot && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo  ){
-                follow.setPath(paths.returnPath("collect2"));
-                follow.usePathHeadings(true);
-                follow.setHeadingLookAheadDistance(100);
-                follow.setHeadingOffset(90);
+
                 pathing = true;
                 intake.InTake = true;
+                targetHeading = 270;
 
                 built = true;
                 intake.block = true;
-                state = AutoState.collect2;
+                state = AutoState.backCollect;
             }
         break;
         case collect2:

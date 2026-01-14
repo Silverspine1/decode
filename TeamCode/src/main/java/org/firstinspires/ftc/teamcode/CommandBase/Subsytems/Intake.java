@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
@@ -26,6 +27,8 @@ public class Intake extends SubSystem {
     public boolean block = true;
     public boolean InTake = false;
     public boolean reverse = false;
+    ElapsedTime blockTime = new ElapsedTime();
+
 
     public int ballCount = 0;
 
@@ -78,12 +81,14 @@ public class Intake extends SubSystem {
         updateBallCount();
 
 
-        if (block) {
+        if (block && blockTime.milliseconds() > 100) {
             intakeBlocker.setPosition(0.53);
             intakePTO.setPosition(0.37);
-        } else {
+        } else if (!block){
             intakeBlocker.setPosition(0.39);
             intakePTO.setPosition(0.52);
+            blockTime.reset();
+
         }
 
         if (InTake) {

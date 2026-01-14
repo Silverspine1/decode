@@ -30,7 +30,7 @@ public class DriveBase extends SubSystem {
     Servo pto1;
     Servo pto2;
 
-    double speed = 1;
+    public double speed = 1.3;
     public boolean engage = false;
 
 
@@ -87,9 +87,7 @@ public class DriveBase extends SubSystem {
     @Override
     public void execute() {
         executeEX();
-        if (!tele){
-            speed = 1.6;
-        }
+
         if (engage){
             pto1.setPosition(0.64);
             pto2.setPosition(0.32);
