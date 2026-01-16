@@ -118,7 +118,7 @@ public class Turret extends SubSystem {
 
 
 
-    public PIDController shootPID = new PIDController(0.003,0.0005,0.00);
+    public PIDController shootPID = new PIDController(0.004,0.000,0.00);
     public Turret(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
     }
@@ -212,10 +212,6 @@ public class Turret extends SubSystem {
         rpm = ((shooterMotorOne.getVelocity()/28)*60);
 
         shootPower = Math.max(0,shootPID.calculate(targetRPM,rpm));
-        if (!toggle){
-            shootPID.reset();
-
-        }
 
         diff = Math.abs(targetRPM - rpm);
         if (hoodRpmDropCompensation<6 && diff >130) {
