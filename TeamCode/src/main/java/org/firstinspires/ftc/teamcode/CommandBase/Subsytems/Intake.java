@@ -100,7 +100,7 @@ public class Intake extends SubSystem {
             secondIntakeMotor.update(0);
         }
         if (reverse){
-            intakeMotor.update(1);
+//            intakeMotor.update(1);
 
         }
 

@@ -180,7 +180,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
 
         if (visionCollect){
 
-            driveBase.drivePowers( Math.pow(processor.distanceCm / 45,2), headingPID.calculate(-processor.hAngleDeg), 0);
+            driveBase.drivePowers( Math.pow(processor.distanceCm / 65,2), headingPID.calculate(-processor.hAngleDeg), 0);
             intake.block = true;
             intake.InTake = true;
 
@@ -240,7 +240,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
 
                 pathing = true;
                 intake.InTake = true;
-                targetHeading = 270;
+                targetHeading = 280;
 
                 built = true;
                 intake.block = true;
@@ -331,23 +331,23 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
 
 
                 }
-                if (built && maxWait.milliseconds() < 1800 || intake.ballCount>2){
+                if (built && maxWait.milliseconds() < 2200 || intake.ballCount>2){
                     visionCollect = true;
                     intake.block = true;
 
                 }
-                if (built && maxWait.milliseconds() > 1800|| intake.ballCount>2 ){
+                if (built && maxWait.milliseconds() > 2200|| intake.ballCount>2 ){
                     visionCollect = false;
                 }
                 //|| intake.ballCount>2
 
 
-                if ( built && maxWait.milliseconds() > 1800 || intake.ballCount>2 && built ){
+                if ( built && maxWait.milliseconds() > 2200 || intake.ballCount>2 && built ){
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath("driveToShootBack"));
                     follow.usePathHeadings(false);
                     visionCollect = false;
-                    targetHeading = 270;
+                    targetHeading = 280;
                     ballShot = false;
                     pathing = true;
                     built = false;
@@ -373,17 +373,18 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
 
                 break;
             case backCollect:
-                if (built && maxWait.milliseconds() < 1800 || intake.ballCount>2){
+                if (built && maxWait.milliseconds() < 2200 || intake.ballCount>2){
                     visionCollect = true;
                 }
-                if (built && maxWait.milliseconds() > 1800 || intake.ballCount>2){
+                if (built && maxWait.milliseconds() > 2200 || intake.ballCount>2){
                     visionCollect = false;
                 }
 
-                if (built && maxWait.milliseconds() > 1800 || intake.ballCount>2 && built ){
+                if (built && maxWait.milliseconds() > 2200 || intake.ballCount>2 && built ){
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath("driveToShootBack"));
                     ballShot = false;
+                    targetHeading = 280;
 
 
                     pathing = true;

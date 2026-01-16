@@ -128,12 +128,14 @@ public class DriveBase extends SubSystem {
                 LB.update((vertikal + (strafe ) - turn) / denominator);
                 RB.update((vertikal - (strafe ) + turn) / denominator);
             }else {
-//                LF.update((vertikal - (strafe) - turn) / denominator);
-//                RF.update((vertikal + (strafe) + turn) / denominator);
+                LF.update((vertikal - (strafe) - turn) / denominator);
+                RF.update((vertikal + (strafe) + turn) / denominator);
+                LB.update(0);
+                RB.update(0);
             }
-
-//                System.out.println("vertikal power" + vertikal);
-//                System.out.println("Left front power" + LF.getPower());
+//
+                System.out.println("vertikal power" + vertikal);
+                System.out.println("Left front power" + LF.getPower());
             },
             () -> true
     );
