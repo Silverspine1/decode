@@ -164,7 +164,7 @@ public class First_Tele extends OpModeEX {
             blue = true;
             turret.targetX = 0;
             gamepad1.rumble(800);
-            turret.turrofset = - 4;
+            turret.turrofset = 0;
 
 
         }
