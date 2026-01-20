@@ -24,7 +24,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 
 public class back_In_A_Case extends OpModeEX {
-    pathsManager paths =new pathsManager(new RobotConfig(0.022, 0.006, 0.028, 0.007, 0.06, 0.005, 0.075, 0.005, 0.022, 0.0005, 0.012, 0.002, 200, 173, 120, 280));
+    pathsManager paths =new pathsManager(new RobotConfig(0.022, 0.006, 0.028, 0.007, 0.06, 0.005, 0.075, 0.005, 0.022, 0.0005, 0.012, 0.002, 200, 173, 80, 140));
 
 
 
@@ -87,22 +87,22 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 190), new Vector2D(55, 220)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(85, 223), new Vector2D(105, 215), new Vector2D(55, 170)),
+            () -> paths.addPoints(new Vector2D(85, 223), new Vector2D(105, 215), new Vector2D(55, 178)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(35, 210), new Vector2D(140, 165)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(140, 155), new Vector2D(62, 148)),
+            () -> paths.addPoints(new Vector2D(140, 155), new Vector2D(70, 148)),
     };
     private final sectionBuilder[] driveToShoot3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(40, 150), new Vector2D(154, 130)),
+            () -> paths.addPoints(new Vector2D(40, 150), new Vector2D(140, 130)),
     };
     private final sectionBuilder[] firstBackCollect = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(110, 300)),
     };
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(142, 329)),
+            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(136, 329)),
     };
     @Override
     public void initEX() {
@@ -181,7 +181,7 @@ public class back_In_A_Case extends OpModeEX {
 
         if (visionCollect){
 
-            driveBase.drivePowers( Math.pow(processor.distanceCm / 65,2), headingPID.calculate(-processor.hAngleDeg), 0);
+            driveBase.drivePowers(0.15 + Math.pow(processor.distanceCm / 65,2), headingPID.calculate(-processor.hAngleDeg), 0);
             intake.block = true;
             intake.InTake = true;
 

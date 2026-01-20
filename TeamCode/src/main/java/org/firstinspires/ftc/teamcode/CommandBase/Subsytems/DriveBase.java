@@ -30,7 +30,7 @@ public class DriveBase extends SubSystem {
     Servo pto1;
     Servo pto2;
 
-    public double speed = 1.3;
+    public double speed = 1;
     public boolean engage = false;
 
 

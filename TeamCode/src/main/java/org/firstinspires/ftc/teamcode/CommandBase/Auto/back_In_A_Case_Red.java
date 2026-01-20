@@ -88,7 +88,7 @@ public class back_In_A_Case_Red extends OpModeEX {
     };
 
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(275, 223), new Vector2D(255, 215), new Vector2D(305, 170)),
+            () -> paths.addPoints(new Vector2D(275, 223), new Vector2D(255, 215), new Vector2D(305, 178)),
     };
 
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
@@ -100,7 +100,7 @@ public class back_In_A_Case_Red extends OpModeEX {
     };
 
     private final sectionBuilder[] driveToShoot3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(320, 150), new Vector2D(206, 130)),
+            () -> paths.addPoints(new Vector2D(320, 150), new Vector2D(212, 130)),
     };
 
     private final sectionBuilder[] firstBackCollect = new sectionBuilder[]{
@@ -108,13 +108,13 @@ public class back_In_A_Case_Red extends OpModeEX {
     };
 
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(218, 329)),
+            () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(226, 329)),
     };
 
     @Override
     public void initEX() {
         // RED starting position: X mirrored (360-169=191), Y same, Heading mirrored (350+180=530, normalized to 170)
-        odometry.startPosition(191, 346, 170);
+        odometry.startPosition(191, 346, 0);
         turret.Auto = true;
         driveBase.tele = false;
         follow.setHeadingOffset(90);
@@ -175,7 +175,7 @@ public class back_In_A_Case_Red extends OpModeEX {
         }
 
         if (visionCollect) {
-            driveBase.drivePowers(Math.pow(processor.distanceCm / 65, 2), headingPID.calculate(-processor.hAngleDeg), 0);
+            driveBase.drivePowers(0.15 + Math.pow(processor.distanceCm / 65,2), headingPID.calculate(-processor.hAngleDeg), 0);
             intake.block = true;
             intake.InTake = true;
         }

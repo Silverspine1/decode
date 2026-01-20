@@ -86,7 +86,7 @@ public class back_In_A_Case_NEX_Red extends OpModeEX {
     };
 
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(275, 223), new Vector2D(255, 215), new Vector2D(305, 170)),
+            () -> paths.addPoints(new Vector2D(275, 223), new Vector2D(255, 215), new Vector2D(305, 178)),
     };
 
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
@@ -106,13 +106,13 @@ public class back_In_A_Case_NEX_Red extends OpModeEX {
     };
 
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(218, 329)),
+            () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(224, 329)),
     };
 
     @Override
     public void initEX() {
         // RED starting position: X mirrored (360-169=191), Y same, Heading mirrored (350+180=530, normalized to 170)
-        odometry.startPosition(191, 346, 170);
+        odometry.startPosition(191, 346, 0);
         turret.Auto = true;
         driveBase.tele = false;
         follow.setHeadingOffset(90);

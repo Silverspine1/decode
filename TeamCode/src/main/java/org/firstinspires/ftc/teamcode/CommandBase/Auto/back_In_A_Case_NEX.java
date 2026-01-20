@@ -86,7 +86,7 @@ public class back_In_A_Case_NEX extends OpModeEX {
             () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 190), new Vector2D(55, 220)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(85, 223), new Vector2D(105, 215), new Vector2D(55, 170)),
+            () -> paths.addPoints(new Vector2D(85, 223), new Vector2D(105, 215), new Vector2D(55, 178)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(35, 210), new Vector2D(140, 165)),
@@ -101,7 +101,7 @@ public class back_In_A_Case_NEX extends OpModeEX {
             () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(110, 300)),
     };
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(142, 329)),
+            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(136, 329)),
     };
     @Override
     public void initEX() {

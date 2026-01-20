@@ -101,7 +101,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(110, 300)),
     };
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(142, 329)),
+            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(136, 329)),
     };
     @Override
     public void initEX() {
@@ -180,7 +180,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
 
         if (visionCollect){
 
-            driveBase.drivePowers( Math.pow(processor.distanceCm / 65,2), headingPID.calculate(-processor.hAngleDeg ), 0);
+            driveBase.drivePowers(0.15 + Math.pow(processor.distanceCm / 65,2), headingPID.calculate(-processor.hAngleDeg), 0);
             intake.block = true;
             intake.InTake = true;
 

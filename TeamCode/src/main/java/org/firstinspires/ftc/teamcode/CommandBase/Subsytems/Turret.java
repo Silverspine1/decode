@@ -52,19 +52,19 @@ public class Turret extends SubSystem {
 
     public double hoodRpmDropCompensation = 0;
     // Common distance points for interpolation
-    double distance1 = 145;
+    double distance1 = 150;
     double distance2 = 234;
     double distance3 = 348;
     double distance4 = 407; // This can be used for extrapolation endpoint
 
 
     // Low power settings
-    double lowHoodAngle1 = 22.65;
-    double lowHoodAngle2 = 39.77;
-    double lowHoodAngle3 = 43.5;
-    double lowPower1 = 1426;
-    double lowPower2 = 1877;
-    double lowPower3 = 2357;
+    double lowHoodAngle1 = 27.6;
+    double lowHoodAngle2 = 35;
+    double lowHoodAngle3 = 40.1;
+    double lowPower1 = 1606;
+    double lowPower2 = 1891;
+    double lowPower3 = 2344;
     // Medium power settings
     double mediumHoodAngle1 = 21;
     double mediumHoodAngle2 = 45;
@@ -252,7 +252,7 @@ public class Turret extends SubSystem {
                 break;
         }
         if(robotY>220){
-            turrofset = 3.5;
+            turrofset = 1;
 
         }
 
@@ -279,16 +279,16 @@ public class Turret extends SubSystem {
         }
 
         if (toggle){
-            targetRPM = interpolatedPower + mapOfset ;
-            setHoodDegrees(Math.max(25, interpolatedHoodAngle)); // Set hood based on interpolation
+//            targetRPM = interpolatedPower + mapOfset;
+//            setHoodDegrees( Math.max(25, interpolatedHoodAngle )); // Set hood based on interpolation
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto) {
-            targetRPM = interpolatedPower = mapOfset;
-            setHoodDegrees( Math.max(25, interpolatedHoodAngle)); // Set hood based on interpolation
+//            targetRPM = interpolatedPower + mapOfset;
+//            setHoodDegrees( Math.max(25, interpolatedHoodAngle)); // Set hood based on interpolation
 
 
             shooterMotorOne.update(shootPower);
