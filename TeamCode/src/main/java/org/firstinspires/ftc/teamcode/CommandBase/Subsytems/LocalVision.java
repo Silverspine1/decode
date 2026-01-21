@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 
-
 import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
@@ -21,26 +20,28 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Config
 public class LocalVision implements VisionProcessor {
 
     public enum TargetColor {
         PURPLE,
-        GREEN
+        GREEN,
+        BOTH  // New option for dual detection
     }
 
     // Dashboard toggles
-    public static boolean SHOW_MASK = false;    // when true: tint mask region on camera
-    public static boolean DRAW_OVERLAY = true;  // when false: no overlays at all
+    public static boolean SHOW_MASK = false;
+    public static boolean DRAW_OVERLAY = true;
 
-    // Downscale factor for processing (1 = no downscale, 2 = half-res, etc.)
-    public static int DOWNSCALE = 2;            // 2 → 640x480 processed as 320x240
+    // Downscale factor
+    public static int DOWNSCALE = 2;
 
-    // Detection params (in downscaled pixels)
+    // Detection params
     public static double MIN_RADIUS_PIXELS = 6.0;
     public static int MORPH_KERNEL_SIZE = 5;
 
-    // HSV ranges
+    // HSV ranges for PURPLE
     public static int PURPLE_H_MIN = 125;
     public static int PURPLE_H_MAX = 155;
     public static int PURPLE_S_MIN = 50;
@@ -48,17 +49,17 @@ public class LocalVision implements VisionProcessor {
     public static int PURPLE_V_MIN = 50;
     public static int PURPLE_V_MAX = 255;
 
+    // HSV ranges for GREEN
     public static int GREEN_H_MIN = 40;
-    public static int GREEN_H_MAX = 90;
+    public static int GREEN_H_MAX = 80;
     public static int GREEN_S_MIN = 50;
     public static int GREEN_S_MAX = 255;
     public static int GREEN_V_MIN = 50;
     public static int GREEN_V_MAX = 255;
 
-    // Outputs
+    // Outputs for the BEST target found (regardless of color)
     public volatile boolean hasTarget = false;
     public volatile TargetColor detectedColor = TargetColor.PURPLE;
-
     public volatile double distanceCm = 0.0;
     public volatile double hAngleDeg = 0.0;
     public volatile double vAngleDeg = 0.0;
@@ -66,10 +67,9 @@ public class LocalVision implements VisionProcessor {
     public volatile double xPosCm = 0.0;
     public volatile double yPosCm = 0.0;
     public volatile double pixelsFromBottom = 0.0;
-    public volatile double radiusPixels = 0.0;  // in full-res pixels
+    public volatile double radiusPixels = 0.0;
 
     private final TargetColor targetColor;
-
 
     // Full image dims
     private int imageWidth = 0;
@@ -79,10 +79,12 @@ public class LocalVision implements VisionProcessor {
     private int smallWidth = 0;
     private int smallHeight = 0;
 
-    // Reused Mats (small)
+    // Reused Mats
     private final Mat smallRgb = new Mat();
     private final Mat smallHsv = new Mat();
-    private final Mat smallMask = new Mat();
+    private final Mat purpleMask = new Mat();
+    private final Mat greenMask = new Mat();
+    private final Mat combinedMask = new Mat();
     private final Mat hierarchy = new Mat();
     private Mat kernel = new Mat();
     private int currentKernelSize = -1;
@@ -90,23 +92,25 @@ public class LocalVision implements VisionProcessor {
     private final MatOfPoint2f contour2f = new MatOfPoint2f();
 
     // Snapshot for drawing
-    private static class FrameAnalysis {
-        boolean hasTarget;
-
-        MatOfPoint bestContourSmall;  // contour in downscaled coords
-
-        double centerXFull;           // full-res coords
+    private static class DetectionResult {
+        TargetColor color;
+        MatOfPoint contourSmall;
+        double centerXFull;
         double centerYFull;
         double radiusFull;
-
         double forwardCm;
         double lateralCm;
         double hAngleDeg;
         double losAngleDeg;
         double vFromCenterDeg;
         double pixelsFromBottom;
+        double scaleX;
+        double scaleY;
+    }
 
-        TargetColor color;
+    private static class FrameAnalysis {
+        boolean hasTarget;
+        DetectionResult bestResult;
         double scaleX;
         double scaleY;
     }
@@ -126,10 +130,9 @@ public class LocalVision implements VisionProcessor {
         int fullW = frame.width();
         int fullH = frame.height();
 
-        FrameAnalysis a = new FrameAnalysis();
-        a.color = targetColor;
+        FrameAnalysis analysis = new FrameAnalysis();
 
-        // Decide downscaled size based on DOWNSCALE
+        // Decide downscaled size
         int ds = Math.max(1, DOWNSCALE);
         int targetW = fullW / ds;
         int targetH = fullH / ds;
@@ -139,54 +142,87 @@ public class LocalVision implements VisionProcessor {
             smallHeight = targetH;
         }
 
-        a.scaleX = (double) fullW / smallWidth;
-        a.scaleY = (double) fullH / smallHeight;
+        analysis.scaleX = (double) fullW / smallWidth;
+        analysis.scaleY = (double) fullH / smallHeight;
 
-        // Resize full frame -> smallRgb (uses interpolation suited for shrinking)
+        // Resize and convert to HSV
         Imgproc.resize(frame, smallRgb, new Size(smallWidth, smallHeight), 0, 0, Imgproc.INTER_AREA);
-
-        // RGB -> HSV on downscaled
         Imgproc.cvtColor(smallRgb, smallHsv, Imgproc.COLOR_RGB2HSV);
 
-        // HSV bounds
-        Scalar lower, upper;
-        if (targetColor == TargetColor.PURPLE) {
-            lower = new Scalar(PURPLE_H_MIN, PURPLE_S_MIN, PURPLE_V_MIN);
-            upper = new Scalar(PURPLE_H_MAX, PURPLE_S_MAX, PURPLE_V_MAX);
-        } else {
-            lower = new Scalar(GREEN_H_MIN, GREEN_S_MIN, GREEN_V_MIN);
-            upper = new Scalar(GREEN_H_MAX, GREEN_S_MAX, GREEN_V_MAX);
+        // Create masks based on target color mode
+        List<DetectionResult> detections = new ArrayList<>();
 
+        if (targetColor == TargetColor.PURPLE || targetColor == TargetColor.BOTH) {
+            DetectionResult purpleResult = detectColor(
+                    TargetColor.PURPLE,
+                    new Scalar(PURPLE_H_MIN, PURPLE_S_MIN, PURPLE_V_MIN),
+                    new Scalar(PURPLE_H_MAX, PURPLE_S_MAX, PURPLE_V_MAX),
+                    fullW, fullH, analysis.scaleX, analysis.scaleY
+            );
+            if (purpleResult != null) {
+                detections.add(purpleResult);
+            }
         }
 
-        // Threshold on downscaled
-        Core.inRange(smallHsv, lower, upper, smallMask);
+        if (targetColor == TargetColor.GREEN || targetColor == TargetColor.BOTH) {
+            DetectionResult greenResult = detectColor(
+                    TargetColor.GREEN,
+                    new Scalar(GREEN_H_MIN, GREEN_S_MIN, GREEN_V_MIN),
+                    new Scalar(GREEN_H_MAX, GREEN_S_MAX, GREEN_V_MAX),
+                    fullW, fullH, analysis.scaleX, analysis.scaleY
+            );
+            if (greenResult != null) {
+                detections.add(greenResult);
+            }
+        }
 
-        // Morphology with reused kernel (still on small image)
+        // Pick the closest target (smallest forward distance)
+        if (detections.isEmpty()) {
+            analysis.hasTarget = false;
+            telemetryUpdateFromAnalysis(analysis);
+            return analysis;
+        }
+
+        DetectionResult best = detections.get(0);
+        for (DetectionResult d : detections) {
+            if (d.forwardCm < best.forwardCm) {
+                best = d;
+            }
+        }
+
+        analysis.hasTarget = true;
+        analysis.bestResult = best;
+
+        telemetryUpdateFromAnalysis(analysis);
+        return analysis;
+    }
+
+    private DetectionResult detectColor(TargetColor color, Scalar lower, Scalar upper,
+                                        int fullW, int fullH, double scaleX, double scaleY) {
+        Mat mask = (color == TargetColor.PURPLE) ? purpleMask : greenMask;
+
+        // Threshold
+        Core.inRange(smallHsv, lower, upper, mask);
+
+        // Morphology
         int kSize = MORPH_KERNEL_SIZE;
         if (kSize < 1) kSize = 1;
         if (kSize != currentKernelSize) {
-            kernel = Imgproc.getStructuringElement(
-                    Imgproc.MORPH_RECT,
-                    new Size(kSize, kSize)
-            );
+            kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(kSize, kSize));
             currentKernelSize = kSize;
         }
-        Imgproc.morphologyEx(smallMask, smallMask, Imgproc.MORPH_OPEN, kernel);
-        Imgproc.morphologyEx(smallMask, smallMask, Imgproc.MORPH_CLOSE, kernel);
+        Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_OPEN, kernel);
+        Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel);
 
-        // Contours on smallMask
+        // Find contours
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(smallMask, contours, hierarchy,
-                Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
         if (contours.isEmpty()) {
-            hasTarget = false;
-            telemetryUpdateFromAnalysis(a);
-            return a;
+            return null;
         }
 
-        // Largest contour
+        // Find largest contour
         MatOfPoint largest = null;
         double maxArea = 0.0;
         for (MatOfPoint c : contours) {
@@ -196,85 +232,75 @@ public class LocalVision implements VisionProcessor {
                 largest = c;
             }
         }
+
         if (largest == null) {
-            hasTarget = false;
-            telemetryUpdateFromAnalysis(a);
-            return a;
+            return null;
         }
 
-        // Min enclosing circle in downscaled coords
+        // Min enclosing circle
         contour2f.fromArray(largest.toArray());
         Point centerSmall = new Point();
         float[] radiusSmall = new float[1];
         Imgproc.minEnclosingCircle(contour2f, centerSmall, radiusSmall);
 
         if (radiusSmall[0] < MIN_RADIUS_PIXELS) {
-            hasTarget = false;
-            telemetryUpdateFromAnalysis(a);
-            return a;
+            return null;
         }
 
-        // Map center/radius back to full-res coordinates
-        double centerXFull = centerSmall.x * a.scaleX;
-        double centerYFull = centerSmall.y * a.scaleY;
-        double radiusFull = radiusSmall[0] * (a.scaleX + a.scaleY) * 0.5; // average scale
-
+        // Scale to full resolution
+        double centerXFull = centerSmall.x * scaleX;
+        double centerYFull = centerSmall.y * scaleY;
+        double radiusFull = radiusSmall[0] * (scaleX + scaleY) * 0.5;
         double pixBottomFull = fullH - centerYFull;
 
-        a.centerXFull = centerXFull;
-        a.centerYFull = centerYFull;
-        a.radiusFull = radiusFull;
-        a.pixelsFromBottom = pixBottomFull;
-        a.bestContourSmall = largest;
-
-        // Ground projection uses full-res center
-        CameraSettings.GroundPosition gp =
-                CameraSettings.projectPixelToGround(centerXFull, centerYFull, fullW, fullH);
+        // Ground projection
+        CameraSettings.GroundPosition gp = CameraSettings.projectPixelToGround(
+                centerXFull, centerYFull, fullW, fullH
+        );
 
         if (!gp.valid) {
-            hasTarget = false;
-            telemetryUpdateFromAnalysis(a);
-            return a;
+            return null;
         }
 
-        a.forwardCm = gp.forwardCm;
-        a.lateralCm = gp.lateralCm;
-        a.hAngleDeg = gp.horizontalAngleDeg;
-        a.losAngleDeg = gp.verticalAngleFromHorizontalDeg;
-        a.vFromCenterDeg = gp.verticalFromCenterDeg;
-        a.hasTarget = true;
+        // Build result
+        DetectionResult result = new DetectionResult();
+        result.color = color;
+        result.contourSmall = largest;
+        result.centerXFull = centerXFull;
+        result.centerYFull = centerYFull;
+        result.radiusFull = radiusFull;
+        result.pixelsFromBottom = pixBottomFull;
+        result.forwardCm = gp.forwardCm;
+        result.lateralCm = gp.lateralCm;
+        result.hAngleDeg = gp.horizontalAngleDeg;
+        result.losAngleDeg = gp.verticalAngleFromHorizontalDeg;
+        result.vFromCenterDeg = gp.verticalFromCenterDeg;
+        result.scaleX = scaleX;
+        result.scaleY = scaleY;
 
-        telemetryUpdateFromAnalysis(a);
-        return a;
+        return result;
     }
 
     @Override
-    public void onDrawFrame(Canvas canvas,
-                            int onscreenWidth,
-                            int onscreenHeight,
-                            float scaleBmpPxToCanvasPx,
-                            float scaleCanvasDensity,
+    public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight,
+                            float scaleBmpPxToCanvasPx, float scaleCanvasDensity,
                             Object userContext) {
 
         FrameAnalysis a = (FrameAnalysis) userContext;
         if (a == null) return;
 
         float scale = scaleBmpPxToCanvasPx;
-
         Paint paint = new Paint();
         paint.setStrokeWidth(2 * scaleCanvasDensity);
-        paint.setAntiAlias(false); // faster
+        paint.setAntiAlias(false);
 
         if (SHOW_MASK) {
-            // Color mask view: we DO NOT clear the canvas.
-            // We draw a translucent tint over all pixels that are in the thresholded region.
-            if (a.bestContourSmall != null) {
+            if (a.bestResult != null) {
                 paint.setStyle(Paint.Style.FILL);
-                // Semi-transparent cyan tint
                 paint.setColor(Color.argb(120, 0, 255, 255));
 
                 Path path = new Path();
-                Point[] pts = a.bestContourSmall.toArray();
+                Point[] pts = a.bestResult.contourSmall.toArray();
                 if (pts.length > 0) {
                     float sx = (float) (scale * a.scaleX);
                     float sy = (float) (scale * a.scaleY);
@@ -292,30 +318,34 @@ public class LocalVision implements VisionProcessor {
                 }
             }
 
-            // Optional: small red dot at center
-            if (a.hasTarget) {
+            if (a.hasTarget && a.bestResult != null) {
                 paint.setStyle(Paint.Style.FILL);
                 paint.setColor(Color.RED);
-                float cx = (float) (a.centerXFull * scale);
-                float cy = (float) (a.centerYFull * scale);
+                float cx = (float) (a.bestResult.centerXFull * scale);
+                float cy = (float) (a.bestResult.centerYFull * scale);
                 canvas.drawCircle(cx, cy, 4 * scaleCanvasDensity, paint);
             }
             return;
         }
 
         if (!DRAW_OVERLAY) {
-            // No overlay drawing at all
             return;
         }
 
-        // NORMAL OVERLAY VIEW
-        if (a.hasTarget) {
+        // Normal overlay
+        if (a.hasTarget && a.bestResult != null) {
             paint.setStyle(Paint.Style.STROKE);
-            paint.setColor(Color.GREEN);
 
-            float cx = (float) (a.centerXFull * scale);
-            float cy = (float) (a.centerYFull * scale);
-            float r = (float) (a.radiusFull * scale);
+            // Color the circle based on detected color
+            if (a.bestResult.color == TargetColor.PURPLE) {
+                paint.setColor(Color.MAGENTA);
+            } else {
+                paint.setColor(Color.GREEN);
+            }
+
+            float cx = (float) (a.bestResult.centerXFull * scale);
+            float cy = (float) (a.bestResult.centerYFull * scale);
+            float r = (float) (a.bestResult.radiusFull * scale);
             canvas.drawCircle(cx, cy, r, paint);
 
             paint.setStyle(Paint.Style.FILL);
@@ -332,9 +362,9 @@ public class LocalVision implements VisionProcessor {
         canvas.drawLine(0, midY, onscreenWidth, midY, paint);
 
         // Helper lines
-        if (a.hasTarget) {
-            float cx = (float) (a.centerXFull * scale);
-            float cy = (float) (a.centerYFull * scale);
+        if (a.hasTarget && a.bestResult != null) {
+            float cx = (float) (a.bestResult.centerXFull * scale);
+            float cy = (float) (a.bestResult.centerYFull * scale);
 
             paint.setColor(Color.YELLOW);
             canvas.drawLine(cx, onscreenHeight, cx, cy, paint);
@@ -346,9 +376,9 @@ public class LocalVision implements VisionProcessor {
 
     private void telemetryUpdateFromAnalysis(FrameAnalysis a) {
         hasTarget = a.hasTarget;
-        detectedColor = a.color;
 
-        if (!a.hasTarget) {
+        if (!a.hasTarget || a.bestResult == null) {
+            detectedColor = targetColor;
             distanceCm = 0;
             hAngleDeg = 0;
             vAngleDeg = 0;
@@ -360,13 +390,15 @@ public class LocalVision implements VisionProcessor {
             return;
         }
 
-        distanceCm = a.forwardCm;
-        hAngleDeg = a.hAngleDeg;
-        vAngleDeg = a.vFromCenterDeg;
-        angleToBallDeg = a.losAngleDeg;
-        xPosCm = a.lateralCm;
-        yPosCm = a.forwardCm;
-        pixelsFromBottom = a.pixelsFromBottom;
-        radiusPixels = a.radiusFull;
+        DetectionResult r = a.bestResult;
+        detectedColor = r.color;
+        distanceCm = r.forwardCm;
+        hAngleDeg = r.hAngleDeg;
+        vAngleDeg = r.vFromCenterDeg;
+        angleToBallDeg = r.losAngleDeg;
+        xPosCm = r.lateralCm;
+        yPosCm = r.forwardCm;
+        pixelsFromBottom = r.pixelsFromBottom;
+        radiusPixels = r.radiusFull;
     }
 }

@@ -137,9 +137,8 @@ public class back_In_A_Case extends OpModeEX {
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-// Create TWO processors - one for each color
-        processor = new LocalVision(LocalVision.TargetColor.PURPLE);
-        LocalVision greenProcessor = new LocalVision(LocalVision.TargetColor.GREEN);
+        processor = new LocalVision(LocalVision.TargetColor.BOTH);
+
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
@@ -156,7 +155,6 @@ public class back_In_A_Case extends OpModeEX {
 
 // Add BOTH processors
         builder.addProcessor(processor);
-        builder.addProcessor(greenProcessor);
 
 // Now actually create the portal
         visionPortal = builder.build();
