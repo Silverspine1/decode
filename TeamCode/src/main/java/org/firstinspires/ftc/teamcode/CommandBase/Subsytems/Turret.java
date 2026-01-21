@@ -13,6 +13,7 @@ import dev.weaponboy.nexus_command_base.Hardware.ServoDegrees;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 
+
 public class Turret extends SubSystem {
     public MotorEx shooterMotorOne = new MotorEx();
     public MotorEx shooterMotorTwo = new MotorEx();
@@ -27,6 +28,8 @@ public class Turret extends SubSystem {
         high
     }
     public LowMediumHigh shootingLevel = LowMediumHigh.low;
+
+
 
     double Xoffset = 16.6;
     double Yoffset = 16.6;
@@ -119,6 +122,7 @@ public class Turret extends SubSystem {
 
 
     public PIDController shootPID = new PIDController(0.004,0.000,0.00);
+
     public Turret(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
     }
@@ -160,6 +164,7 @@ public class Turret extends SubSystem {
 
 
     }
+
 
 
     public void setHoodDegrees(double theta){

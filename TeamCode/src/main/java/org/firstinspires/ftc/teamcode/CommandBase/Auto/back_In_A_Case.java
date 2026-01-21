@@ -65,6 +65,7 @@ public class back_In_A_Case extends OpModeEX {
     double velo = 6;
     double cycleTarget = 4;
     double cycle ;
+    double turn;
 
     ElapsedTime shootTime = new ElapsedTime();
     ElapsedTime intakeoff = new ElapsedTime();
@@ -132,30 +133,35 @@ public class back_In_A_Case extends OpModeEX {
         paths.addNewPath("driveToShootBack");
         paths.buildPath(driveToShootBack);
 
+        Apriltag.limelight.pipelineSwitch(0);
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
+// Create TWO processors - one for each color
         processor = new LocalVision(LocalVision.TargetColor.PURPLE);
+        LocalVision greenProcessor = new LocalVision(LocalVision.TargetColor.GREEN);
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
-        // Camera + settings BEFORE build()
+// Camera + settings BEFORE build()
         builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
 
-        // Set lower resolution here
-        builder.setCameraResolution(new Size(640, 480));   // or 640x480 if you want
+// Set lower resolution here
+        builder.setCameraResolution(new Size(640, 480));
 
         builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
 
-        // Optional: disable RC live view to save CPU
+// Optional: disable RC live view to save CPU
         builder.enableLiveView(false);
 
+// Add BOTH processors
         builder.addProcessor(processor);
+        builder.addProcessor(greenProcessor);
 
-        // Now actually create the portal
+// Now actually create the portal
         visionPortal = builder.build();
 
-        // Dashboard camera stream
+// Dashboard camera stream
         dashboard.startCameraStream(visionPortal, 15);
 
 
@@ -180,8 +186,13 @@ public class back_In_A_Case extends OpModeEX {
         }
 
         if (visionCollect){
+            if (headingPID.calculate(-processor.hAngleDeg) > 0){
+                turn = headingPID.calculate(-processor.hAngleDeg);
+            }else {
+                turn = 0;
+            }
 
-            driveBase.drivePowers(0.15 + Math.pow(processor.distanceCm / 65,2), headingPID.calculate(-processor.hAngleDeg), 0);
+            driveBase.drivePowers(0.15 + Math.pow(processor.distanceCm / 65,2), turn, 0);
             intake.block = true;
             intake.InTake = true;
 

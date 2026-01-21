@@ -41,27 +41,31 @@ public class First_Tele extends OpModeEX {
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
+// Create TWO processors - one for each color
         processor = new LocalVision(LocalVision.TargetColor.PURPLE);
+        LocalVision greenProcessor = new LocalVision(LocalVision.TargetColor.GREEN);
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
-        // Camera + settings BEFORE build()
+// Camera + settings BEFORE build()
         builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
 
-        // Set lower resolution here
-        builder.setCameraResolution(new Size(640, 480));   // or 640x480 if you want
+// Set lower resolution here
+        builder.setCameraResolution(new Size(640, 480));
 
         builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
 
-        // Optional: disable RC live view to save CPU
+// Optional: disable RC live view to save CPU
         builder.enableLiveView(false);
 
+// Add BOTH processors
         builder.addProcessor(processor);
+        builder.addProcessor(greenProcessor);
 
-        // Now actually create the portal
+// Now actually create the portal
         visionPortal = builder.build();
 
-        // Dashboard camera stream
+// Dashboard camera stream
         dashboard.startCameraStream(visionPortal, 15);
 
 
