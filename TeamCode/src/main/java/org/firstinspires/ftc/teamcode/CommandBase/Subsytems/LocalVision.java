@@ -49,7 +49,7 @@ public class LocalVision implements VisionProcessor {
     public static int PURPLE_V_MAX = 255;
 
     public static int GREEN_H_MIN = 40;
-    public static int GREEN_H_MAX = 80;
+    public static int GREEN_H_MAX = 90;
     public static int GREEN_S_MIN = 50;
     public static int GREEN_S_MAX = 255;
     public static int GREEN_V_MIN = 50;
@@ -156,6 +156,7 @@ public class LocalVision implements VisionProcessor {
         } else {
             lower = new Scalar(GREEN_H_MIN, GREEN_S_MIN, GREEN_V_MIN);
             upper = new Scalar(GREEN_H_MAX, GREEN_S_MAX, GREEN_V_MAX);
+
         }
 
         // Threshold on downscaled

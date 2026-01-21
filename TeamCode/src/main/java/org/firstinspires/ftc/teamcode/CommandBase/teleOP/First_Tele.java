@@ -91,7 +91,7 @@ public class First_Tele extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
-//        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
 //        driveBase.driveFieldCentric(gamepad1.right_stick_y, -gamepad1.right_stick_x,gamepad1.right_trigger - gamepad1.left_trigger ,odometry.normilised);
 
 
@@ -103,11 +103,11 @@ public class First_Tele extends OpModeEX {
 //        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.low;
 //        }
-            targetHood = targetHood + gamepad1.right_stick_y/8;
-            turret.setHoodDegrees(targetHood);
-//////
-//////
-        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
+//            targetHood = targetHood + gamepad1.right_stick_y/8;
+//            turret.setHoodDegrees(targetHood);
+////////
+////////
+//        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
 //        if (!intake.InTake && intake.ballCount >2){
 //            intake.reverse = true;
 //        }
@@ -120,7 +120,7 @@ public class First_Tele extends OpModeEX {
 
             gamepad1.rumble(400);
         }else if(intake.ballCount < 1 ){
-//            turret.toggle = false;
+            turret.toggle = false;
         }
 
 
