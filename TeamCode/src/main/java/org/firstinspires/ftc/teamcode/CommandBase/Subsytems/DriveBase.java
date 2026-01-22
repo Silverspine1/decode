@@ -149,14 +149,14 @@ public class DriveBase extends SubSystem {
         RB.update(power);
     }
 
-    public void driveFieldCentric(double drive, double strafe, double turn, double robotHeading) {
-        // Rotate the movement direction counter to the robot's rotation
-        // to make it field-centric (relative to driver, not robot)
-        double rotatedStrafe = strafe * Math.cos(-robotHeading) - drive * Math.sin(-robotHeading);
-        double rotatedDrive = strafe * Math.sin(-robotHeading) + drive * Math.cos(-robotHeading);
 
-        // Pass the rotated values to the robot-centric drive command
-        drivePowers(rotatedDrive, turn, rotatedStrafe);
+    public void driveFieldCentric(double drive, double strafe, double turn, double robotHeading) {
+
+        double rotX = strafe * Math.cos(-robotHeading) - drive * Math.sin(-robotHeading);
+        double rotY = strafe * Math.sin(-robotHeading) + drive * Math.cos(-robotHeading);
+
+
+        drivePowers(rotY, turn, rotX);
     }
 
 
