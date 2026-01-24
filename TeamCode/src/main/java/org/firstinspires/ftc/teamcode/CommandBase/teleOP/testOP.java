@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -20,13 +19,12 @@ import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 @TeleOp
 
 
-public class First_Tele extends OpModeEX {
+public class testOP extends OpModeEX {
     private VisionPortal visionPortal;
     private LocalVision processor;
     double heading;
     boolean captureLastHeading = false;
     boolean brake = false;
-    boolean rest = false;
     double targetHood = 25;
     boolean blue = true;
     boolean togle = false;
@@ -67,6 +65,8 @@ public class First_Tele extends OpModeEX {
 // Dashboard camera stream
         dashboard.startCameraStream(visionPortal, 15);
 
+        turret.testOP = true;
+
 
 
 
@@ -87,30 +87,30 @@ public class First_Tele extends OpModeEX {
     public void loopEX() {
         lastBallCount = currentBallCount;
         currentBallCount = intake.ballCount;
-        turret.robotX = odometry.X() + odometry.getXVelocity()/3;
-        turret.robotY = odometry.Y() + odometry.getYVelocity()/3;
+        turret.robotX = odometry.X();
+        turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
-        if (rest) {
-            driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, gamepad1.left_trigger - gamepad1.right_trigger, odometry.Heading() - 270);
-        }else {
-            driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
-        }
+//        driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, gamepad1.left_trigger -gamepad1.right_trigger,odometry.Heading()- 270);
+
+
+//        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger-gamepad1.right_trigger), -gamepad1.right_stick_x);
+
 
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.medium;
 //        } else if (turret.shootingLevel == Turret.LowMediumHigh.medium &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.low;
 //        }
-//            targetHood = targetHood + gamepad1.right_stick_y/8;
-//            if (intake.ballCount > 1) {
-//                turret.setHoodDegrees(targetHood - 2);
-//            }else {
-//                turret.setHoodDegrees(targetHood);
-//            }
-////////
-////////
-//        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
+            targetHood = targetHood + gamepad1.right_stick_y/8;
+            if (intake.ballCount > 1) {
+                turret.setHoodDegrees(targetHood - 2);
+            }else {
+                turret.setHoodDegrees(targetHood);
+            }
+//////
+//////
+        turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
 //        if (!intake.InTake && intake.ballCount >2){
 //            intake.reverse = true;
 //        }
@@ -165,7 +165,6 @@ public class First_Tele extends OpModeEX {
         if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180 || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
             togle = true;
             gamepad1.rumble(800);
-            rest = true;
 
 
 

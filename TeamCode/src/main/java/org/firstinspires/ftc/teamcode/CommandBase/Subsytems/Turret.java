@@ -53,7 +53,7 @@ public class Turret extends SubSystem {
 
     public double distance;
 
-    public double hoodRpmDropCompensation = 0;
+    public double hoodCompensation = 0;
     // Common distance points for interpolation
     double distance1 = 151;
     double distance2 = 237;
@@ -108,6 +108,7 @@ public class Turret extends SubSystem {
     public boolean spinDown = false;
     public boolean Auto = false;
     public boolean toggle = true;
+    public boolean  testOP = false;
 
 
     double K1 = R1 /R2;
@@ -161,8 +162,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(189);
-        turretTurnTwo.setOffset(189);
+        turretTurnOne.setOffset(180);
+        turretTurnTwo.setOffset(180);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);
@@ -225,11 +226,6 @@ public class Turret extends SubSystem {
         shootPower = Math.max(0,shootPID.calculate(targetRPM,rpm));
 
         diff = Math.abs(targetRPM - rpm);
-        if (hoodRpmDropCompensation<6 && diff >130) {
-            hoodRpmDropCompensation =  (((lowHoodAngle2 - lowHoodAngle1 + lowHoodAngle3 - lowHoodAngle2) / 2) / ((lowPower2 - lowPower1 + lowPower3 - lowPower2) / 2)) * -diff / 2;
-        }else {
-            hoodRpmDropCompensation = 0;
-        }
 //        if (inZone && !zoneResetStop || Auto){
 //            shootingTime.reset();
 //            zoneResetStop = true;
@@ -260,13 +256,11 @@ public class Turret extends SubSystem {
                 // Add logic for high if needed
                 break;
         }
-        if(robotY>220){
-            turrofset = 1;
 
-        }
 
         // *** Turret angle adjustment
         turretAngle = Math.toDegrees(-Math.atan2(deltaX,deltaY) + robotHeading);
+
         if ((turretAngle) > turretLimitAngle ) {
             turretInRange = false;
             turretAngle = 0;
@@ -288,16 +282,17 @@ public class Turret extends SubSystem {
         }
 
         if (toggle){
-            targetRPM = interpolatedPower + mapOfset;
-            setHoodDegrees( Math.max(25, interpolatedHoodAngle )); // Set hood based on interpolation
-
+            if (!testOP) {
+                targetRPM = interpolatedPower + mapOfset;
+                setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation)); // Set hood based on interpolation
+            }
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
             turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
         } else if (Auto) {
             targetRPM = interpolatedPower + mapOfset;
-            setHoodDegrees( Math.max(25, interpolatedHoodAngle)); // Set hood based on interpolation
+            setHoodDegrees( Math.max(17, interpolatedHoodAngle + hoodCompensation)); // Set hood based on interpolation
 
 
             shooterMotorOne.update(shootPower);
