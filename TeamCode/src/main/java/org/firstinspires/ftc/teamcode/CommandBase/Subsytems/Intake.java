@@ -26,8 +26,10 @@ public class Intake extends SubSystem {
 
     public boolean block = true;
     public boolean InTake = false;
+    boolean intakeBeforeBlock = false;
+
     public boolean reverse = false;
-    ElapsedTime blockTime = new ElapsedTime();
+    ElapsedTime intakeTime = new ElapsedTime();
 
 
     public int ballCount = 0;
@@ -81,20 +83,23 @@ public class Intake extends SubSystem {
         updateBallCount();
 
 
-        if (block && blockTime.milliseconds() > 100) {
+        if (block) {
             intakeBlocker.setPosition(0.53);
             intakePTO.setPosition(0.37);
         } else if (!block){
-            intakeBlocker.setPosition(0.39);
+            intakeBlocker.setPosition(0.29);
             intakePTO.setPosition(0.52);
-            blockTime.reset();
+            intakeBeforeBlock = false;
 
         }
 
         if (InTake) {
             intakeMotor.update(-1);
-            secondIntakeMotor.update(-0.6);
+            secondIntakeMotor.update(-0.9);
             reverse = false;
+            if (intakeBeforeBlock){
+                intakeTime.reset();
+            }
         } else {
             intakeMotor.update(0);
             secondIntakeMotor.update(0);
