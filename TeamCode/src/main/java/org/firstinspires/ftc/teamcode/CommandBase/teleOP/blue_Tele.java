@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.CommandBase.AdafruitSensorDriver;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -20,7 +19,7 @@ import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 @TeleOp
 
 
-public class First_Tele extends OpModeEX {
+public class blue_Tele extends OpModeEX {
     private VisionPortal visionPortal;
     private LocalVision processor;
     double heading;
