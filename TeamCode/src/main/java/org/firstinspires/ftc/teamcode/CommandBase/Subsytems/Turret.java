@@ -58,23 +58,31 @@ public class Turret extends SubSystem {
     double distance1 = 151;
     double distance2 = 237;
     double distance3 = 340;
-    double distance4 = 407; // This can be used for extrapolation endpoint
+    double distance4 = 407;
 
 
     // Low power settings
     double lowHoodAngle1 = 30.4;
     double lowHoodAngle2 = 36.99;
     double lowHoodAngle3 = 43.5;
+    double lowHoodAngle4 = 43.5;
+
     double lowPower1 = 1606;
     double lowPower2 = 1806;
     double lowPower3 = 2528;
+    double lowPower4 = 2528;
+
     // Medium power settings
     double mediumHoodAngle1 = 21;
     double mediumHoodAngle2 = 45;
     double mediumHoodAngle3 = 22;
+    double mediumHoodAngle4 = 22;
+
     double mediumPower1 = 2306;
     double mediumPower2 = 2683;
     double mediumPower3 = 3401;
+    double mediumPower4 = 3401;
+
     double turretLast = 0;
 
 
@@ -186,9 +194,9 @@ public class Turret extends SubSystem {
     }
 
 
-    private double interpolateValue(double currentDistance, double d1, double v1, double d2, double v2, double d3, double v3) {
+    private double interpolateValue(double currentDistance, double d1, double v1, double d2, double v2, double d3, double v3, double d4, double v4) {
         if (currentDistance <= d1) {
-            // Before the first point, hold the first value
+            // Before the first point, return the first value (Clamping)
             return v1;
         } else if (currentDistance <= d2) {
             // Between point 1 and 2
@@ -196,14 +204,12 @@ public class Turret extends SubSystem {
         } else if (currentDistance <= d3) {
             // Between point 2 and 3
             return v2 + (v3 - v2) * (currentDistance - d2) / (d3 - d2);
+        } else if (currentDistance <= d4) {
+            // Between point 3 and 4
+            return v3 + (v4 - v3) * (currentDistance - d3) / (d4 - d3);
         } else {
-            // After the last point, extrapolate from the last two points
-            if (d3 - d2 != 0) {
-                double slope = (v3 - v2) / (d3 - d2);
-                return v3 + slope * (currentDistance - d3);
-            } else {
-                return v3; // Fallback if distances are the same
-            }
+            // After the last point, return the last value (Clamping/No extrapolation)
+            return v4;
         }
     }
 
@@ -241,19 +247,17 @@ public class Turret extends SubSystem {
 
         switch (shootingLevel) {
             case low:
-                // Interpolate power for the 'low' setting
-                interpolatedPower = interpolateValue(distance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3);
-                // Interpolate hood angle for the 'low' setting
-                interpolatedHoodAngle = interpolateValue(distance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3);
+                // Pass distance4 and lowPower4/lowHoodAngle4
+                interpolatedPower = interpolateValue(distance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3, distance4, lowPower4);
+                interpolatedHoodAngle = interpolateValue(distance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3, distance4, lowHoodAngle4);
                 break;
             case medium:
-                // Interpolate power for the 'medium' setting
-                interpolatedPower = interpolateValue(distance, distance1, mediumPower1, distance2, mediumPower2, distance3, mediumPower3);
-                // Interpolate hood angle for the 'medium' setting
-                interpolatedHoodAngle = interpolateValue(distance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3);
+                // Pass distance4 and mediumPower4/mediumHoodAngle4
+                interpolatedPower = interpolateValue(distance, distance1, mediumPower1, distance2, mediumPower2, distance3, mediumPower3, distance4, mediumPower4);
+                interpolatedHoodAngle = interpolateValue(distance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3, distance4, mediumHoodAngle4);
                 break;
             case high:
-
+                // Add logic for high if needed
                 break;
         }
         if(robotY>220){
