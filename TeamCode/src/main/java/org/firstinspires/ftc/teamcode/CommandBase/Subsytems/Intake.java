@@ -33,6 +33,7 @@ public class Intake extends SubSystem {
 
 
     public int ballCount = 0;
+    public double intakeRPM = 0;
 
     public Intake(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
@@ -81,16 +82,16 @@ public class Intake extends SubSystem {
         executeEX();
 
         updateBallCount();
+        intakeRPM = secondIntakeMotor.getVelocity();
 
 
         if (block) {
             intakeBlocker.setPosition(0.53);
             intakePTO.setPosition(0.37);
-        } else if (!block){
+        } else if (!block && intakeRPM > 700){
             intakeBlocker.setPosition(0.29);
             intakePTO.setPosition(0.52);
             intakeBeforeBlock = false;
-
         }
 
         if (InTake) {

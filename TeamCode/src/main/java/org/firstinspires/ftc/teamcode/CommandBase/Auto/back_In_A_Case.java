@@ -74,7 +74,7 @@ public class back_In_A_Case extends OpModeEX {
     ElapsedTime ballShotTimer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(170, 330),  new Vector2D(170, 324)),
+            () -> paths.addPoints(new Vector2D(170, 330),  new Vector2D(170, 328)),
     };
 
 
@@ -82,7 +82,7 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(126, 254), new Vector2D(62, 268)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(43, 270), new Vector2D(104, 261), new Vector2D(132, 318)),
+            () -> paths.addPoints(new Vector2D(43, 270), new Vector2D(104, 261), new Vector2D(132, 323)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 190), new Vector2D(68, 210)),
@@ -91,16 +91,17 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(60, 223), new Vector2D(70, 215), new Vector2D(62, 178)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(35, 210), new Vector2D(117, 145)),
+            () -> paths.addPoints(new Vector2D(35, 210), new Vector2D(117, 150)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(140, 155), new Vector2D(87, 146)),
     };
     private final sectionBuilder[] driveToShoot3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(40, 150), new Vector2D(117, 140)),
+            () -> paths.addPoints(new Vector2D(40, 150), new Vector2D(117, 148)),
     };
+
     private final sectionBuilder[] firstBackCollect = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(70, 300)),
+            () -> paths.addPoints(new Vector2D(117, 148), new Vector2D(164, 293), new Vector2D(51, 227)),
     };
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 340)),

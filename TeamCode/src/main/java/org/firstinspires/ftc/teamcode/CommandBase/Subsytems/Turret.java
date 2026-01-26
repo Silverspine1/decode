@@ -256,6 +256,12 @@ public class Turret extends SubSystem {
                 // Add logic for high if needed
                 break;
         }
+        if (robotY > 300) {
+            turrofset = -3;
+        } else {
+            turrofset = 0;
+
+        }
 
 
         // *** Turret angle adjustment

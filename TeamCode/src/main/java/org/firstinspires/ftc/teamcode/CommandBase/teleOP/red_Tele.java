@@ -110,7 +110,7 @@ public class red_Tele extends OpModeEX {
             }
             shooterOffWait.reset();
 
-        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>1000 ){
+        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>500 ){
             turret.toggle = false;
         }
 

@@ -125,7 +125,7 @@ public class blue_Tele extends OpModeEX {
             }
             shooterOffWait.reset();
 
-        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>3000 ){
+        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>500 ){
             turret.toggle = false;
         }
 
@@ -149,6 +149,12 @@ public class blue_Tele extends OpModeEX {
             intake.InTake = true;
         }else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper){
             intake.InTake = false;
+        }
+        if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left){
+            turret.turrofset -= 1;
+        }
+        if (!lastGamepad1.dpad_right  && currentGamepad1.dpad_right){
+            turret.turrofset += 1;
         }
         if (gamepad1.dpad_down){
             intake.block = true;
