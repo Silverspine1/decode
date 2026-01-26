@@ -125,7 +125,7 @@ public class blue_Tele extends OpModeEX {
             }
             shooterOffWait.reset();
 
-        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>1000 ){
+        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>3000 ){
             turret.toggle = false;
         }
 
@@ -161,7 +161,7 @@ public class blue_Tele extends OpModeEX {
             }
         }
 
-        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180 || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
+        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
             togle = true;
             gamepad1.rumble(800);
             rest = true;
@@ -232,6 +232,9 @@ public class blue_Tele extends OpModeEX {
         System.out.println("X: " + odometry.X());
         System.out.println("Y: " + odometry.Y());
         telemetry.addData("ball",intake.ballCount);
+        telemetry.addData("turretservang ",turret.turretAngle/turret.gearRatio +180);
+
+
 
 
 

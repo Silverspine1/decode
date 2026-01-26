@@ -44,10 +44,10 @@ public class Turret extends SubSystem {
 
     public double targetRPM = 0;
     public double rpm;
-    public double mapOfset = -20;
+    public double mapOfset = -120;
     public double turrofset= 0;
     public double turretAngle;
-    final double gearRatio = 0.73;
+    public final double gearRatio = 0.72;
     final double turretLimitAngle =120;
 
 
@@ -58,19 +58,19 @@ public class Turret extends SubSystem {
     double distance1 = 151;
     double distance2 = 237;
     double distance3 = 340;
-    double distance4 = 407;
+    double distance4 = 430;
 
 
     // Low power settings
     double lowHoodAngle1 = 30.4;
     double lowHoodAngle2 = 36.99;
-    double lowHoodAngle3 = 43.5;
-    double lowHoodAngle4 = 43.5;
+    double lowHoodAngle3 = 43.8;
+    double lowHoodAngle4 = 44.9;
 
-    double lowPower1 = 1606;
-    double lowPower2 = 1806;
-    double lowPower3 = 2528;
-    double lowPower4 = 2528;
+    double lowPower1 = 1590;
+    double lowPower2 = 1790;
+    double lowPower3 = 2480;
+    double lowPower4 = 2500;
 
     // Medium power settings
     double mediumHoodAngle1 = 21;
@@ -162,8 +162,8 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(180);
-        turretTurnTwo.setOffset(180);
+        turretTurnOne.setOffset(182);
+        turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         turretTurnOne.setPosition(0);
         turretTurnTwo.setPosition(0);

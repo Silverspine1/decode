@@ -29,6 +29,8 @@
             <RevExternalImu name="imu" port="0" bus="1" />
             <DigitalDevice name="sensor2" port="3"  />
             <DigitalDevice name="sensor3" port="6"  />
+            <Servo name="base" port="2" />
+
 
 
         </LynxModule>

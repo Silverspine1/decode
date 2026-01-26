@@ -36,6 +36,7 @@ public class red_Tele extends OpModeEX {
 
     @Override
     public void initEX() {
+        turret.turrofset = -3;
         turret.targetX = 360;
         turret.toggle = false;
         Apriltag.limelight.pipelineSwitch(0);

@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
+import dev.weaponboy.nexus_command_base.Hardware.ServoDegrees;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
@@ -29,9 +30,13 @@ public class DriveBase extends SubSystem {
     public TouchSensor intakeSensor;
     Servo pto1;
     Servo pto2;
+    ServoDegrees baseServo =new ServoDegrees();
+
 
     public double speed = 1;
     public boolean engage = false;
+    public boolean lift = false;
+
 
 
 
@@ -58,6 +63,10 @@ public class DriveBase extends SubSystem {
         RB.initMotor("RB", getOpMode().hardwareMap);
         pto1 = getOpMode().hardwareMap.get(Servo.class, "pto1");
         pto2 = getOpMode().hardwareMap.get(Servo.class, "pto2");
+        baseServo.initServo("base", getOpMode().hardwareMap);
+        baseServo.setRange(180);
+        baseServo.setDirection(Servo.Direction.REVERSE );
+
 
 
 
@@ -91,11 +100,21 @@ public class DriveBase extends SubSystem {
         if (engage){
             pto1.setPosition(0.64);
             pto2.setPosition(0.32);
+            baseServo.setPosition(35);
+
         } else {
             pto1.setPosition(0.5);
             pto2.setPosition(0.5);
+            baseServo.setPosition(0);
+
 
         }
+//        if (lift){
+//            baseServo.setPosition(90);
+//        }else {
+//            baseServo.setPosition(0);
+//        }
+
 
     }
 
