@@ -86,8 +86,8 @@ public class blue_Tele extends OpModeEX {
     public void loopEX() {
         lastBallCount = currentBallCount;
         currentBallCount = intake.ballCount;
-        turret.robotX = odometry.X() + odometry.getXVelocity()/3;
-        turret.robotY = odometry.Y() + odometry.getYVelocity()/3;
+        turret.robotX = odometry.X() ;
+        turret.robotY = odometry.Y() ;
         turret.robotHeading = odometry.normilised;
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
         if (rest) {
@@ -151,10 +151,10 @@ public class blue_Tele extends OpModeEX {
             intake.InTake = false;
         }
         if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left){
-            turret.turrofset -= 1;
+            turret.turrofset -= 3;
         }
         if (!lastGamepad1.dpad_right  && currentGamepad1.dpad_right){
-            turret.turrofset += 1;
+            turret.turrofset += 3;
         }
         if (gamepad1.dpad_down){
             intake.block = true;
@@ -204,9 +204,7 @@ public class blue_Tele extends OpModeEX {
 
         }
 
-        if (gamepad1.dpad_left){
-            intake.intakeMotor.update(1);
-        }
+
         if (!lastGamepad1.a && currentGamepad1.a && !driveBase.engage){
             driveBase.engage = true;
         }else  if (!lastGamepad1.a && currentGamepad1.a && driveBase.engage){

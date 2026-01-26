@@ -257,9 +257,9 @@ public class Turret extends SubSystem {
                 break;
         }
         if (robotY > 300) {
-            turrofset = -3;
-        } else {
             turrofset = 0;
+        } else {
+            turrofset = 1;
 
         }
 
