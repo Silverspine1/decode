@@ -60,6 +60,9 @@ public class back_In_A_Case extends OpModeEX {
     boolean Preload = false;
     boolean visionCollect = false;
     boolean ballShot = false;
+    boolean move = false;
+    boolean reset = false;
+
     double lookAheadTime = 0;
     double shootWait = 850;
     double velo = 8;
@@ -71,7 +74,7 @@ public class back_In_A_Case extends OpModeEX {
     ElapsedTime intakeoff = new ElapsedTime();
     ElapsedTime maxWait = new ElapsedTime();
     ElapsedTime preload = new ElapsedTime();
-    ElapsedTime ballShotTimer = new ElapsedTime();
+    ElapsedTime gameTime = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(170, 330),  new Vector2D(170, 328)),
@@ -106,12 +109,16 @@ public class back_In_A_Case extends OpModeEX {
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 340)),
     };
+    private final sectionBuilder[] movePath = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
+    };
     @Override
     public void initEX() {
         odometry.startPosition(169, 346, 350);
         turret.Auto = true;
         driveBase.tele= false;
         follow.setHeadingOffset(90);
+
 
         paths.addNewPath("shoot");
         paths.buildPath(shoot);
@@ -133,6 +140,8 @@ public class back_In_A_Case extends OpModeEX {
         paths.buildPath(firstBackCollect);
         paths.addNewPath("driveToShootBack");
         paths.buildPath(driveToShootBack);
+        paths.addNewPath("movePath");
+        paths.buildPath(movePath);
 
         Apriltag.limelight.pipelineSwitch(0);
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -173,6 +182,10 @@ public class back_In_A_Case extends OpModeEX {
         turret.robotHeading = odometry.normilised;
         if (!intake.InTake && intake.ballCount >2){
             intake.reverse = true;
+        }
+        if (!reset){
+            gameTime.reset();
+            reset = true;
         }
 
         if (intakeOff && intakeoff.milliseconds() > 1550 || intakeOff && intake.ballCount >2){
@@ -389,6 +402,13 @@ public class back_In_A_Case extends OpModeEX {
                 }
                 if (built && maxWait.milliseconds() > 2200 || intake.ballCount>2){
                     visionCollect = false;
+                }
+                if (gameTime.milliseconds() > 28000){
+                    built = false;
+                    visionCollect = false;
+                    pathing = true;
+                    follow.setPath(paths.returnPath("movePath"));
+
                 }
 
                 if (built && maxWait.milliseconds() > 2200 || intake.ballCount>2 && built ){
