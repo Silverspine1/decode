@@ -126,6 +126,8 @@ public class Turret extends SubSystem {
     public double T2;
     public double diff = 0;
 
+    public boolean stopTurret = false;
+
 
 
 
@@ -256,9 +258,9 @@ public class Turret extends SubSystem {
                 // Add logic for high if needed
                 break;
         }
-        if (robotY > 300) {
+        if (robotY > 300 && Auto) {
             turrofset = 0;
-        } else {
+        } else if(Auto) {
             turrofset = 1;
 
         }
@@ -303,8 +305,10 @@ public class Turret extends SubSystem {
 
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
-            turretTurnOne.setPosition(((turretAngle+ turrofset) / gearRatio));
-            turretTurnTwo.setPosition(((turretAngle+ turrofset) / gearRatio));
+            if (!stopTurret) {
+                turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
+                turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
+            }
 
         } else {
             shooterMotorTwo.update(0);
