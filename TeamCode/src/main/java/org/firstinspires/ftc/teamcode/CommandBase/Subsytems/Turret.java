@@ -44,8 +44,8 @@ public class Turret extends SubSystem {
 
     public double targetRPM = 0;
     public double rpm;
-    public double mapOfset = -120;
-    public double turrofset= 0;
+    public double mapOfset = 0;
+    public double turrofset= -1;
     public double turretAngle;
     public final double gearRatio = 0.72;
     final double turretLimitAngle =120;
@@ -67,10 +67,10 @@ public class Turret extends SubSystem {
     double lowHoodAngle3 = 43.8;
     double lowHoodAngle4 = 44.9;
 
-    double lowPower1 = 1590;
-    double lowPower2 = 1790;
-    double lowPower3 = 2480;
-    double lowPower4 = 2500;
+    double lowPower1 = 1500;
+    double lowPower2 = 1740;
+    double lowPower3 = 2440;
+    double lowPower4 = 2470;
 
     // Medium power settings
     double mediumHoodAngle1 = 21;
@@ -258,12 +258,7 @@ public class Turret extends SubSystem {
                 // Add logic for high if needed
                 break;
         }
-        if (robotY > 300 && Auto) {
-            turrofset = 0;
-        } else if(Auto) {
-            turrofset = 1;
 
-        }
 
 
         // *** Turret angle adjustment
@@ -296,8 +291,10 @@ public class Turret extends SubSystem {
             }
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
-            turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
-            turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
+            if (!stopTurret) {
+                turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
+                turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
+            }
         } else if (Auto) {
             targetRPM = interpolatedPower + mapOfset;
             setHoodDegrees( Math.max(17, interpolatedHoodAngle + hoodCompensation)); // Set hood based on interpolation

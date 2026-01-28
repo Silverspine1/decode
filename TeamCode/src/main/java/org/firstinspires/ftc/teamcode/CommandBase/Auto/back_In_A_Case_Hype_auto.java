@@ -24,7 +24,8 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 
 public class back_In_A_Case_Hype_auto extends OpModeEX {
-    pathsManager paths =new pathsManager(new RobotConfig(0.022, 0.006, 0.028, 0.007, 0.06, 0.005, 0.075, 0.005, 0.022, 0.0005, 0.012, 0.002, 200, 173, 80, 140));
+    pathsManager paths =new pathsManager(new RobotConfig(0.018, 0.004, 0.020, 0.005, 0.04, 0.004, 0.065, 0.004
+            , 0.022, 0.0005, 0.012, 0.002, 200, 173, 80, 140));
 
 
 
@@ -61,11 +62,11 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
     boolean Preload = false;
     boolean visionCollect = false;
     boolean ballShot = false;
-    boolean move = false;
+    boolean collectDone = false;
     boolean reset = false;
 
     double lookAheadTime = 0;
-    double shootWait = 900;
+    double shootWait = 1200;
     double velo = 8;
     double cycleTarget = 4;
     double cycle ;
@@ -87,7 +88,8 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(126, 254), new Vector2D(62, 268)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(43, 270), new Vector2D(104, 261), new Vector2D(132, 323)),
+            () -> paths.addPoints(new Vector2D(43, 270), new Vector2D(104, 261), new Vector2D(132, 332)),
+
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 190), new Vector2D(68, 210)),
@@ -106,16 +108,25 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
     };
 
     private final sectionBuilder[] firstBackCollect = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(117, 148), new Vector2D(164, 293), new Vector2D(80, 334)),
+            () -> paths.addPoints(new Vector2D(117, 148), new Vector2D(164, 293), new Vector2D(70, 330)),
     };
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(110, 340)),
+            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(150, 327)),
     };
     private final sectionBuilder[] firstDriveToShootBack = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(136, 340)),
+            () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(150, 327)),
     };
     private final sectionBuilder[] movePath = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
+    };
+    private final sectionBuilder[] p1 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 338)),
+    };
+    private final sectionBuilder[] p2 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 317)),
+    };
+    private final sectionBuilder[] p3 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 284)),
     };
     @Override
     public void initEX() {
@@ -144,11 +155,17 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
         paths.addNewPath("firstBackCollect");
         paths.buildPath(firstBackCollect);
         paths.addNewPath("firstDriveToShootBack");
-        paths.buildPath(firstDriveToShootBack);
+        paths.buildPath(firstDriveToShootBack,100);
         paths.addNewPath("driveToShootBack");
-        paths.buildPath(driveToShootBack);
+        paths.buildPath(driveToShootBack, 100);
         paths.addNewPath("movePath");
         paths.buildPath(movePath);
+        paths.addNewPath("p1");
+        paths.buildPath(p1);
+        paths.addNewPath("p2");
+        paths.buildPath(p2);
+        paths.addNewPath("p3");
+        paths.buildPath(p3);
 
         Apriltag.limelight.pipelineSwitch(0);
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -195,7 +212,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             reset = true;
         }
 
-        if (intakeOff && intakeoff.milliseconds() > 300 || intakeOff && intake.ballCount >2){
+        if (intakeOff && intakeoff.milliseconds() > 1200 || intakeOff && intake.ballCount >2){
             intake.InTake = false;
             intakeOff = false;
 
@@ -205,10 +222,26 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
         }
 
         if (visionCollect){
-            turn = headingPID.calculate(-processor.hAngleDeg);
+            if (processor.hAngleDeg >8){
+                follow.setPath(paths.returnPath("p3"));
+                pathing = true;
+                targetHeading = 270;
+            } else if (processor.hAngleDeg <8) {
+                follow.setPath(paths.returnPath("p1"));
+                pathing = true;
+                targetHeading = 270;
+
+            }else {
+                follow.setPath(paths.returnPath("p2"));
+                pathing = true;
+                targetHeading = 270;
+
+            }
+            if (follow.isFinished(5,5)){
+                collectDone = true;
+            }
 
 
-            driveBase.drivePowers(forward.calculate(processor.distanceCm + 5), turn/1.5, 0);
             intake.block = true;
             intake.InTake = true;
 
@@ -266,15 +299,15 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
 
                 if (follow.isFinished(10,10) && !built && shootTime.milliseconds() > shootWait && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo || follow.isFinished(10,10) && !built && ballShot && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo  ){
-                    targetHeading = 270;
+                    follow.setPath(paths.returnPath("firstBackCollect"));
+                    follow.usePathHeadings(true);
+                    follow.setHeadingLookAheadDistance(100);
+                    follow.setHeadingOffset(90);
                     pathing = true;
-                    intake.InTake = true;
-                    maxWait.reset();
-
-
-                    built = true;
                     intake.block = true;
-                    state = AutoState.backCollect;
+                    built = false;
+                    collectDone = false;
+                    state = AutoState.firstBackCollect;
                 }
                 break;
             case collect2:
@@ -287,6 +320,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     state = AutoState.gate;
                     follow.setPath(paths.returnPath("gate"));
                     follow.usePathHeadings(false);
+                    intakeoff.reset();
                     intakeOff = true;
                     targetHeading = 270;
                     built = true;
@@ -362,20 +396,21 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     forward.reset();
                     intake.block = true;
                     turret.stopTurret = true;
+                    turret.mapOfset = 0;
+
 
 
 
                 }
 
-                //|| intake.ballCount>2
 
-
-                if ( built && maxWait.milliseconds() > 500 || intake.ballCount>2 && built ){
+                if ( built && maxWait.milliseconds() > 1000 || built && collectDone ){
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath("firstDriveToShootBack"));
                     follow.usePathHeadings(false);
                     visionCollect = false;
-                    targetHeading = 270;
+                    targetHeading = 355;
+                    intakeOff = false;
                     ballShot = false;
                     pathing = true;
                     turret.stopTurret = false;
@@ -383,18 +418,20 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
                 break;
             case driveToShootBack:
-                if (pathing && follow.isFinished(12, 12)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 2 ){
+                if (pathing && follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 4  ){
                     pathing = false;
                     shootTime.reset();
                     built = true;
                     intake.block = false;
                     intake.InTake = true;
+                    turret.turrofset += 0.1;
 
                 }
 
 
                 if (built && shootTime.milliseconds() > shootWait ){
                     state = AutoState.backCollect;
+                    collectDone = false;
                     maxWait.reset();
 
                 }
@@ -403,7 +440,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 break;
             case backCollect:
 
-                if (built && maxWait.milliseconds() < 2200 || intake.ballCount>2){
+                if (built && maxWait.milliseconds() < 2200 || intake.ballCount>2 ){
                     visionCollect = true;
                 }
                 if (built && maxWait.milliseconds() > 2200 || intake.ballCount>2){
@@ -421,12 +458,13 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     visionCollect = false;
                 }
 
-                if (built && maxWait.milliseconds() > 2200 || intake.ballCount>2 && built ){
+                if (built && maxWait.milliseconds() > 2200 ||  built && collectDone){
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath("driveToShootBack"));
                     ballShot = false;
-                    targetHeading = 270;
+                    targetHeading = 355;
+                    intakeoff.reset();
                     intakeOff = true;
 
 
@@ -453,7 +491,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));
-        }else if (!visionCollect){
+        }else {
             driveBase.queueCommand(driveBase.drivePowers(0,0,0));
         }
         telemetry.addData("block ",intake.block);
