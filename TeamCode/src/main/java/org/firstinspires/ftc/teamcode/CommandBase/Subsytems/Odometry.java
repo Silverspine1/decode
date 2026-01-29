@@ -40,6 +40,7 @@ public class Odometry extends SubSystem {
     double XVelocity = 0;
     double YVelocity = 0;
     double HVelocity = 0;
+    boolean resetAtStart = false;
 
    public Odometry(OpModeEX opModeEX) {
        registerSubsystem(opModeEX, update);
@@ -118,6 +119,15 @@ public class Odometry extends SubSystem {
     @Override
     public void execute() {
         executeEX();
+        if (!resetAtStart){
+            odo.setPosX(0,DistanceUnit.CM);
+            odo.setPosY(0,DistanceUnit.CM);
+            odo.setHeading(0,AngleUnit.DEGREES);
+            resetAtStart = true;
+
+        }
+
+
     }
 
     public double X() {
@@ -153,6 +163,7 @@ public class Odometry extends SubSystem {
             () -> {
 
                 odo.update();
+
 
                 XVelocity = odo.getVelX(DistanceUnit.CM);
                 YVelocity = odo.getVelY(DistanceUnit.CM);

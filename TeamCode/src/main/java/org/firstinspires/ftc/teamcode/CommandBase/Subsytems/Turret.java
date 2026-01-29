@@ -56,21 +56,21 @@ public class Turret extends SubSystem {
     public double hoodCompensation = 0;
     // Common distance points for interpolation
     double distance1 = 151;
-    double distance2 = 237;
-    double distance3 = 340;
-    double distance4 = 430;
+    double distance2 = 236;
+    double distance3 = 336;
+    double distance4 = 413;
 
 
     // Low power settings
-    double lowHoodAngle1 = 30.4;
-    double lowHoodAngle2 = 36.99;
-    double lowHoodAngle3 = 43.8;
-    double lowHoodAngle4 = 44.9;
+    double lowHoodAngle1 = 35.7;
+    double lowHoodAngle2 = 40.6;
+    double lowHoodAngle3 = 41.8;
+    double lowHoodAngle4 = 41.86;
 
-    double lowPower1 = 1500;
-    double lowPower2 = 1740;
-    double lowPower3 = 2440;
-    double lowPower4 = 2470;
+    double lowPower1 = 1440;
+    double lowPower2 = 1687;
+    double lowPower3 = 2167;
+    double lowPower4 = 2578;
 
     // Medium power settings
     double mediumHoodAngle1 = 21;

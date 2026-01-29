@@ -133,9 +133,9 @@ public class back_In_A_Case_Red extends OpModeEX {
         odometry.startPosition(191, 346, 10);
         turret.Auto = true;
         driveBase.tele= false;
-        follow.setHeadingOffset(-90);
+        follow.setHeadingOffset(90);
         turret.targetX = 360;
-
+        turret.turrofset = -3;
 
         paths.addNewPath("shoot");
         paths.buildPath(shoot);
@@ -286,7 +286,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     state = AutoState.driveToShoot1;
                     follow.setPath(paths.returnPath("driveToShoot1"));
                     follow.usePathHeadings(true);
-                    follow.setHeadingOffset(90);
+                    follow.setHeadingOffset(-90);
                     follow.setHeadingLookAheadDistance(100);
                 }
                 break;
@@ -303,7 +303,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     follow.setPath(paths.returnPath("collect2"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
-                    follow.setHeadingOffset(-90);
+                    follow.setHeadingOffset(90);
                     pathing = true;
                     intake.InTake = true;
 
@@ -332,7 +332,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 if (follow.isFinished(8,8)){
                     state = AutoState.driveToShoot2;
                     follow.setPath(paths.returnPath("driveToShoot2"));
-                    follow.setHeadingOffset(90);
+                    follow.setHeadingOffset(-90);
 
 
                 }
@@ -383,7 +383,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     follow.setPath(paths.returnPath("firstBackCollect"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
-                    follow.setHeadingOffset(-90);
+                    follow.setHeadingOffset(90);
                     pathing = true;
                     intake.block = true;
                     built = false;
