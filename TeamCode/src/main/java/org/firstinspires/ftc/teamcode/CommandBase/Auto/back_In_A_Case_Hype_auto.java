@@ -418,7 +418,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
                 break;
             case driveToShootBack:
-                if (pathing && follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 4  ){
+                if (pathing && follow.isFinished(   10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 4  ){
                     pathing = false;
                     shootTime.reset();
                     built = true;
