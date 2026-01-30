@@ -167,7 +167,7 @@ public class blue_Tele extends OpModeEX {
             }
         }
 
-        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
+        if (!lastGamepad2.a && currentGamepad2.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
             togle = true;
             gamepad1.rumble(800);
             rest = true;
@@ -195,10 +195,10 @@ public class blue_Tele extends OpModeEX {
 
         }
 
-        if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle){
+        if (!lastGamepad2.dpad_up && currentGamepad2.dpad_up && turret.toggle){
             togle = false;
             gamepad1.rumble(800);
-        }else if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up&& !turret.toggle){
+        }else if (!lastGamepad2.dpad_up && currentGamepad2.dpad_up&& !turret.toggle){
             turret.toggle = true;
             gamepad1.rumble(800);
 
@@ -230,7 +230,8 @@ public class blue_Tele extends OpModeEX {
         telemetry.addData("limeY",Apriltag.getY());
         telemetry.addData("limeH",Apriltag.getH());
         telemetry.addData("ball x ",processor.xPosCm);
-        telemetry.addData("ball y ",processor.yPosCm);
+
+        telemetry.addData("block ",intake.block);
 
 
         System.out.println("X: " + odometry.X());

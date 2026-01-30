@@ -201,8 +201,11 @@ public class judge extends OpModeEX {
 
         }
 
-        if (gamepad1.dpad_left){
-            intake.intakeMotor.update(1);
+        if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left){
+            turret.turrofset -= 8;
+        }
+        if (!lastGamepad1.dpad_right  && currentGamepad1.dpad_right){
+            turret.turrofset += 8;
         }
         if (!lastGamepad1.a && currentGamepad1.a && !driveBase.engage){
             driveBase.engage = true;

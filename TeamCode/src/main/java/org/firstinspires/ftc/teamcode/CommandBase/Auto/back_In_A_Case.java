@@ -120,13 +120,13 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 338)),
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 350)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 317)),
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 317)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 284)),
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 284)),
     };
     @Override
     public void initEX() {
@@ -382,6 +382,7 @@ public class back_In_A_Case extends OpModeEX {
                     follow.setPath(paths.returnPath("firstBackCollect"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
+                    turret.stopTurret = true;
                     follow.setHeadingOffset(90);
                     pathing = true;
                     intake.block = true;
@@ -410,7 +411,6 @@ public class back_In_A_Case extends OpModeEX {
                     follow.setPath(paths.returnPath("firstDriveToShootBack"));
                     follow.usePathHeadings(false);
                     visionCollect = false;
-                    targetHeading = 355;
                     intakeoff.reset();
                     intakeOff = true;
                     ballShot = false;
@@ -420,6 +420,10 @@ public class back_In_A_Case extends OpModeEX {
                 }
                 break;
             case driveToShootBack:
+                if (intakeoff.milliseconds() > 400){
+                    targetHeading = 355;
+
+                }
                 if (pathing && follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 4  ){
                     pathing = false;
                     shootTime.reset();

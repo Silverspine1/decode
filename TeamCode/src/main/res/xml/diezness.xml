@@ -13,10 +13,10 @@
         </LynxModule>
         <ServoHub name="Servo Hub 4" port="4">
             <Servo name="turretTurnOne" port="0" />
-            <Servo name="pto1" port="1" />
-            <Servo name="turretTurnTwo" port="2" />
+            <Servo name="pto1" port="2" />
+            <Servo name="turretTurnTwo" port="4" />
             <Servo name="intakePTO" port="3" />
-            <Servo name="intakeBlocker" port="4" />
+            <Servo name="intakeBlocker" port="1" />
             <Servo name="hoodAdjust" port="5" />
         </ServoHub>
         <LynxModule name="Control Hub" port="173">
