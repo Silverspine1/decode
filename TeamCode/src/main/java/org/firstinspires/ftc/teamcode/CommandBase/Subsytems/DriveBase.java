@@ -140,19 +140,19 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
-                 double denominator = Math.max(speed, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
-            if (!engage) {
-                LF.update((vertikal - (strafe) - turn) / denominator);
-                RF.update((vertikal + (strafe) + turn) / denominator);
-                LB.update((vertikal + (strafe ) - turn) / denominator);
-                RB.update((vertikal - (strafe ) + turn) / denominator);
-            }else {
-                LF.update((vertikal - (strafe) - turn) / denominator);
-                RF.update((vertikal + (strafe) + turn) / denominator);
-                LB.update(0);
-                RB.update(0);
-            }
-//
+                double denominator = Math.max(1.0, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+                if (!engage) {
+                    LF.update(((vertikal - strafe - turn) / denominator) * speed);
+                    RF.update(((vertikal + strafe + turn) / denominator) * speed);
+                    LB.update(((vertikal + strafe - turn) / denominator) * speed);
+                    RB.update(((vertikal - strafe + turn) / denominator) * speed);
+                } else {
+                    LF.update(((vertikal - strafe - turn) / denominator) * speed);
+                    RF.update(((vertikal + strafe + turn) / denominator) * speed);
+                    LB.update(0);
+                    RB.update(0);
+                }
+
                 System.out.println("vertikal power" + vertikal);
                 System.out.println("Left front power" + LF.getPower());
             },

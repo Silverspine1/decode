@@ -67,9 +67,9 @@ public class Turret extends SubSystem {
     double lowHoodAngle3 = 41.8;
     double lowHoodAngle4 = 41.86;
 
-    double lowPower1 = 1490;
-    double lowPower2 = 1700;
-    double lowPower3 = 2150;
+    double lowPower1 = 1510;
+    double lowPower2 = 1730;
+    double lowPower3 = 2080;
     double lowPower4 = 2500;
 
     // Medium power settings
@@ -164,7 +164,7 @@ public class Turret extends SubSystem {
 
 
 
-        turretTurnOne.setOffset(182);
+        turretTurnOne.setOffset(181.3);
         turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         turretTurnOne.setPosition(0);

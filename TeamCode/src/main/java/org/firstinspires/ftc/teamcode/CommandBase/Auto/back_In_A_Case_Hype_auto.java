@@ -167,6 +167,9 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
         paths.addNewPath("p3");
         paths.buildPath(p3);
 
+        turret.mapOfset = 30;
+
+
         Apriltag.limelight.pipelineSwitch(0);
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
@@ -396,7 +399,6 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     forward.reset();
                     intake.block = true;
                     turret.stopTurret = true;
-                    turret.mapOfset = 0;
 
 
 
