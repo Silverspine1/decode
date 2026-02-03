@@ -215,11 +215,57 @@ public class Turret extends SubSystem {
             return v4;
         }
     }
+    static double sign(double x1, double y1, double x2, double y2, double x3, double y3) {
+        return (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3);
+    }
+
+    static boolean pointInTriangle(double px, double py,
+                                   double x1, double y1,
+                                   double x2, double y2,
+                                   double x3, double y3) {
+        double d1 = sign(px, py, x1, y1, x2, y2);
+        double d2 = sign(px, py, x2, y2, x3, y3);
+        double d3 = sign(px, py, x3, y3, x1, y1);
+
+        boolean hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        boolean hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+        return !(hasNeg && hasPos);
+    }
+
+    static double[] expandTriangle(double x1, double y1,
+                                   double x2, double y2,
+                                   double x3, double y3, double offset) {
+        double cx = (x1 + x2 + x3) / 3.0;
+        double cy = (y1 + y2 + y3) / 3.0;
+
+        double dx1 = x1 - cx, dy1 = y1 - cy;
+        double len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+        x1 += (dx1 / len1) * offset;
+        y1 += (dy1 / len1) * offset;
+
+        double dx2 = x2 - cx, dy2 = y2 - cy;
+        double len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        x2 += (dx2 / len2) * offset;
+        y2 += (dy2 / len2) * offset;
+
+        double dx3 = x3 - cx, dy3 = y3 - cy;
+        double len3 = Math.sqrt(dx3 * dx3 + dy3 * dy3);
+        x3 += (dx3 / len3) * offset;
+        y3 += (dy3 / len3) * offset;
+
+        return new double[]{x1, y1, x2, y2, x3, y3};
+    }
 
 
-    @Override
+
+
+
+
+        @Override
     public void execute() {
         executeEX();
+
         double deltaX = robotX  - targetX;
         double deltaY = robotY  - targetY;
         distance = Math.hypot(deltaY,deltaX);
@@ -239,6 +285,23 @@ public class Turret extends SubSystem {
 //        }else if(!inZone && !Auto) {
 //            spunUp = false;
 //        }
+            double ROBOT_OFFSET = 10.0;
+
+            double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, ROBOT_OFFSET);
+
+            double[] t2 = expandTriangle(120, 360, 180, 300, 240, 360, ROBOT_OFFSET);
+
+
+
+
+
+            if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5]) ||
+                    pointInTriangle(robotX, robotY, t2[0], t2[1], t2[2], t2[3], t2[4], t2[5])) {
+                inZone = true;
+
+            } else {
+                inZone = false;
+            }
 
 
 
@@ -278,11 +341,7 @@ public class Turret extends SubSystem {
             turretInRange = true;
         }
 
-        if ( (robotX > 160 && robotX < 260 && robotY > 270) || ((robotY + Yoffset < 180)&& (robotX + Xoffset < 180) && (robotX + Xoffset >= robotY + Yoffset))|| ((robotY + Yoffset < 180) && (robotX + Xoffset > 180) && (360- robotX+Xoffset >= robotY + Yoffset)) ){
-            inZone = true;
-        }else {
-            inZone = false;
-        }
+
 
         if (toggle){
             if (!testOP) {

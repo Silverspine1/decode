@@ -128,6 +128,11 @@ public class blue_Tele extends OpModeEX {
         }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>500 ){
             turret.toggle = false;
         }
+        if (turret.inZone && turret.diff < 300){
+            intake.block = false;
+            intake.InTake = true;
+
+        }
 
 
 
