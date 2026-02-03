@@ -25,7 +25,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
 public class back_In_A_Case extends OpModeEX {
     pathsManager paths =new pathsManager(new RobotConfig(0.018, 0.004, 0.020, 0.005, 0.04, 0.004, 0.065, 0.004
-            , 0.022, 0.0005, 0.012, 0.002, 200, 173, 80, 140));
+            , 0.022, 0.0005, 0.012, 0.002, 200, 273, 220, 340));
 
 
 
@@ -155,9 +155,9 @@ public class back_In_A_Case extends OpModeEX {
         paths.addNewPath("firstBackCollect");
         paths.buildPath(firstBackCollect);
         paths.addNewPath("firstDriveToShootBack");
-        paths.buildPath(firstDriveToShootBack,100);
+        paths.buildPath(firstDriveToShootBack);
         paths.addNewPath("driveToShootBack");
-        paths.buildPath(driveToShootBack, 100);
+        paths.buildPath(driveToShootBack);
         paths.addNewPath("movePath");
         paths.buildPath(movePath);
         paths.addNewPath("p1");
@@ -395,7 +395,6 @@ public class back_In_A_Case extends OpModeEX {
                     pathing = false;
                     built = true;
                     maxWait.reset();
-                    forward.reset();
                     intake.block = true;
                     turret.stopTurret = true;
                     turret.mapOfset = 0;
