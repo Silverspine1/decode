@@ -14,13 +14,13 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 public class test_path extends OpModeEX {
     pathsManager paths =new pathsManager(new RobotConfig(0.018, 0.004, 0.020, 0.005, 0.04, 0.004, 0.065, 0.004
-            , 0.022, 0.0005, 0.012, 0.002, 200, 173, 80, 140));
+            , 0.022, 0.0005, 0.012, 0.002, 200, 273, 220, 340));
 
 
 
     follower follow = new follower();
     double targetHeading = 0;
-    boolean pathing = true;
+    boolean pathing = false;
     private final sectionBuilder[] shoot = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(0, 0),  new Vector2D(0, -120)),
     };
@@ -37,6 +37,9 @@ public class test_path extends OpModeEX {
 
     @Override
     public void loopEX() {
+        follow.setPath(paths.returnPath("shoot"));
+        pathing =true;
+
         if (pathing){
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
