@@ -146,7 +146,7 @@ public class red_Tele extends OpModeEX {
             }
         }
 
-        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180 || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
+        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
             togle = true;
             gamepad1.rumble(800);
             rest = true;

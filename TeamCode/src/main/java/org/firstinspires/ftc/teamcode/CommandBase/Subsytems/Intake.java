@@ -88,7 +88,7 @@ public class Intake extends SubSystem {
         if (block && intakeTime.milliseconds() >250) {
             intakeBlocker.setPosition(0.53);
             intakePTO.setPosition(0.37);
-        } else if (!block && intakeRPM > 700){
+        } else if (!block ){
             intakeBlocker.setPosition(0.29);
             intakePTO.setPosition(0.52);
             intakeTime.reset();

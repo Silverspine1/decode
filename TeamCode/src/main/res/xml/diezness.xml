@@ -13,10 +13,10 @@
         </LynxModule>
         <ServoHub name="Servo Hub 4" port="4">
             <Servo name="turretTurnOne" port="0" />
-            <Servo name="pto1" port="1" />
-            <Servo name="turretTurnTwo" port="2" />
+            <Servo name="pto1" port="2" />
+            <Servo name="turretTurnTwo" port="4" />
             <Servo name="intakePTO" port="3" />
-            <Servo name="intakeBlocker" port="4" />
+            <Servo name="intakeBlocker" port="1" />
             <Servo name="hoodAdjust" port="5" />
         </ServoHub>
         <LynxModule name="Control Hub" port="173">
@@ -25,8 +25,8 @@
             <goBILDA5201SeriesMotor name="LF" port="2" />
             <goBILDA5201SeriesMotor name="RF" port="3" />
             <Servo name="pto2" port="1" />
-            <goBILDAPinpoint name="odo" port="0" bus="0" />
-            <RevExternalImu name="imu" port="0" bus="1" />
+            <goBILDAPinpoint name="odo" port="0" bus="2" />
+            <ControlHubImuBHI260AP name="imu" port="0" bus="0"/>
             <DigitalDevice name="sensor2" port="3"  />
             <DigitalDevice name="sensor3" port="6"  />
             <Servo name="base" port="2" />

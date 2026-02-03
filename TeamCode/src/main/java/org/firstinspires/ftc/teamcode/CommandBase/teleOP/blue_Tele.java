@@ -230,7 +230,8 @@ public class blue_Tele extends OpModeEX {
         telemetry.addData("limeY",Apriltag.getY());
         telemetry.addData("limeH",Apriltag.getH());
         telemetry.addData("ball x ",processor.xPosCm);
-        telemetry.addData("ball y ",processor.yPosCm);
+
+        telemetry.addData("block ",intake.block);
 
 
         System.out.println("X: " + odometry.X());

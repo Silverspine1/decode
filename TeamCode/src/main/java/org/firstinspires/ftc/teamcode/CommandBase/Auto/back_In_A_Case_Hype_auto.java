@@ -120,13 +120,13 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 338)),
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 350)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 317)),
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 317)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(70, 284)),
+            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 284)),
     };
     @Override
     public void initEX() {
@@ -166,6 +166,9 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
         paths.buildPath(p2);
         paths.addNewPath("p3");
         paths.buildPath(p3);
+
+        turret.mapOfset = 30;
+
 
         Apriltag.limelight.pipelineSwitch(0);
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -396,7 +399,6 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     forward.reset();
                     intake.block = true;
                     turret.stopTurret = true;
-                    turret.mapOfset = 0;
 
 
 
@@ -409,7 +411,6 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     follow.setPath(paths.returnPath("firstDriveToShootBack"));
                     follow.usePathHeadings(false);
                     visionCollect = false;
-                    targetHeading = 355;
                     intakeOff = false;
                     ballShot = false;
                     pathing = true;
@@ -418,6 +419,10 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
                 break;
             case driveToShootBack:
+                if (intakeoff.milliseconds() > 400){
+                    targetHeading = 355;
+
+                }
                 if (pathing && follow.isFinished(   10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 4  ){
                     pathing = false;
                     shootTime.reset();
