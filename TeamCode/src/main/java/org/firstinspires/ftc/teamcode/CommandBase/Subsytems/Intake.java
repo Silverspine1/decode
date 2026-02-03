@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
@@ -25,9 +26,14 @@ public class Intake extends SubSystem {
 
     public boolean block = true;
     public boolean InTake = false;
+    boolean intakeBeforeBlock = false;
+
     public boolean reverse = false;
+    ElapsedTime intakeTime = new ElapsedTime();
+
 
     public int ballCount = 0;
+    public double intakeRPM = 0;
 
     public Intake(OpModeEX opModeEX){
         registerSubsystem(opModeEX,defaultCommand);
@@ -76,26 +82,30 @@ public class Intake extends SubSystem {
         executeEX();
 
         updateBallCount();
+        intakeRPM = secondIntakeMotor.getVelocity();
 
 
-        if (block) {
+        if (block && intakeTime.milliseconds() >250) {
             intakeBlocker.setPosition(0.53);
             intakePTO.setPosition(0.37);
-        } else {
-            intakeBlocker.setPosition(0.39);
+        } else if (!block && intakeRPM > 700){
+            intakeBlocker.setPosition(0.29);
             intakePTO.setPosition(0.52);
+            intakeTime.reset();
+
         }
 
         if (InTake) {
             intakeMotor.update(-1);
-            secondIntakeMotor.update(-0.6);
+            secondIntakeMotor.update(-0.9);
             reverse = false;
+
         } else {
             intakeMotor.update(0);
             secondIntakeMotor.update(0);
         }
         if (reverse){
-            intakeMotor.update(1);
+//            intakeMotor.update(1);
 
         }
 

@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
+import dev.weaponboy.nexus_command_base.Hardware.ServoDegrees;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
@@ -29,9 +30,13 @@ public class DriveBase extends SubSystem {
     public TouchSensor intakeSensor;
     Servo pto1;
     Servo pto2;
+    ServoDegrees baseServo =new ServoDegrees();
 
-    double speed = 1;
+
+    public double speed = 1;
     public boolean engage = false;
+    public boolean lift = false;
+
 
 
 
@@ -58,6 +63,10 @@ public class DriveBase extends SubSystem {
         RB.initMotor("RB", getOpMode().hardwareMap);
         pto1 = getOpMode().hardwareMap.get(Servo.class, "pto1");
         pto2 = getOpMode().hardwareMap.get(Servo.class, "pto2");
+        baseServo.initServo("base", getOpMode().hardwareMap);
+        baseServo.setRange(180);
+        baseServo.setDirection(Servo.Direction.REVERSE );
+
 
 
 
@@ -87,17 +96,25 @@ public class DriveBase extends SubSystem {
     @Override
     public void execute() {
         executeEX();
-        if (!tele){
-            speed = 2;
-        }
+
         if (engage){
             pto1.setPosition(0.64);
             pto2.setPosition(0.32);
+            baseServo.setPosition(35);
+
         } else {
             pto1.setPosition(0.5);
             pto2.setPosition(0.5);
+            baseServo.setPosition(0);
+
 
         }
+//        if (lift){
+//            baseServo.setPosition(90);
+//        }else {
+//            baseServo.setPosition(0);
+//        }
+
 
     }
 
@@ -142,23 +159,19 @@ public class DriveBase extends SubSystem {
                 LB.update((vertikal + (strafe ) - turn) / denominator);
                 RB.update((vertikal - (strafe ) + turn) / denominator);
             }else {
-//                LF.update((vertikal - (strafe) - turn) / denominator);
-//                RF.update((vertikal + (strafe) + turn) / denominator);
+                LF.update((vertikal - (strafe) - turn) / denominator);
+                RF.update((vertikal + (strafe) + turn) / denominator);
+                LB.update(0);
+                RB.update(0);
             }
-
-//                System.out.println("vertikal power" + vertikal);
-//                System.out.println("Left front power" + LF.getPower());
+//
+                System.out.println("vertikal power" + vertikal);
+                System.out.println("Left front power" + LF.getPower());
             },
             () -> true
     );
 
-    public Command driveFieldCentric(double vertical, double turn, double strafe){
-        this.vertikal = -vertical;
-        this.strafe = strafe;
-        this.turn = turn;
 
-        return driveField;
-    }
 
     public void setAll(double power){
         LF.update(power);
@@ -167,30 +180,17 @@ public class DriveBase extends SubSystem {
         RB.update(power);
     }
 
-    LambdaCommand driveField = new LambdaCommand(
-            () -> {
-            },
-            () -> {
-                double denominator = Math.max(1, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
 
+    public void driveFieldCentric(double drive, double strafe, double turn, double robotHeading) {
+        // Convert degrees → radians  (most common IMU method in FTC)
+        double headingRadians = Math.toRadians(robotHeading);
 
-                double heading = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.RADIANS);
+        // Now rotate the translation vector opposite to the robot's heading
+        double rotX = strafe * Math.cos(-headingRadians) - drive * Math.sin(-headingRadians);
+        double rotY = strafe * Math.sin(-headingRadians) + drive * Math.cos(-headingRadians);
 
-                double rotX = vertikal * Math.cos(-heading) - strafe * Math.sin(-heading);
-                double rotY = vertikal * Math.sin(-heading) + strafe * Math.cos(-heading);
-
-
-                LF.update((rotX-rotY-turn)/denominator);
-                RF.update((rotX+rotY+turn)/denominator);
-                LB.update((rotX+rotY-turn)/denominator);
-                RB.update((rotX-rotY+turn)/denominator);
-
-
-            },
-            () -> true
-
-
-    );
+        drivePowers(rotY, turn, rotX);
+    }
 
 
 
