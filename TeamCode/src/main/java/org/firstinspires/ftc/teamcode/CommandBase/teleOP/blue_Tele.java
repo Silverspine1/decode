@@ -229,6 +229,8 @@ public class blue_Tele extends OpModeEX {
         telemetry.addData("inzone ",turret.inZone);
 
 
+        telemetry.addLine("=== Movement Debug ===");
+        telemetry.addLine(turret.getShootingWhileMovingTelemetry());
 
         telemetry.addData("block ",intake.block);
 
