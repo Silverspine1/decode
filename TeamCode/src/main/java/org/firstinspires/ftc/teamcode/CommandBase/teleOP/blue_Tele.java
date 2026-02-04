@@ -235,6 +235,8 @@ public class blue_Tele extends OpModeEX {
         telemetry.addData("limeY",Apriltag.getY());
         telemetry.addData("limeH",Apriltag.getH());
         telemetry.addData("ball x ",processor.xPosCm);
+        telemetry.addLine("=== Movement Debug ===");
+        telemetry.addLine(turret.getShootingWhileMovingTelemetry());
 
         telemetry.addData("block ",intake.block);
 
