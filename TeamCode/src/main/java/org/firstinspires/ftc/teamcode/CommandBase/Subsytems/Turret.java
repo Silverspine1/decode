@@ -104,7 +104,7 @@ public class Turret extends SubSystem {
     public boolean inZone = false;
 
     public boolean intakeTime;
-    boolean turretInRange = false;
+    public boolean turretInRange = false;
     public boolean spinDown = false;
     public boolean Auto = false;
     public boolean toggle = true;

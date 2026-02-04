@@ -26,7 +26,6 @@
             <goBILDA5201SeriesMotor name="RF" port="3" />
             <Servo name="pto2" port="1" />
             <goBILDAPinpoint name="odo" port="0" bus="2" />
-            <ControlHubImuBHI260AP name="imu" port="0" bus="0"/>
             <DigitalDevice name="sensor2" port="3"  />
             <DigitalDevice name="sensor3" port="6"  />
             <Servo name="base" port="2" />

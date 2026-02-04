@@ -43,7 +43,6 @@ public class DriveBase extends SubSystem {
 
     PIDController headingPID = new PIDController(0.025,0,0.0003);
 
-    public IMU imu;
 
     double vertikal ;
     double turn ;
@@ -74,11 +73,9 @@ public class DriveBase extends SubSystem {
 
 
 
-        imu = getOpMode().hardwareMap.get(IMU.class, "imu");
 
 
 
-        imu.resetYaw();
 
         LF.setDirection(DcMotorSimple.Direction.REVERSE);
         LB.setDirection(DcMotorSimple.Direction.REVERSE);

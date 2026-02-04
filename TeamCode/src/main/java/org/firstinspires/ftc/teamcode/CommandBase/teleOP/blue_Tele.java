@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -90,11 +91,8 @@ public class blue_Tele extends OpModeEX {
         turret.robotY = odometry.Y() ;
         turret.robotHeading = odometry.normilised;
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
-        if (rest) {
-            driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, gamepad1.left_trigger - gamepad1.right_trigger, odometry.Heading() - 270);
-        }else {
-            driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
-        }
+        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
+
 
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
 //            turret.shootingLevel = Turret.LowMediumHigh.medium;
@@ -128,13 +126,6 @@ public class blue_Tele extends OpModeEX {
         }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>500 ){
             turret.toggle = false;
         }
-        if (turret.inZone && turret.diff < 300){
-            intake.block = false;
-            intake.InTake = true;
-
-        }
-
-
 
         if (gamepad1.right_bumper ){
 
@@ -142,7 +133,7 @@ public class blue_Tele extends OpModeEX {
                 intake.InTake = true;
 
 
-        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170){
+        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange){
             intake.InTake = true;
             intake.block = false;
             System.out.println("ball count"+intake.ballCount);
@@ -235,6 +226,9 @@ public class blue_Tele extends OpModeEX {
         telemetry.addData("limeY",Apriltag.getY());
         telemetry.addData("limeH",Apriltag.getH());
         telemetry.addData("ball x ",processor.xPosCm);
+        telemetry.addData("inzone ",turret.inZone);
+
+
 
         telemetry.addData("block ",intake.block);
 
