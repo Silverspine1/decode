@@ -50,11 +50,11 @@ public class Turret extends SubSystem {
     private ElapsedTime velocityTimer = new ElapsedTime();
 
     // Shooting while moving parameters
-    public boolean enableShootingWhileMoving = true;
+    public boolean enableShootingWhileMoving = false;
 
     // Mechanical lookahead time (time for turret/hood to reach target position)
     // Tune this based on your actual mechanism response time
-    public double mechanicalLookaheadTime = 0.15; // seconds (150ms)
+    public double mechanicalLookaheadTime = 0; // seconds (150ms)
 
     // Predicted positions (for debugging/telemetry)
     public double predictedRobotX;
