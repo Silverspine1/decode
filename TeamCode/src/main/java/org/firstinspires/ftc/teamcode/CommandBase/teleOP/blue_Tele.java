@@ -87,9 +87,14 @@ public class blue_Tele extends OpModeEX {
     public void loopEX() {
         lastBallCount = currentBallCount;
         currentBallCount = intake.ballCount;
-        turret.robotX = odometry.X() ;
-        turret.robotY = odometry.Y() ;
-        turret.robotHeading = odometry.normilised;
+        turret.robotX = odometry.X(); // CM
+        turret.robotY = odometry.Y(); // CM
+        turret.robotHeading = odometry.normiliased(); // radians (wrapping)
+
+// If using TurretWithOdometryVelocity (recommended):
+        turret.robotVelocityX = odometry.getXVelocity(); // cm/s
+        turret.robotVelocityY = odometry.getYVelocity(); // cm/s
+        turret.robotAngularVelocity = odometry.getHVelocity(); // rad/s
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
         driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
 
