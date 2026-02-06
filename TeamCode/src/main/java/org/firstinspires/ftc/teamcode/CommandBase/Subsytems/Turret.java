@@ -64,7 +64,7 @@ public class Turret extends SubSystem {
 
     // Minimum speed threshold to use shooting while moving
     // Below this speed, we ignore velocity prediction to prevent jitter
-    public double minimumSpeedForPrediction = 50.0; // mm/s - tune this value
+    public double minimumSpeedForPrediction = 5.0; // cm/s - tune this value (was 50 mm/s = 5 cm/s)
 
     // Velocity filtering to prevent shaking when stationary
     public double velocityDeadband = 1.0; // cm/s - velocities below this are treated as 0
@@ -282,12 +282,17 @@ public class Turret extends SubSystem {
      * @return Array with [effectiveTargetX, effectiveTargetY]
      */
     private double[] calculateEffectiveTarget() {
-        // Calculate robot speed (convert cm/s to mm/s for threshold comparison)
-        double robotSpeed = Math.hypot(robotVelocityX * 10, robotVelocityY * 10); // cm/s to mm/s
-        double totalSpeed = Math.hypot(robotSpeed, Math.abs(robotAngularVelocity * 100));
+        // Calculate robot speed in cm/s (velocities are already in cm/s from odometry)
+        double robotSpeed = Math.hypot(robotVelocityX, robotVelocityY); // cm/s
 
         // If feature is disabled OR robot is barely moving, use current position
-        if (!enableShootingWhileMoving || totalSpeed < minimumSpeedForPrediction) {
+        if (!enableShootingWhileMoving || robotSpeed < minimumSpeedForPrediction) {
+            // Set predicted values to current for telemetry
+            predictedRobotX = robotX;
+            predictedRobotY = robotY;
+            predictedRobotHeading = robotHeading;
+            estimatedFlightTime = 0;
+            totalLookaheadTime = 0;
             return new double[]{targetX, targetY};
         }
 
@@ -390,7 +395,7 @@ public class Turret extends SubSystem {
         double[] effectiveTarget = calculateEffectiveTarget();
 
         // Determine if we should use prediction
-        double robotSpeed = Math.hypot(robotVelocityX * 10, robotVelocityY * 10); // cm/s to mm/s
+        double robotSpeed = Math.hypot(robotVelocityX, robotVelocityY); // cm/s
         boolean usePrediction = enableShootingWhileMoving && (robotSpeed >= minimumSpeedForPrediction);
 
         // Use predicted POSITION for distance/power calculations
@@ -486,14 +491,14 @@ public class Turret extends SubSystem {
      * Get telemetry data for debugging shooting while moving
      */
     public String getShootingWhileMovingTelemetry() {
-        double robotSpeed = Math.hypot(robotVelocityX * 10, robotVelocityY * 10); // cm/s to mm/s
+        double robotSpeed = Math.hypot(robotVelocityX, robotVelocityY); // cm/s
         boolean isPredicting = enableShootingWhileMoving &&
                 robotSpeed >= minimumSpeedForPrediction;
 
         return String.format(
                 "SWM Enabled: %b\n" +
                         "Prediction Active: %b\n" +
-                        "Robot Speed: %.1f mm/s\n" +
+                        "Robot Speed: %.1f cm/s\n" +
                         "Robot Vel: (%.1f, %.1f) cm/s\n" +
                         "Angular Vel: %.3f rad/s\n" +
                         "Flight Time: %.3f s\n" +
