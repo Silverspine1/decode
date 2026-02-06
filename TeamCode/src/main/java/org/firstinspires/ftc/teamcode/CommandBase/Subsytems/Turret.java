@@ -55,7 +55,7 @@ public class Turret extends SubSystem {
     private static final double MIN_UPDATE_TIME = 0.02; // seconds - minimum time between velocity updates
 
     // Shooting while moving parameters
-    public boolean enableShootingWhileMoving = true;
+    public boolean enableShootingWhileMoving = false;
 
     // Mechanical lookahead time (time for turret/hood to reach target position)
     // Tune this based on your actual mechanism response time
@@ -185,10 +185,8 @@ public class Turret extends SubSystem {
         turretTurnOne.setOffset(181.3);
         turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
-        turretTurnOne.setPosition(0);
-        turretTurnTwo.setPosition(0);
+
         hoodAdjust.setOffset(60);
-        setHoodDegrees(31);
 
         // Initialize velocity tracking
         velocityTimer.reset();
