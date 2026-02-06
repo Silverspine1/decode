@@ -14,6 +14,18 @@ import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 
 
+/**
+ * TURRET WITH SHOOTING WHILE MOVING
+ *
+ * This version uses velocities DIRECTLY from your Odometry subsystem
+ * No velocity calculation needed - your Pinpoint already does it!
+ *
+ * Key changes from original:
+ * - Uses odometry.getXVelocity(), getYVelocity(), getHVelocity()
+ * - Handles CM units from odometry (converts internally)
+ * - Properly handles wrapped heading from odometry.normilised()
+ * - Anti-shake filtering with speed threshold
+ */
 public class Turret extends SubSystem {
     public MotorEx shooterMotorOne = new MotorEx();
     public MotorEx shooterMotorTwo = new MotorEx();
@@ -39,31 +51,24 @@ public class Turret extends SubSystem {
     public double robotY;
     public double robotHeading;
 
-    // Robot velocity tracking
-    public double robotVelocityX = 0;
-    public double robotVelocityY = 0;
-    public double robotAngularVelocity = 0;
-
-    private double lastRobotX = 0;
-    private double lastRobotY = 0;
-    private double lastRobotHeading = 0;
-    private ElapsedTime velocityTimer = new ElapsedTime();
-
-    // Velocity filtering to prevent shaking when stationary
-    private static final double VELOCITY_DEADBAND = 10.0; // mm/s - ignore velocities below this
-    private static final double ANGULAR_VELOCITY_DEADBAND = 0.02; // rad/s - ignore angular velocities below this
-    private static final double MIN_UPDATE_TIME = 0.02; // seconds - minimum time between velocity updates
+    // Velocity from odometry (you'll set these from odometry subsystem)
+    public double robotVelocityX = 0; // cm/s from odometry
+    public double robotVelocityY = 0; // cm/s from odometry
+    public double robotAngularVelocity = 0; // rad/s from odometry
 
     // Shooting while moving parameters
-    public boolean enableShootingWhileMoving = false;
+    public boolean enableShootingWhileMoving = true;
 
     // Mechanical lookahead time (time for turret/hood to reach target position)
-    // Tune this based on your actual mechanism response time
     public double mechanicalLookaheadTime = 0.15; // seconds (150ms)
 
     // Minimum speed threshold to use shooting while moving
     // Below this speed, we ignore velocity prediction to prevent jitter
     public double minimumSpeedForPrediction = 50.0; // mm/s - tune this value
+
+    // Velocity filtering to prevent shaking when stationary
+    public double velocityDeadband = 1.0; // cm/s - velocities below this are treated as 0
+    public double angularVelocityDeadband = 0.02; // rad/s - angular velocities below this are treated as 0
 
     // Predicted positions (for debugging/telemetry)
     public double predictedRobotX;
@@ -84,11 +89,19 @@ public class Turret extends SubSystem {
 
     public double hoodCompensation = 0;
 
-    // Common distance points for interpolation
-    double distance1 = 151;
-    double distance2 = 236;
-    double distance3 = 336;
-    double distance4 = 413;
+    // ===== HARDCODED FLIGHT TIMES =====
+    // These are the flight times at your calibrated distances
+    // Tune these based on actual testing
+    public double flightTime1 = 0.35;  // Flight time at distance1 (151cm)
+    public double flightTime2 = 0.45;  // Flight time at distance2 (236cm)
+    public double flightTime3 = 0.55;  // Flight time at distance3 (336cm)
+    public double flightTime4 = 0.65;  // Flight time at distance4 (413cm)
+
+    // Common distance points for interpolation (IN CM to match odometry!)
+    double distance1 = 15.1; // 151mm = 15.1cm
+    double distance2 = 23.6; // 236mm = 23.6cm
+    double distance3 = 33.6; // 336mm = 33.6cm
+    double distance4 = 41.3; // 413mm = 41.3cm
 
     // Low power settings
     double lowHoodAngle1 = 35.7;
@@ -129,7 +142,7 @@ public class Turret extends SubSystem {
 
     public boolean inZone = false;
     public boolean intakeTime;
-    public boolean turretInRange = false;
+    boolean turretInRange = false;
     public boolean spinDown = false;
     public boolean Auto = false;
     public boolean toggle = true;
@@ -185,14 +198,10 @@ public class Turret extends SubSystem {
         turretTurnOne.setOffset(181.3);
         turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
-
+        turretTurnOne.setPosition(0);
+        turretTurnTwo.setPosition(0);
         hoodAdjust.setOffset(60);
-
-        // Initialize velocity tracking
-        velocityTimer.reset();
-        lastRobotX = robotX;
-        lastRobotY = robotY;
-        lastRobotHeading = robotHeading;
+        setHoodDegrees(31);
     }
 
     public void setHoodDegrees(double theta) {
@@ -211,87 +220,32 @@ public class Turret extends SubSystem {
     }
 
     /**
-     * Updates robot velocity based on position changes
-     * Call this method regularly (every loop) for accurate velocity tracking
-     *
-     * IMPORTANT: Your odometry already provides velocity! Consider using those instead.
-     * However, this method gives you control over filtering and deadbands.
-     *
-     * Note: robotHeading from odometry.normilised() wraps to approximately [-π, π]
-     * (it's startHeading + current angle, which can wrap)
+     * Apply deadbands to velocities to filter noise
+     * Call this after getting velocities from odometry
      */
-    private void updateVelocity() {
-        double dt = velocityTimer.seconds();
-
-        // Only update if enough time has passed (prevents division issues and excessive noise)
-        if (dt < MIN_UPDATE_TIME) {
-            return;
+    private void applyVelocityFiltering() {
+        // Filter linear velocities
+        if (Math.abs(robotVelocityX) < velocityDeadband) {
+            robotVelocityX = 0;
+        }
+        if (Math.abs(robotVelocityY) < velocityDeadband) {
+            robotVelocityY = 0;
         }
 
-        if (dt > 0.001) { // Avoid division by zero
-            // Calculate linear velocities in cm/s (your odometry uses CM not MM!)
-            // Convert to mm/s for consistency with distance calculations
-            double rawVelX = ((robotX - lastRobotX) / dt) * 10; // cm/s to mm/s
-            double rawVelY = ((robotY - lastRobotY) / dt) * 10; // cm/s to mm/s
-
-            // Apply deadband to prevent noise when stationary
-            if (Math.abs(rawVelX) < VELOCITY_DEADBAND) {
-                robotVelocityX = 0;
-            } else {
-                robotVelocityX = rawVelX;
-            }
-
-            if (Math.abs(rawVelY) < VELOCITY_DEADBAND) {
-                robotVelocityY = 0;
-            } else {
-                robotVelocityY = rawVelY;
-            }
-
-            // Calculate angular velocity in rad/s
-            // robotHeading wraps, so we need to handle wrap-around
-            double deltaHeading = robotHeading - lastRobotHeading;
-
-            // Handle wrap-around (e.g., from π to -π or vice versa)
-            if (deltaHeading > Math.PI) {
-                deltaHeading -= 2 * Math.PI;
-            } else if (deltaHeading < -Math.PI) {
-                deltaHeading += 2 * Math.PI;
-            }
-
-            double rawAngularVel = deltaHeading / dt;
-
-            // Apply deadband to angular velocity
-            if (Math.abs(rawAngularVel) < ANGULAR_VELOCITY_DEADBAND) {
-                robotAngularVelocity = 0;
-            } else {
-                robotAngularVelocity = rawAngularVel;
-            }
-
-            // Update last values
-            lastRobotX = robotX;
-            lastRobotY = robotY;
-            lastRobotHeading = robotHeading;
-            velocityTimer.reset();
+        // Filter angular velocity
+        if (Math.abs(robotAngularVelocity) < angularVelocityDeadband) {
+            robotAngularVelocity = 0;
         }
     }
-
-    // ===== HARDCODED FLIGHT TIMES =====
-    // These are the flight times at your calibrated distances
-    // Tune these based on actual testing
-    public double flightTime1 = 0.35;  // Flight time at distance1 (151mm)
-    public double flightTime2 = 0.45;  // Flight time at distance2 (236mm)
-    public double flightTime3 = 0.55;  // Flight time at distance3 (336mm)
-    public double flightTime4 = 0.65;  // Flight time at distance4 (413mm)
 
     /**
      * Gets the flight time based on distance using interpolation
      * Uses hardcoded flight times that you tune based on real-world testing
      *
-     * @param currentDistance Distance to target in mm
+     * @param currentDistance Distance to target in CM (not MM!)
      * @return Estimated flight time in seconds
      */
     private double getFlightTime(double currentDistance) {
-        // Use the same interpolation as power/hood angle, but for flight time
         return interpolateValue(
                 currentDistance,
                 distance1, flightTime1,
@@ -303,20 +257,16 @@ public class Turret extends SubSystem {
 
     /**
      * Predicts where the robot will be at a future time based on current velocity
-     * Assumes constant velocity (reasonable for short time periods)
      *
      * @param lookaheadTime Time into the future in seconds
-     * @return Array with [predictedX, predictedY, predictedHeading]
+     * @return Array with [predictedX, predictedY, predictedHeading] in CM and radians
      */
     private double[] predictRobotPosition(double lookaheadTime) {
         double dt = lookaheadTime;
 
-        // Positions are in CM from odometry, velocities are in mm/s
-        // Convert velocities back to cm/s for prediction
-        double predX = robotX + ((robotVelocityX / 10.0) * dt); // mm/s to cm/s
-        double predY = robotY + ((robotVelocityY / 10.0) * dt); // mm/s to cm/s
-
-        // Heading prediction (handles wrapping)
+        // Velocities are in cm/s and rad/s - perfect!
+        double predX = robotX + (robotVelocityX * dt);
+        double predY = robotY + (robotVelocityY * dt);
         double predHeading = robotHeading + (robotAngularVelocity * dt);
 
         // Normalize predicted heading to [-π, π]
@@ -328,27 +278,25 @@ public class Turret extends SubSystem {
 
     /**
      * Calculates the effective target position accounting for robot movement
-     * This is where the robot will be when the ball reaches the target
      *
      * @return Array with [effectiveTargetX, effectiveTargetY]
      */
     private double[] calculateEffectiveTarget() {
-        // Calculate robot speed
-        double robotSpeed = Math.hypot(robotVelocityX, robotVelocityY);
-        double totalSpeed = Math.hypot(robotSpeed, Math.abs(robotAngularVelocity * 100)); // Scale angular for comparison
+        // Calculate robot speed (convert cm/s to mm/s for threshold comparison)
+        double robotSpeed = Math.hypot(robotVelocityX * 10, robotVelocityY * 10); // cm/s to mm/s
+        double totalSpeed = Math.hypot(robotSpeed, Math.abs(robotAngularVelocity * 100));
 
         // If feature is disabled OR robot is barely moving, use current position
         if (!enableShootingWhileMoving || totalSpeed < minimumSpeedForPrediction) {
-            // Return current position - no prediction needed
             return new double[]{targetX, targetY};
         }
 
-        // Calculate initial distance
+        // Calculate initial distance (in CM)
         double deltaX = robotX - targetX;
         double deltaY = robotY - targetY;
         double initialDistance = Math.hypot(deltaY, deltaX);
 
-        // Get flight time from hardcoded lookup table based on distance
+        // Get flight time from hardcoded lookup table
         double flightTime = getFlightTime(initialDistance);
 
         // Total lookahead = mechanical lag + flight time
@@ -372,7 +320,6 @@ public class Turret extends SubSystem {
         // Store for telemetry
         estimatedFlightTime = flightTime;
 
-        // Return the target position (unchanged) - we'll use predicted robot position for calculations
         return new double[]{targetX, targetY};
     }
 
@@ -436,30 +383,35 @@ public class Turret extends SubSystem {
     public void execute() {
         executeEX();
 
-        // Update robot velocity first
-        updateVelocity();
+        // Apply velocity filtering to remove noise
+        applyVelocityFiltering();
 
         // Calculate effective target position (accounts for movement)
         double[] effectiveTarget = calculateEffectiveTarget();
 
-        // Use predicted robot position for calculations when shooting while moving is enabled
-        double calcRobotX = enableShootingWhileMoving ? predictedRobotX : robotX;
-        double calcRobotY = enableShootingWhileMoving ? predictedRobotY : robotY;
-        double calcRobotHeading = enableShootingWhileMoving ? predictedRobotHeading : robotHeading;
+        // Determine if we should use prediction
+        double robotSpeed = Math.hypot(robotVelocityX * 10, robotVelocityY * 10); // cm/s to mm/s
+        boolean usePrediction = enableShootingWhileMoving && (robotSpeed >= minimumSpeedForPrediction);
 
-        // Calculate delta from predicted position to target
+        // Use predicted POSITION for distance/power calculations
+        // But ALWAYS use CURRENT heading for turret angle!
+        // The turret angle formula already accounts for heading changes
+        double calcRobotX = usePrediction ? predictedRobotX : robotX;
+        double calcRobotY = usePrediction ? predictedRobotY : robotY;
+
+        // Calculate delta from predicted position to target (all in CM)
         double deltaX = calcRobotX - effectiveTarget[0];
         double deltaY = calcRobotY - effectiveTarget[1];
-        distance = Math.hypot(deltaY, deltaX);
+        distance = Math.hypot(deltaY, deltaX); // Distance in CM
 
         rpm = ((shooterMotorOne.getVelocity() / 28) * 60);
         shootPower = Math.max(0, shootPID.calculate(targetRPM, rpm));
         diff = Math.abs(targetRPM - rpm);
 
         // Zone detection (using actual robot position, not predicted)
-        double ROBOT_OFFSET = 10.0;
-        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, ROBOT_OFFSET);
-        double[] t2 = expandTriangle(120, 360, 180, 300, 240, 360, ROBOT_OFFSET);
+        double ROBOT_OFFSET = 1.0; // Offset in CM
+        double[] t1 = expandTriangle(0, 0, 18.0, 18.0, 36.0, 0, ROBOT_OFFSET);
+        double[] t2 = expandTriangle(12.0, 36.0, 18.0, 30.0, 24.0, 36.0, ROBOT_OFFSET);
 
         if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5]) ||
                 pointInTriangle(robotX, robotY, t2[0], t2[1], t2[2], t2[3], t2[4], t2[5])) {
@@ -479,12 +431,15 @@ public class Turret extends SubSystem {
                 interpolatedHoodAngle = interpolateValue(distance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3, distance4, mediumHoodAngle4);
                 break;
             case high:
-                // Add logic for high if needed
                 break;
         }
 
-        // Calculate turret angle using predicted position and heading
-        turretAngle = Math.toDegrees(-Math.atan2(deltaX, deltaY) + calcRobotHeading);
+        // Calculate turret angle using CURRENT heading, NOT predicted!
+        // The turret angle formula already compensates for robot rotation
+        // atan2 gives us the field-relative angle to target
+        // Subtracting current heading converts to robot-relative angle
+        // We do NOT want to use predicted heading here!
+        turretAngle = Math.toDegrees(-Math.atan2(deltaX, deltaY) + robotHeading);
 
         // Turret limit checking
         if ((turretAngle) > turretLimitAngle) {
@@ -529,10 +484,9 @@ public class Turret extends SubSystem {
 
     /**
      * Get telemetry data for debugging shooting while moving
-     * Add this data to your telemetry output
      */
     public String getShootingWhileMovingTelemetry() {
-        double robotSpeed = Math.hypot(robotVelocityX, robotVelocityY);
+        double robotSpeed = Math.hypot(robotVelocityX * 10, robotVelocityY * 10); // cm/s to mm/s
         boolean isPredicting = enableShootingWhileMoving &&
                 robotSpeed >= minimumSpeedForPrediction;
 
@@ -540,14 +494,14 @@ public class Turret extends SubSystem {
                 "SWM Enabled: %b\n" +
                         "Prediction Active: %b\n" +
                         "Robot Speed: %.1f mm/s\n" +
-                        "Robot Vel: (%.1f, %.1f) mm/s\n" +
+                        "Robot Vel: (%.1f, %.1f) cm/s\n" +
                         "Angular Vel: %.3f rad/s\n" +
                         "Flight Time: %.3f s\n" +
                         "Mech Lookahead: %.3f s\n" +
                         "Total Lookahead: %.3f s\n" +
-                        "Predicted Pos: (%.1f, %.1f)\n" +
-                        "Current Pos: (%.1f, %.1f)\n" +
-                        "Position Offset: (%.1f, %.1f)",
+                        "Predicted Pos: (%.1f, %.1f) cm\n" +
+                        "Current Pos: (%.1f, %.1f) cm\n" +
+                        "Position Offset: (%.1f, %.1f) cm",
                 enableShootingWhileMoving,
                 isPredicting,
                 robotSpeed,
