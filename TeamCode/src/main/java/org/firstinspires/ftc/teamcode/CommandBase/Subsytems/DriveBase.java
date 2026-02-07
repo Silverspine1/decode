@@ -181,16 +181,8 @@ public class DriveBase extends SubSystem {
     }
 
 
-    public void driveFieldCentric(double drive, double strafe, double turn, double robotHeading) {
-        // Convert degrees → radians  (most common IMU method in FTC)
-        double headingRadians = Math.toRadians(robotHeading);
 
-        // Now rotate the translation vector opposite to the robot's heading
-        double rotX = strafe * Math.cos(-headingRadians) - drive * Math.sin(-headingRadians);
-        double rotY = strafe * Math.sin(-headingRadians) + drive * Math.cos(-headingRadians);
 
-        drivePowers(rotY, turn, rotX);
-    }
 
 
 
