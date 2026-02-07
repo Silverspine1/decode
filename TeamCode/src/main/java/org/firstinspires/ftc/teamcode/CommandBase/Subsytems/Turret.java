@@ -277,23 +277,22 @@ public class Turret extends SubSystem {
     }
 
     /**
-     * Calculates the effective target position accounting for robot movement
-     *
-     * @return Array with [effectiveTargetX, effectiveTargetY]
+     * Calculates the predicted robot position accounting for movement
+     * Updates the predicted position variables for use in execute()
      */
-    private double[] calculateEffectiveTarget() {
+    private void calculatePrediction() {
         // Calculate robot speed in cm/s (velocities are already in cm/s from odometry)
         double robotSpeed = Math.hypot(robotVelocityX, robotVelocityY); // cm/s
 
-        // If feature is disabled OR robot is barely moving, use current position
+        // If feature is disabled OR robot is barely moving, don't predict
         if (!enableShootingWhileMoving || robotSpeed < minimumSpeedForPrediction) {
-            // Set predicted values to current for telemetry
+            // Set predicted values to current (no prediction)
             predictedRobotX = robotX;
             predictedRobotY = robotY;
             predictedRobotHeading = robotHeading;
             estimatedFlightTime = 0;
             totalLookaheadTime = 0;
-            return new double[]{targetX, targetY};
+            return;
         }
 
         // Calculate initial distance (in CM)
@@ -324,8 +323,6 @@ public class Turret extends SubSystem {
 
         // Store for telemetry
         estimatedFlightTime = flightTime;
-
-        return new double[]{targetX, targetY};
     }
 
     private double interpolateValue(double currentDistance, double d1, double v1, double d2, double v2, double d3, double v3, double d4, double v4) {
@@ -391,22 +388,20 @@ public class Turret extends SubSystem {
         // Apply velocity filtering to remove noise
         applyVelocityFiltering();
 
-        // Calculate effective target position (accounts for movement)
-        double[] effectiveTarget = calculateEffectiveTarget();
+        // Calculate predicted position
+        calculatePrediction();
 
-        // Determine if we should use prediction
+        // Determine if we should use prediction based on speed
         double robotSpeed = Math.hypot(robotVelocityX, robotVelocityY); // cm/s
         boolean usePrediction = enableShootingWhileMoving && (robotSpeed >= minimumSpeedForPrediction);
 
-        // Use predicted POSITION for distance/power calculations
-        // But ALWAYS use CURRENT heading for turret angle!
-        // The turret angle formula already accounts for heading changes
+        // Use predicted position if moving fast enough, otherwise use current
         double calcRobotX = usePrediction ? predictedRobotX : robotX;
         double calcRobotY = usePrediction ? predictedRobotY : robotY;
 
-        // Calculate delta from predicted position to target (all in CM)
-        double deltaX = calcRobotX - effectiveTarget[0];
-        double deltaY = calcRobotY - effectiveTarget[1];
+        // Calculate delta to TARGET from predicted/current position (all in CM)
+        double deltaX = calcRobotX - targetX;
+        double deltaY = calcRobotY - targetY;
         distance = Math.hypot(deltaY, deltaX); // Distance in CM
 
         rpm = ((shooterMotorOne.getVelocity() / 28) * 60);

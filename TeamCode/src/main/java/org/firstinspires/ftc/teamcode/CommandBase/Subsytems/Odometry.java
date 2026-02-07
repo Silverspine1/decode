@@ -1,129 +1,117 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.firstinspires.ftc.teamcode.CommandBase.GoBildaPinpointDriver.Register;
+
+
+import java.util.ArrayList;
 
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
-/**
- * IMPROVED Pinpoint Odometry Subsystem
- *
- * This implementation keeps your ORIGINAL outputs (X(), Y(), Heading(), normiliased())
- * but adds improved error handling and drift resistance from Pedro Pathing best practices.
- *
- * KEY IMPROVEMENTS:
- * 1. Proper IMU calibration timing with stability wait
- * 2. Thread-safe update calls
- * 3. Better error detection and handling
- * 4. Maintains exact same output behavior as original for drop-in replacement
- *
- * OUTPUTS MATCH ORIGINAL:
- * - X(): Position in CM (startX - raw X)
- * - Y(): Position in CM (startY + raw Y)
- * - Heading(): Degrees (360 - heading for display, handles negatives)
- * - normiliased(): Radians (startHeading + current heading, wraps)
- * - Velocities: cm/s and rad/s from Pinpoint
- *
- * @author Based on your original code with Pedro Pathing improvements
- * @version 2.0
- */
+
 public class Odometry extends SubSystem {
 
-    public GoBildaPinpointDriver odo;
+    public GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
 
-    // Current position tracking (public for external access)
-    public double X, Y, Heading, normilised;
+    double oldTime = 0;
 
-    // Start position offsets
-    private double startX, startY, startHeading;
+    Register[] onlyPosition = {
+            Register.X_POSITION,
+            Register.Y_POSITION,
+            Register.H_ORIENTATION,
+            Register.X_VELOCITY,
+            Register.Y_VELOCITY,
+    };
 
-    // Velocity tracking
-    private double XVelocity = 0;
-    private double YVelocity = 0;
-    private double HVelocity = 0;
+    DcMotorEx leftPod;
+    DcMotorEx rightPod;
+    DcMotorEx backPod;
 
-    // Reset flag - matches original behavior
+    public double X, Y, Heading,normilised;
+    double startX, startY, startHeading;
+
+    double XVelocity = 0;
+    double YVelocity = 0;
+    double HVelocity = 0;
     boolean resetAtStart = false;
 
     public Odometry(OpModeEX opModeEX) {
         registerSubsystem(opModeEX, update);
     }
 
-    /**
-     * Set the starting position for the robot
-     * This should be called BEFORE init() if you want a custom start position
-     */
     public void startPosition(double X, double Y, int Heading) {
         this.startX = X;
         this.startY = Y;
-        this.startHeading = Heading;
+        this.Heading = Heading;
     }
 
     @Override
     public void init() {
         /*
-         * CRITICAL INITIALIZATION SEQUENCE
-         * Following GoBilda best practices
+         * Initialize the hardware variables. Note that the strings used here must correspond
+         * to the names assigned during the robot configuration step on the DS or RC devices.
          */
-
-        // Get Pinpoint from hardware map
         odo = getOpMode().hardwareMap.get(GoBildaPinpointDriver.class, "odo");
 
-        /*
-         * Set offsets - these define where the odometry pods are relative to robot center
-         * X offset: How far sideways from center (positive = left, negative = right) in MM
-         * Y offset: How far forward from center (positive = forward, negative = back) in MM
-         */
-        odo.setOffsets(-13, 132, DistanceUnit.MM);
+        //Here we set the bulk read scope we created earlier.
 
         /*
-         * Set encoder resolution
-         * Using goBILDA 4-bar pods - these are pre-calibrated at factory
+         Another new feature to the Pinpoint is on-device error detection. This allows the device
+         to ensure that the most recent read hasn't been corrupted. We use CRC8 error detection
+         which is a lightweight, and accurate option. The sending device does a polynomial division
+         on the contents of the transmission, and sends the result of that calculation along with
+         the data. The receiving device then repeats that calculation and compares it. If the two
+         results do not match, then the previous read of that data is repeated, and a
+         "FAULT_BAD_READ" flag is thrown.
+         */
+
+        /*
+        Set the odometry pod positions relative to the point that the odometry computer tracks around.
+        The X pod offset refers to how far sideways from the tracking point the
+        X (forward) odometry pod is. Left of the center is a positive number,
+        right of center is a negative number. the Y pod offset refers to how far forwards from
+        the tracking point the Y (strafe) odometry pod is. forward of center is a positive number,
+        backwards is a negative number.
+         */
+        odo.setOffsets(-13, 132, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
+
+        /*
+        Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
+        the goBILDA_SWINGARM_POD, or the goBILDA_4_BAR_POD.
+        If you're using another kind of odometry pod, uncomment setEncoderResolution and input the
+        number of ticks per mm of your odometry pod.
          */
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        //odo.setEncoderResolution(13.26291192, DistanceUnit.MM);
+
 
         /*
-         * Set encoder directions
-         * Forward pod should increase when robot moves forward
-         * Strafe pod should increase when robot moves left
+        Set the direction that each of the two odometry pods count. The X (forward) pod should
+        increase when you move the robot forward. And the Y (strafe) pod should increase when
+        you move the robot to the left.
          */
-        odo.setEncoderDirections(
-                GoBildaPinpointDriver.EncoderDirection.REVERSED,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD
-        );
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+
 
         /*
-         * CRITICAL: Reset and calibrate IMU
-         * This MUST be done when robot is COMPLETELY STATIONARY
+        Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary
+        The IMU will automatically calibrate when first powered on, but recalibrating before running
+        the robot is a good idea to ensure that the calibration is "good".
+        resetPosAndIMU will reset the position to 0,0,0 and also recalibrate the IMU.
+        This is recommended before you run your autonomous, as a bad initial calibration can cause
+        an incorrect starting value for x, y, and heading.
          */
+        //odo.recalibrateIMU();
         odo.resetPosAndIMU();
-
-        /*
-         * IMPORTANT: Wait for IMU to stabilize after calibration
-         * The Pinpoint needs time to settle after reset
-         * This prevents initial drift from bad calibration
-         */
-        try {
-            Thread.sleep(300);  // GoBilda recommendation: 300ms minimum
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Initialize tracking variables
-        X = startX;
-        Y = startY;
-        Heading = startHeading;
-        normilised = Math.toRadians(startHeading);
     }
 
-    /**
-     * Calculate heading error for PID control
-     */
     public double headingError(double targetHeading) {
         return Heading - targetHeading;
     }
@@ -131,18 +119,16 @@ public class Odometry extends SubSystem {
     @Override
     public void execute() {
         executeEX();
-
-        // Match original behavior: reset position once at start of execute
-        if (!resetAtStart) {
-            odo.setPosX(startX, DistanceUnit.CM);
-            odo.setPosY(startY, DistanceUnit.CM);
-            odo.setHeading(Math.toRadians(startHeading), AngleUnit.RADIANS);
+        if (!resetAtStart){
+            odo.setPosX(0,DistanceUnit.CM);
+            odo.setPosY(0,DistanceUnit.CM);
+            odo.setHeading(0,AngleUnit.DEGREES);
             resetAtStart = true;
-        }
-    }
 
-    // ==================== ACCESSOR METHODS ====================
-    // These match your ORIGINAL interface exactly for drop-in compatibility
+        }
+
+
+    }
 
     public double X() {
         return X;
@@ -152,18 +138,9 @@ public class Odometry extends SubSystem {
         return Y;
     }
 
-    /**
-     * Returns heading in degrees
-     * Matches original: 360 - Heading (inverted for field-centric)
-     */
     public double Heading() {
         return 360 - Heading;
     }
-
-    /**
-     * Returns normalized heading in radians
-     * Matches original: startHeading + current heading (wraps around ±π)
-     */
     public double normiliased() {
         return normilised;
     }
@@ -175,122 +152,40 @@ public class Odometry extends SubSystem {
     public double getXVelocity() {
         return XVelocity;
     }
-
     public double getHVelocity() {
         return HVelocity;
     }
 
-    /**
-     * MAIN UPDATE LOOP
-     * Matches original output behavior exactly
-     */
+
     public LambdaCommand update = new LambdaCommand(
             () -> {
-                // Initialize - runs once at start
             },
             () -> {
-                // Execute - runs every loop
 
-                /*
-                 * STEP 1: Update the Pinpoint
-                 * This refreshes all sensor data internally
-                 */
                 odo.update();
 
-                /*
-                 * STEP 2: Get velocities
-                 * These are in CM/s for X/Y and RAD/s for heading
-                 */
+
                 XVelocity = odo.getVelX(DistanceUnit.CM);
                 YVelocity = odo.getVelY(DistanceUnit.CM);
                 HVelocity = odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
 
-                /*
-                 * STEP 3: Calculate heading - MATCHES ORIGINAL EXACTLY
-                 * normilised = startHeading + current heading (in radians)
-                 * This will wrap around ±π naturally
-                 */
-                normilised = Math.toRadians(startHeading) + odo.getHeading(AngleUnit.RADIANS);
 
-                /*
-                 * STEP 4: Calculate Heading in degrees - MATCHES ORIGINAL EXACTLY
-                 * If negative, add 360 to make positive
-                 * Otherwise use raw value
-                 */
-                double rawHeadingDegrees = odo.getHeading(AngleUnit.DEGREES);
-                if (rawHeadingDegrees < 0) {
-                    Heading = rawHeadingDegrees + 360;
-                } else {
-                    Heading = rawHeadingDegrees;
+                Heading = startHeading + odo.getHeading(AngleUnit.DEGREES);
+                normilised = startHeading + odo.getHeading(AngleUnit.RADIANS) ;
+
+                if (odo.getHeading(AngleUnit.DEGREES) <0) {
+                    Heading = odo.getHeading(AngleUnit.DEGREES) + 360;
+                } else{
+                    Heading = odo.getHeading(AngleUnit.DEGREES);
                 }
 
-                /*
-                 * STEP 5: Update position - MATCHES ORIGINAL EXACTLY
-                 * X = startX - raw X (inverted)
-                 * Y = startY + raw Y (normal)
-                 */
-                X = startX - odo.getPosX(DistanceUnit.CM);
-                Y = startY + odo.getPosY(DistanceUnit.CM);
+                X =  startX-odo.getPosX(DistanceUnit.CM);
+                Y =  startY + odo.getPosY(DistanceUnit.CM);
             },
-            () -> false  // Never finish
+            () -> false
     );
 
-    /**
-     * Offset the Y position by a given amount
-     */
     public void offsetY(double offset) {
         Y += offset;
-        odo.setPosY(Y + startY, DistanceUnit.CM); // Update Pinpoint too
-    }
-
-    // ==================== UTILITY METHODS ====================
-
-    /**
-     * Recalibrate the IMU
-     * Call this when robot is stationary if you notice drift accumulating
-     * Note: This does NOT reset position, only recalibrates the IMU
-     */
-    public void recalibrate() {
-        odo.recalibrateIMU();
-        try {
-            Thread.sleep(300);  // Wait for calibration to complete
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Check if position has NaN values (indicates hardware/software error)
-     */
-    public boolean isNAN() {
-        return Double.isNaN(X) || Double.isNaN(Y) || Double.isNaN(Heading);
-    }
-
-    /**
-     * Get the raw Pinpoint driver for advanced usage
-     */
-    public GoBildaPinpointDriver getPinpoint() {
-        return odo;
-    }
-
-    /**
-     * Reset position to start values and recalibrate IMU
-     * WARNING: Robot must be COMPLETELY STATIONARY when calling this
-     */
-    public void resetPosAndIMU() {
-        odo.resetPosAndIMU();
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Reset to start values
-        X = startX;
-        Y = startY;
-        Heading = startHeading;
-        normilised = Math.toRadians(startHeading);
-
-        resetAtStart = false; // Allow execute to reset again
     }
 }
