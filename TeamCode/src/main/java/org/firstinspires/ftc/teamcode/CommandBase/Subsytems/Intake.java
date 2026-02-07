@@ -134,11 +134,11 @@ public class Intake extends SubSystem {
         executeEX();
         if (block){
             intakeBlocker.setPosition(0.56);
-            intakePTO.setPosition(0.52);
+            intakePTO.setPosition(0.43);
 
         }else {
             intakeBlocker.setPosition(0.36);
-            intakePTO.setPosition(0.43);
+            intakePTO.setPosition(0.53);
         }
         if (InTake){
             intakeMotor.update(-1);
