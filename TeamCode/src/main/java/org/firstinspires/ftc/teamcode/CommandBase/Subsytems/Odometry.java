@@ -42,8 +42,8 @@ public class Odometry extends SubSystem {
     double HVelocity = 0;
     boolean resetAtStart = false;
 
-   public Odometry(OpModeEX opModeEX) {
-       registerSubsystem(opModeEX, update);
+    public Odometry(OpModeEX opModeEX) {
+        registerSubsystem(opModeEX, update);
     }
 
     public void startPosition(double X, double Y, int Heading) {
@@ -189,5 +189,3 @@ public class Odometry extends SubSystem {
         Y += offset;
     }
 }
-
-
