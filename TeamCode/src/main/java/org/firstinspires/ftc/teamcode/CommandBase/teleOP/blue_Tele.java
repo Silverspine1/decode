@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -92,9 +91,9 @@ public class blue_Tele extends OpModeEX {
         turret.robotHeading = odometry.normiliased(); // radians (wrapping)
 
 // If using TurretWithOdometryVelocity (recommended):
-        turret.robotVelocityX = odometry.getXVelocity(); // cm/s
-        turret.robotVelocityY = odometry.getYVelocity(); // cm/s
-        turret.robotAngularVelocity = odometry.getHVelocity(); // rad/s
+        turret.robotXVelo = odometry.getXVelocity(); // cm/s
+        turret.robotYVelo = odometry.getYVelocity(); // cm/s
+        turret.robotHeadingVelo = odometry.getHVelocity(); // rad/s
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
         driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
 
@@ -168,7 +167,7 @@ public class blue_Tele extends OpModeEX {
             }
         }
 
-        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  || intake.ballCount>2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
+        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  ) {
             togle = true;
             gamepad1.rumble(800);
             rest = true;
@@ -231,11 +230,6 @@ public class blue_Tele extends OpModeEX {
         telemetry.addData("limeY",Apriltag.getY());
         telemetry.addData("limeH",Apriltag.getH());
         telemetry.addData("ball x ",processor.xPosCm);
-        telemetry.addData("inzone ",turret.inZone);
-
-
-        telemetry.addLine("=== Movement Debug ===");
-        telemetry.addLine(turret.getShootingWhileMovingTelemetry());
 
         telemetry.addData("block ",intake.block);
 
@@ -248,7 +242,26 @@ public class blue_Tele extends OpModeEX {
 
 
 
+        ElapsedTime loopTimer = new ElapsedTime();
 
+
+        telemetry.addData("Loop Time", "%.1f ms", loopTimer.milliseconds());
+        telemetry.addData("Vel X", "%.1f cm/s", turret.robotXVelo);
+        telemetry.addData("Vel Y", "%.1f cm/s", turret.robotYVelo);
+        telemetry.addData("V_radial", "%.1f cm/s", turret.vRadial);
+        telemetry.addData("V_tangential", "%.1f cm/s", turret.vTangential);
+        telemetry.addData("TOF", "%.3f s", turret.interpolatedTOF);
+        telemetry.addData("Turret Angle", "%.2f°", turret.turretAngle);
+// === END NEW DEBUG ===
+
+        System.out.println("X: " + odometry.X());
+        System.out.println("Y: " + odometry.Y());
+        telemetry.addData("ball",intake.ballCount);
+        telemetry.addData("distance velo",turret.distanceVelocity);
+        telemetry.addData("distance offset",turret.ofsetDistance);
+
+
+        telemetry.addData("turretservang ",turret.turretAngle/turret.gearRatio +180);
 
 
 
