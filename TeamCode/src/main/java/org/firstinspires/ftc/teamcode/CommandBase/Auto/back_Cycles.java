@@ -180,6 +180,13 @@ public class back_Cycles extends OpModeEX {
         paths.buildPath(p2);
         paths.addNewPath("p3");
         paths.buildPath(p3);
+        paths.addNewPath("S1");
+        paths.buildPath(S1);
+        paths.addNewPath("S2");
+        paths.buildPath(S2);
+        paths.addNewPath("S3");
+        paths.buildPath(S3);
+
 
         Apriltag.limelight.pipelineSwitch(0);
         FtcDashboard dashboard = FtcDashboard.getInstance();
