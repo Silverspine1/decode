@@ -173,10 +173,10 @@ public class Odometry extends SubSystem {
                 Heading = startHeading + odo.getHeading(AngleUnit.DEGREES);
                 normilised = startHeading + odo.getHeading(AngleUnit.RADIANS) ;
 
-                if (odo.getHeading(AngleUnit.DEGREES) <0) {
-                    Heading = odo.getHeading(AngleUnit.DEGREES) + 360;
+                if (startHeading + odo.getHeading(AngleUnit.DEGREES) <0) {
+                    Heading = startHeading + odo.getHeading(AngleUnit.DEGREES) + 360;
                 } else{
-                    Heading = odo.getHeading(AngleUnit.DEGREES);
+                    Heading = startHeading + odo.getHeading(AngleUnit.DEGREES);
                 }
 
                 X =  startX-odo.getPosX(DistanceUnit.CM);

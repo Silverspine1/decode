@@ -170,10 +170,8 @@ public class Turret extends SubSystem {
         turretTurnOne.setOffset(181.3);
         turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
-        turretTurnOne.setPosition(0);
-        turretTurnTwo.setPosition(0);
+
         hoodAdjust.setOffset(60);
-        setHoodDegrees(31);
 
         distanceTimer.reset();
     }
@@ -271,9 +269,9 @@ public class Turret extends SubSystem {
         shootPower = Math.max(0, shootPID.calculate(targetRPM, rpm));
         diff = Math.abs(targetRPM - rpm);
 
-        double ROBOT_OFFSET = 10.0;
-        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, ROBOT_OFFSET);
-        double[] t2 = expandTriangle(120, 360, 180, 300, 240, 360, ROBOT_OFFSET);
+        double ROBOT_OFFSET = 20.0;
+        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, 15);
+        double[] t2 = expandTriangle(100, 360, 180, 275, 295, 360, 0);
 
         if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5]) ||
                 pointInTriangle(robotX, robotY, t2[0], t2[1], t2[2], t2[3], t2[4], t2[5])) {
