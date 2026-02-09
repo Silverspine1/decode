@@ -51,7 +51,13 @@ public class back_Cycles extends OpModeEX {
         finished
 
     }
+    enum shootPath{
+        S1,
+        S2,
+        S3
+    }
     AutoState state = AutoState.backCollect;
+    shootPath shootState = shootPath.S2;
 
 
     double targetHeading;
@@ -68,6 +74,7 @@ public class back_Cycles extends OpModeEX {
     double lookAheadTime = 0;
     double shootWait = 1200;
     double velo = 8;
+
 
 
     ElapsedTime shootTime = new ElapsedTime();
@@ -125,6 +132,15 @@ public class back_Cycles extends OpModeEX {
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 284)),
+    };
+    private final sectionBuilder[] S1 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(45, 350), new Vector2D(150, 317)),
+    };
+    private final sectionBuilder[] S2 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(45, 317), new Vector2D(150, 317)),
+    };
+    private final sectionBuilder[] S3 = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(45, 284), new Vector2D(150, 317)),
     };
     @Override
     public void initEX() {
@@ -202,6 +218,7 @@ public class back_Cycles extends OpModeEX {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
+
         if (!intake.InTake && intake.ballCount >2){
             intake.reverse = true;
         }
@@ -224,17 +241,20 @@ public class back_Cycles extends OpModeEX {
                 follow.setPath(paths.returnPath("p3"));
                 pathing = true;
                 intakePathSelected = true;
+                shootState = shootPath.S3;
                 targetHeading = 270;
             } else if (processor.hAngleDeg <8 && !intakePathSelected) {
                 follow.setPath(paths.returnPath("p1"));
                 pathing = true;
                 intakePathSelected = true;
+                shootState = shootPath.S1;
                 targetHeading = 270;
 
             }else if(!intakePathSelected) {
                 follow.setPath(paths.returnPath("p2"));
                 pathing = true;
                 intakePathSelected = true;
+                shootState = shootPath.S2;
                 targetHeading = 270;
 
             }
@@ -462,7 +482,7 @@ public class back_Cycles extends OpModeEX {
                 if (built && maxWait.milliseconds() > 2200 ||  built && collectDone || intake.ballCount>2 && built ){
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
-                    follow.setPath(paths.returnPath("driveToShootBack"));
+                    follow.setPath(paths.returnPath(shootState.name()));
                     intakePathSelected = false;
                     ballShot = false;
                     targetHeading = 270;
