@@ -75,8 +75,8 @@ public class Turret extends SubSystem {
     double lowHoodAngle3 = 41.8;
     double lowHoodAngle4 = 41.86;
 
-    double lowPower1 = 1510;
-    double lowPower2 = 1730;
+    double lowPower1 = 1540;
+    double lowPower2 = 1770;
     double lowPower3 = 2080;
     double lowPower4 = 2500;
 
@@ -167,7 +167,7 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(181.3);
+        turretTurnOne.setOffset(182);
         turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
 
@@ -270,7 +270,7 @@ public class Turret extends SubSystem {
         diff = Math.abs(targetRPM - rpm);
 
         double ROBOT_OFFSET = 20.0;
-        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, 15);
+        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, 20);
         double[] t2 = expandTriangle(100, 360, 180, 275, 295, 360, 0);
 
         if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5]) ||
@@ -295,6 +295,11 @@ public class Turret extends SubSystem {
                 break;
             case high:
                 break;
+        }
+        if (robotY > 240){
+            TURRET_COMP_FACTOR = 1.2;
+        }else {
+            TURRET_COMP_FACTOR = 0.9;
         }
 
         double baseTurretAngle = Math.toDegrees(-Math.atan2(deltaX, deltaY) + robotHeading);

@@ -246,19 +246,14 @@ public class blue_Tele extends OpModeEX {
 
 
         telemetry.addData("Loop Time", "%.1f ms", loopTimer.milliseconds());
-        telemetry.addData("Vel X", "%.1f cm/s", turret.robotXVelo);
-        telemetry.addData("Vel Y", "%.1f cm/s", turret.robotYVelo);
-        telemetry.addData("V_radial", "%.1f cm/s", turret.vRadial);
-        telemetry.addData("V_tangential", "%.1f cm/s", turret.vTangential);
-        telemetry.addData("TOF", "%.3f s", turret.interpolatedTOF);
-        telemetry.addData("Turret Angle", "%.2f°", turret.turretAngle);
-// === END NEW DEBUG ===
 
         System.out.println("X: " + odometry.X());
         System.out.println("Y: " + odometry.Y());
         telemetry.addData("ball",intake.ballCount);
         telemetry.addData("distance velo",turret.distanceVelocity);
         telemetry.addData("distance offset",turret.ofsetDistance);
+        telemetry.addData("vision angle",processor.hAngleDeg);
+
 
 
         telemetry.addData("turretservang ",turret.turretAngle/turret.gearRatio +180);

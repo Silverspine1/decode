@@ -51,7 +51,7 @@ public class LocalVision implements VisionProcessor {
 
     // HSV ranges for GREEN
     public static int GREEN_H_MIN = 40;
-    public static int GREEN_H_MAX = 80;
+    public static int GREEN_H_MAX = 92;
     public static int GREEN_S_MIN = 50;
     public static int GREEN_S_MAX = 255;
     public static int GREEN_V_MIN = 50;

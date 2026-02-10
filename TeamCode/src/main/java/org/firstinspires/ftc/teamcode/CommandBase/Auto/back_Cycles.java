@@ -24,7 +24,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
 public class back_Cycles extends OpModeEX {
     pathsManager paths =new pathsManager(new RobotConfig(0.018, 0.004, 0.020, 0.005, 0.04, 0.004, 0.065, 0.004
-            , 0.022, 0.0005, 0.012, 0.002, 200, 273, 220, 340));
+            , 0.022, 0.0005, 0.012, 0.002, 200, 273, 270, 320));
 
 
 
@@ -72,7 +72,7 @@ public class back_Cycles extends OpModeEX {
     boolean intakePathSelected = false;
 
     double lookAheadTime = 0;
-    double shootWait = 1200;
+    double shootWait = 600;
     double velo = 8;
 
 
@@ -125,22 +125,22 @@ public class back_Cycles extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 350)),
+            () -> paths.addPoints(new Vector2D(130, 317), new Vector2D(50, 347)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 317)),
+            () -> paths.addPoints(new Vector2D(130, 317), new Vector2D(50, 317)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(150, 317), new Vector2D(45, 284)),
+            () -> paths.addPoints(new Vector2D(130, 317), new Vector2D(50, 284)),
     };
     private final sectionBuilder[] S1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(45, 350), new Vector2D(150, 317)),
+            () -> paths.addPoints(new Vector2D(50, 350), new Vector2D(130, 320)),
     };
     private final sectionBuilder[] S2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(45, 317), new Vector2D(150, 317)),
+            () -> paths.addPoints(new Vector2D(50, 320), new Vector2D(130, 320)),
     };
     private final sectionBuilder[] S3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(45, 284), new Vector2D(150, 317)),
+            () -> paths.addPoints(new Vector2D(50, 284), new Vector2D(130, 320)),
     };
     @Override
     public void initEX() {
@@ -250,7 +250,7 @@ public class back_Cycles extends OpModeEX {
                 intakePathSelected = true;
                 shootState = shootPath.S3;
                 targetHeading = 270;
-            } else if (processor.hAngleDeg <8 && !intakePathSelected) {
+            } else if (processor.hAngleDeg <-8 && !intakePathSelected) {
                 follow.setPath(paths.returnPath("p1"));
                 pathing = true;
                 intakePathSelected = true;
@@ -447,9 +447,10 @@ public class back_Cycles extends OpModeEX {
                 }
                 break;
             case driveToShootBack:
-                if (!built && pathing && follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 4 || !built && pathing && turret.inZone ){
+                if (!built && pathing && follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity())< 15){
                     shootTime.reset();
                     built = true;
+                    pathing = false;
                     intake.block = false;
                     intake.InTake = true;
 
@@ -457,7 +458,6 @@ public class back_Cycles extends OpModeEX {
 
 
                 if (built && shootTime.milliseconds() > shootWait ){
-                    pathing = false;
                     state = AutoState.backCollect;
                     collectDone = false;
                     maxWait.reset();
