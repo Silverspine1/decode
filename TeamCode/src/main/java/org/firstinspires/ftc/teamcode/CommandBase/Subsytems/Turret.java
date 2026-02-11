@@ -269,11 +269,8 @@ public class Turret extends SubSystem {
         shootPower = Math.max(0, shootPID.calculate(targetRPM, rpm));
         diff = Math.abs(targetRPM - rpm);
 
-        double ROBOT_OFFSET = 20.0;
-        if (Auto){
-            ROBOT_OFFSET = 25;
-        }
-        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, ROBOT_OFFSET);
+
+        double[] t1 = expandTriangle(-20, 0, 180, 200, 380, 0, 0);
         double[] t2 = expandTriangle(100, 360, 180, 275, 295, 360, 0);
 
         if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5]) ||
@@ -299,10 +296,8 @@ public class Turret extends SubSystem {
             case high:
                 break;
         }
-        if (robotY > 240){
-            TURRET_COMP_FACTOR = 1.2;
-        }else {
-            TURRET_COMP_FACTOR = 0.9;
+        if (Auto){
+            TURRET_COMP_FACTOR = 2.4;
         }
 
         double baseTurretAngle = Math.toDegrees(-Math.atan2(deltaX, deltaY) + robotHeading);
