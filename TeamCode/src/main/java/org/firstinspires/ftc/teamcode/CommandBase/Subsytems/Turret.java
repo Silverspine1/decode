@@ -270,7 +270,10 @@ public class Turret extends SubSystem {
         diff = Math.abs(targetRPM - rpm);
 
         double ROBOT_OFFSET = 20.0;
-        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, 20);
+        if (Auto){
+            ROBOT_OFFSET = 25;
+        }
+        double[] t1 = expandTriangle(0, 0, 180, 180, 360, 0, ROBOT_OFFSET);
         double[] t2 = expandTriangle(100, 360, 180, 275, 295, 360, 0);
 
         if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5]) ||
