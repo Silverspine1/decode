@@ -237,7 +237,7 @@ public class back_In_A_Case extends OpModeEX {
             reset = true;
         }
 
-        if (intakeOff && intakeoff.milliseconds() > 1200 || intakeOff && intake.ballCount >2 && intakeoff.milliseconds() >400){
+        if (intakeOff && intake.ballCount >2 && intakeoff.milliseconds() >200){
             intake.InTake = false;
             intakeOff = false;
 

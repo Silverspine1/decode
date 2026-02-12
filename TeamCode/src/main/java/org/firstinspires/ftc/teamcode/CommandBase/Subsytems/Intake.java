@@ -85,8 +85,8 @@ public class Intake extends SubSystem {
         intakeRPM = secondIntakeMotor.getVelocity();
 
 
-        if (block && intakeTime.milliseconds() >250) {
-            intakeBlocker.setPosition(0.53);
+        if (block && intakeTime.milliseconds() >50) {
+            intakeBlocker.setPosition(0.60);
             intakePTO.setPosition(0.37);
         } else if (!block ){
             intakeBlocker.setPosition(0.29);

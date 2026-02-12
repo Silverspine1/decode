@@ -121,6 +121,10 @@ public class blue_Tele extends OpModeEX {
         }else {
             turret.hoodCompensation = 0;
         }
+        if (intake.ballCount>0){
+            shooterOffWait.reset();
+
+        }
         if (intake.ballCount >2){
             if (togle){
                 turret.toggle = true;
@@ -137,7 +141,7 @@ public class blue_Tele extends OpModeEX {
                 intake.InTake = true;
 
 
-        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange){
+        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange && odometry.getHVelocity() < 1){
             intake.InTake = true;
             intake.block = false;
             System.out.println("ball count"+intake.ballCount);
@@ -156,16 +160,8 @@ public class blue_Tele extends OpModeEX {
         if (!lastGamepad1.dpad_right  && currentGamepad1.dpad_right){
             turret.turrofset += 3;
         }
-        if (gamepad1.dpad_down){
-            intake.block = true;
-            intake.InTake = true;
 
 
-
-            if (processor.hasTarget) {
-                driveBase.drivePowers(-gamepad1.right_stick_y + processor.distanceCm / 50, headingPID.calculate(-processor.hAngleDeg), -gamepad1.right_stick_x);
-            }
-        }
 
         if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  ) {
             togle = true;
@@ -205,10 +201,11 @@ public class blue_Tele extends OpModeEX {
         }
 
 
-        if (!lastGamepad1.a && currentGamepad1.a && !driveBase.engage){
-            driveBase.engage = true;
-        }else  if (!lastGamepad1.a && currentGamepad1.a && driveBase.engage){
-            driveBase.engage = false;
+        if (gamepad1.dpad_down){
+            driveBase.headingLock(45 + odometry.normiliased(),true);
+        }else {
+            driveBase.headingLock(45 + odometry.normiliased(),false);
+
         }
 
 

@@ -81,12 +81,11 @@ public class DriveBase extends SubSystem {
         LB.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public double headindingLockMotorPower (double headingError){
-        if (headingError < -180) {
-            headingError = (360 + headingError);
-        } else if (headingError > 180) {
-            headingError = (headingError - 360);
+    public double headingLock (double headingError , boolean on){
+        if (on) {
+            turn = headingPID.calculate(headingError);
         }
+
         return headingPID.calculate(headingError);
     }
 

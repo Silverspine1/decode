@@ -103,11 +103,8 @@ public class testOP extends OpModeEX {
 //            turret.shootingLevel = Turret.LowMediumHigh.low;
 //        }
             targetHood = targetHood + gamepad1.right_stick_y/8;
-            if (intake.ballCount > 1) {
-                turret.setHoodDegrees(targetHood - 2);
-            }else {
-                turret.setHoodDegrees(targetHood);
-            }
+            turret.setHoodDegrees(targetHood);
+
 //////
 //////
         turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
@@ -115,10 +112,10 @@ public class testOP extends OpModeEX {
 //            intake.reverse = true;
 //        }
 //
-        if (intake.ballCount > 1) {
-            turret.hoodCompensation = -2;
-        }else {
-            turret.hoodCompensation = 0;
+
+        if (intake.ballCount>0){
+            shooterOffWait.reset();
+
         }
         if (intake.ballCount >2){
             if (togle){
@@ -127,7 +124,7 @@ public class testOP extends OpModeEX {
             shooterOffWait.reset();
 
         }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>1000 ){
-            turret.toggle = false;
+//            turret.toggle = false;
         }
 
 

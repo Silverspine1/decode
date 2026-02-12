@@ -26,7 +26,7 @@ public class Turret extends SubSystem {
     public ServoDegrees turretTurnTwo =new ServoDegrees();
     public ServoDegrees hoodAdjust = new ServoDegrees();
 
-    public static double TURRET_COMP_FACTOR = 0.9;
+    public static double TURRET_COMP_FACTOR = 0;
     public static boolean FLIP_PERPENDICULAR = true;  // Toggle on dashboard to flip tangential direction
 
     public enum LowMediumHigh {
@@ -65,20 +65,20 @@ public class Turret extends SubSystem {
 
     public double hoodCompensation = 0;
 
-    double distance1 = 151;
-    double distance2 = 236;
-    double distance3 = 336;
-    double distance4 = 413;
+    double distance1 = 152;
+    double distance2 = 237;
+    double distance3 = 327;
+    double distance4 = 420;
 
-    double lowHoodAngle1 = 35.7;
-    double lowHoodAngle2 = 40.6;
-    double lowHoodAngle3 = 41.8;
-    double lowHoodAngle4 = 41.86;
+    double lowHoodAngle1 = 27.99;
+    double lowHoodAngle2 = 36.2;
+    double lowHoodAngle3 = 40.1;
+    double lowHoodAngle4 = 42.7;
 
-    double lowPower1 = 1540;
-    double lowPower2 = 1770;
-    double lowPower3 = 2080;
-    double lowPower4 = 2500;
+    double lowPower1 = 1403;
+    double lowPower2 = 1701;
+    double lowPower3 = 2000;
+    double lowPower4 = 2418;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -167,7 +167,7 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(182);
+        turretTurnOne.setOffset(180);
         turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
 
@@ -270,11 +270,9 @@ public class Turret extends SubSystem {
         diff = Math.abs(targetRPM - rpm);
 
 
-        double[] t1 = expandTriangle(-20, 0, 180, 200, 380, 0, 0);
-        double[] t2 = expandTriangle(100, 360, 180, 275, 295, 360, 0);
+        double[] t1 = expandTriangle(-10, 0, 180, 190, 370, 0, 0);
 
-        if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5]) ||
-                pointInTriangle(robotX, robotY, t2[0], t2[1], t2[2], t2[3], t2[4], t2[5])) {
+        if (pointInTriangle(robotX, robotY, t1[0], t1[1], t1[2], t1[3], t1[4], t1[5])) {
             inZone = true;
         } else {
             inZone = false;
@@ -283,7 +281,7 @@ public class Turret extends SubSystem {
         switch (shootingLevel) {
             case low:
                 interpolatedTOF = interpolateValue(distance, distance1, lowTOF1, distance2, lowTOF2, distance3, lowTOF3, distance4, lowTOF4);
-                ofsetDistance = distanceVelocity * interpolatedTOF;
+                ofsetDistance = distanceVelocity*0 * interpolatedTOF;
                 interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3, distance4, lowPower4);
                 interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3, distance4, lowHoodAngle4);
                 break;
