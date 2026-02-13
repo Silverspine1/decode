@@ -88,7 +88,7 @@ public abstract class OpModeEX extends OpMode {
         loopEX();
 
         loopTime = timer.milliseconds() - lastTime;
-        System.out.println("loop time: " + loopTime);
+//        System.out.println("loop time: " + loopTime);
     }
 
     /**

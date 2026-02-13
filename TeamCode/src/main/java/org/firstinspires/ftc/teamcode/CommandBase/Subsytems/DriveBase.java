@@ -33,7 +33,7 @@ public class DriveBase extends SubSystem {
     ServoDegrees baseServo =new ServoDegrees();
 
 
-    public double speed = 0.9;
+    public double speed = 1;
     public boolean engage = false;
     public boolean lift = false;
 

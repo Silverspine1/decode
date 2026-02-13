@@ -14,6 +14,9 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 
 @TeleOp
@@ -33,6 +36,23 @@ public class blue_Tele extends OpModeEX {
     double currentBallCount = 0;
     PIDController headingPID = new PIDController(0.013,0,0.0032);
     ElapsedTime shooterOffWait = new ElapsedTime();
+
+    // Variables for velocity and acceleration tracking
+    private double lastXVelo = 0;
+    private double lastYVelo = 0;
+    private double lastHVelo = 0;
+    private ElapsedTime veloTimer = new ElapsedTime();
+    ElapsedTime Timer = new ElapsedTime();
+
+
+    // Lists to store recent max values (averaging window)
+    private List<Double> recentMaxVelos = new ArrayList<>();
+    private List<Double> recentMaxAccels = new ArrayList<>();
+    private final int AVERAGING_WINDOW = 10; // Average over 10 samples
+
+    private double currentMaxVelo = 0;
+    private double currentMaxAccel = 0;
+
 
     @Override
     public void initEX() {
@@ -66,20 +86,18 @@ public class blue_Tele extends OpModeEX {
 // Dashboard camera stream
         dashboard.startCameraStream(visionPortal, 15);
 
-
-
-
-
+        // Initialize velocity timer
+        veloTimer.reset();
     }
+
     @Override public void stop() {
         if (visionPortal != null) visionPortal.close();
     }
-        @Override
+
+    @Override
     public void start() {
-
-
-            Apriltag.limelight.start();
-
+        Apriltag.limelight.start();
+        veloTimer.reset();
     }
 
     @Override
@@ -94,6 +112,10 @@ public class blue_Tele extends OpModeEX {
         turret.robotXVelo = odometry.getXVelocity(); // cm/s
         turret.robotYVelo = odometry.getYVelocity(); // cm/s
         turret.robotHeadingVelo = odometry.getHVelocity(); // rad/s
+
+        // Calculate velocity and acceleration
+        calculateVelocityAndAcceleration();
+
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
         driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
 
@@ -137,15 +159,14 @@ public class blue_Tele extends OpModeEX {
 
         if (gamepad1.right_bumper ){
 
-                intake.block = true;
-                intake.InTake = true;
+            intake.block = true;
+            intake.InTake = true;
 
 
         }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange && odometry.getHVelocity() < 1){
             intake.InTake = true;
             intake.block = false;
-            System.out.println("ball count"+intake.ballCount);
-            System.out.println("fiff"+turret.diff);
+
 
 
 
@@ -231,8 +252,10 @@ public class blue_Tele extends OpModeEX {
         telemetry.addData("block ",intake.block);
 
 
-        System.out.println("X: " + odometry.X());
-        System.out.println("Y: " + odometry.Y());
+        System.out.println("Current Velocity: " + currentMaxVelo);
+        System.out.println("Current Accel: " + currentMaxAccel);
+        System.out.println("time: " + Timer);
+
         telemetry.addData("ball",intake.ballCount);
         telemetry.addData("turretservang ",turret.turretAngle/turret.gearRatio +180);
 
@@ -244,8 +267,7 @@ public class blue_Tele extends OpModeEX {
 
         telemetry.addData("Loop Time", "%.1f ms", loopTimer.milliseconds());
 
-        System.out.println("X: " + odometry.X());
-        System.out.println("Y: " + odometry.Y());
+
         telemetry.addData("ball",intake.ballCount);
         telemetry.addData("distance velo",turret.distanceVelocity);
         telemetry.addData("distance offset",turret.ofsetDistance);
@@ -255,12 +277,12 @@ public class blue_Tele extends OpModeEX {
 
         telemetry.addData("turretservang ",turret.turretAngle/turret.gearRatio +180);
 
-
-
-
-
-
-
+        // Display velocity and acceleration data
+        telemetry.addData("--- PERFORMANCE METRICS ---", "");
+        telemetry.addData("Max Velocity (avg)", "%.1f cm/s", getAverageMaxVelo());
+        telemetry.addData("Current Velocity", "%.1f cm/s", currentMaxVelo);
+        telemetry.addData("Max Accel (avg)", "%.1f cm/s²", getAverageMaxAccel());
+        telemetry.addData("Current Accel", "%.1f cm/s²", currentMaxAccel);
 
 
 
@@ -268,5 +290,84 @@ public class blue_Tele extends OpModeEX {
         telemetry.update();
 
 
+    }
+
+    /**
+     * Calculate current velocity magnitude and acceleration
+     */
+    private void calculateVelocityAndAcceleration() {
+        // Get current velocities from odometry
+        double xVelo = odometry.getXVelocity(); // cm/s
+        double yVelo = odometry.getYVelocity(); // cm/s
+
+        // Calculate velocity magnitude (Pythagorean theorem)
+        double currentVelo = Math.sqrt(xVelo * xVelo + yVelo * yVelo);
+
+        // Update max velocity if current is higher
+        if (currentVelo > currentMaxVelo) {
+            currentMaxVelo = currentVelo;
+
+            // Add to recent max velocities list
+            recentMaxVelos.add(currentMaxVelo);
+            if (recentMaxVelos.size() > AVERAGING_WINDOW) {
+                recentMaxVelos.remove(0); // Remove oldest value
+            }
+        }
+
+        // Calculate time delta
+        double dt = veloTimer.seconds();
+        veloTimer.reset();
+
+        // Avoid division by zero
+        if (dt > 0.001) {
+            // Calculate acceleration components
+            double xAccel = (xVelo - lastXVelo) / dt;
+            double yAccel = (yVelo - lastYVelo) / dt;
+
+            // Calculate acceleration magnitude
+            double currentAccel = Math.sqrt(xAccel * xAccel + yAccel * yAccel);
+
+            // Update max acceleration if current is higher
+            if (currentAccel > currentMaxAccel) {
+                currentMaxAccel = currentAccel;
+
+                // Add to recent max accelerations list
+                recentMaxAccels.add(currentMaxAccel);
+                if (recentMaxAccels.size() > AVERAGING_WINDOW) {
+                    recentMaxAccels.remove(0); // Remove oldest value
+                }
+            }
+        }
+
+        // Store current velocities for next loop
+        lastXVelo = xVelo;
+        lastYVelo = yVelo;
+        lastHVelo = odometry.getHVelocity();
+    }
+
+    /**
+     * Get average of recent max velocities
+     */
+    private double getAverageMaxVelo() {
+        if (recentMaxVelos.isEmpty()) return 0;
+
+        double sum = 0;
+        for (double velo : recentMaxVelos) {
+            sum += velo;
+        }
+        return sum / recentMaxVelos.size();
+    }
+
+    /**
+     * Get average of recent max accelerations
+     */
+    private double getAverageMaxAccel() {
+        if (recentMaxAccels.isEmpty()) return 0;
+
+        double sum = 0;
+        for (double accel : recentMaxAccels) {
+            sum += accel;
+        }
+        return sum / recentMaxAccels.size();
     }
 }
