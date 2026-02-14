@@ -25,11 +25,13 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
 public class back_In_A_Case extends OpModeEX {
     pathsManager paths =new pathsManager(new RobotConfig(0.018, 0.004, 0.020, 0.005, 0.04, 0.004, 0.065, 0.004
-            , 0.022, 0.0005, 0.012, 0.002, 152, 210, 200, 280));
+            , 0.008, 0.0005, 0.012, 0.002,  200, 273, 270, 320));
 
 
 
-    follower follow = new follower();
+    follower follow = new follower(new RobotConfig(0.018, 0.004, 0.020, 0.005, 0.04, 0.004, 0.065, 0.004
+            , 0.008, 0.0005, 0.012, 0.002,  200, 273, 270, 320));
+
     PIDController headingPID = new PIDController(0.012,0,0.0030);
     PIDController forward = new PIDController(0.010,0,0.0030);
 
@@ -93,10 +95,10 @@ public class back_In_A_Case extends OpModeEX {
 
 
     private final sectionBuilder[] collect1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(126, 254), new Vector2D(73, 268)),
+            () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(126, 254), new Vector2D(73, 282)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(43, 270), new Vector2D(104, 261), new Vector2D(132, 332)),
+            () -> paths.addPoints(new Vector2D(43, 282), new Vector2D(104, 261), new Vector2D(136, 332)),
 
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
@@ -147,7 +149,7 @@ public class back_In_A_Case extends OpModeEX {
     };
     @Override
     public void initEX() {
-        odometry.startPosition(169, 346, 270);
+        odometry.startPosition(169, 342, 270);
         turret.Auto = true;
         driveBase.tele= false;
         follow.setHeadingOffset(90);
@@ -229,6 +231,7 @@ public class back_In_A_Case extends OpModeEX {
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
 
+
         if (!intake.InTake && intake.ballCount >2){
             intake.reverse = true;
         }
@@ -294,6 +297,7 @@ public class back_In_A_Case extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
+                    turret.mapOfset = 50;
 
                 }
                 if (built && preload.milliseconds() >1400|| built && turret.diff < 100 && turret.rpm > 1200 ){
@@ -329,7 +333,7 @@ public class back_In_A_Case extends OpModeEX {
                 }
                 break;
             case driveToShoot1:
-                if (built && follow.isFinished(10,10) && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo ){
+                if (built && follow.isFinished(15,15) && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo ){
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -433,8 +437,6 @@ public class back_In_A_Case extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.firstBackCollect;
-                    turret.turrofset = 0;
-                    turret.mapOfset = 0;
                 }
                 break;
             case firstBackCollect:
@@ -444,7 +446,6 @@ public class back_In_A_Case extends OpModeEX {
                     maxWait.reset();
                     intake.block = true;
                     turret.stopTurret = true;
-                    turret.mapOfset = 0;
 
 
 
