@@ -36,6 +36,8 @@ public class blue_Tele extends OpModeEX {
     double currentBallCount = 0;
     PIDController headingPID = new PIDController(0.013,0,0.0032);
     ElapsedTime shooterOffWait = new ElapsedTime();
+    ElapsedTime rumble = new ElapsedTime();
+
 
     // Variables for velocity and acceleration tracking
     private double lastXVelo = 0;
@@ -88,6 +90,8 @@ public class blue_Tele extends OpModeEX {
 
         // Initialize velocity timer
         veloTimer.reset();
+        turret.mapOfset = 40;
+        turret.turrofset = -1.5;
     }
 
     @Override public void stop() {
@@ -117,7 +121,7 @@ public class blue_Tele extends OpModeEX {
         calculateVelocityAndAcceleration();
 
 //        driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
-        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger), -gamepad1.right_stick_x);
+        driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger)*0.7, -gamepad1.right_stick_x);
 
 
 //        if (turret.shootingLevel == Turret.LowMediumHigh.low &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
@@ -156,6 +160,9 @@ public class blue_Tele extends OpModeEX {
         }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>500 ){
             turret.toggle = false;
         }
+        if (intake.ballCount > 2 && rumble.milliseconds() > 1500){
+            gamepad1.rumble(300);
+        }
 
         if (gamepad1.right_bumper ){
 
@@ -163,7 +170,7 @@ public class blue_Tele extends OpModeEX {
             intake.InTake = true;
 
 
-        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange && odometry.getHVelocity() < 1 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 7){
+        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange && odometry.getHVelocity() < 1 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 17){
             intake.InTake = true;
             intake.block = false;
 
@@ -176,17 +183,17 @@ public class blue_Tele extends OpModeEX {
             intake.InTake = false;
         }
         if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left){
-            turret.turrofset -= 3;
+            turret.turrofset -= 1;
         }
         if (!lastGamepad1.dpad_right  && currentGamepad1.dpad_right){
-            turret.turrofset += 3;
+            turret.turrofset += 1;
         }
 
 
 
-        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() !=180  ) {
+        if (gamepad1.left_stick_y < -0.3 && Apriltag.getH() != 0 && Apriltag.getH() !=180 || intake.ballCount > 2 && Apriltag.getH() != 0 && Apriltag.getH() !=180) {
             togle = true;
-            gamepad1.rumble(800);
+            gamepad1.rumble(200);
             rest = true;
 
 

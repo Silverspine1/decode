@@ -97,7 +97,7 @@ public class Intake extends SubSystem {
 
         if (InTake) {
             intakeMotor.update(-1);
-            secondIntakeMotor.update(-0.9);
+            secondIntakeMotor.update(-1);
             reverse = false;
 
         } else {

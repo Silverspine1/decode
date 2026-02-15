@@ -41,6 +41,11 @@ public class LocalVision implements VisionProcessor {
     public static double MIN_RADIUS_PIXELS = 6.0;
     public static int MORPH_KERNEL_SIZE = 5;
 
+    // Distance compensation power (higher = more weight to distance)
+    // Score = area * (distance ^ DISTANCE_COMPENSATION_POWER)
+    // 1.0 = linear compensation, 2.0 = quadratic (accounts for area scaling)
+    public static double DISTANCE_COMPENSATION_POWER = 2.0;
+
     // HSV ranges for PURPLE
     public static int PURPLE_H_MIN = 125;
     public static int PURPLE_H_MAX = 155;
@@ -57,7 +62,7 @@ public class LocalVision implements VisionProcessor {
     public static int GREEN_V_MIN = 50;
     public static int GREEN_V_MAX = 255;
 
-    // Outputs for the BEST target found (regardless of color)
+    // Outputs for the BEST target found (compensated for distance)
     public volatile boolean hasTarget = false;
     public volatile TargetColor detectedColor = TargetColor.PURPLE;
     public volatile double distanceCm = 0.0;
@@ -68,6 +73,7 @@ public class LocalVision implements VisionProcessor {
     public volatile double yPosCm = 0.0;
     public volatile double pixelsFromBottom = 0.0;
     public volatile double radiusPixels = 0.0;
+    public volatile double compensatedScore = 0.0;  // New: the score used for selection
 
     private final TargetColor targetColor;
 
@@ -106,6 +112,8 @@ public class LocalVision implements VisionProcessor {
         double pixelsFromBottom;
         double scaleX;
         double scaleY;
+        double pixelArea;  // New: pixel area of the blob
+        double compensatedScore;  // New: distance-compensated score
     }
 
     private static class FrameAnalysis {
@@ -149,34 +157,30 @@ public class LocalVision implements VisionProcessor {
         Imgproc.resize(frame, smallRgb, new Size(smallWidth, smallHeight), 0, 0, Imgproc.INTER_AREA);
         Imgproc.cvtColor(smallRgb, smallHsv, Imgproc.COLOR_RGB2HSV);
 
-        // Create masks based on target color mode
+        // Collect all detections from all colors
         List<DetectionResult> detections = new ArrayList<>();
 
         if (targetColor == TargetColor.PURPLE || targetColor == TargetColor.BOTH) {
-            DetectionResult purpleResult = detectColor(
+            List<DetectionResult> purpleResults = detectAllBlobsOfColor(
                     TargetColor.PURPLE,
                     new Scalar(PURPLE_H_MIN, PURPLE_S_MIN, PURPLE_V_MIN),
                     new Scalar(PURPLE_H_MAX, PURPLE_S_MAX, PURPLE_V_MAX),
                     fullW, fullH, analysis.scaleX, analysis.scaleY
             );
-            if (purpleResult != null) {
-                detections.add(purpleResult);
-            }
+            detections.addAll(purpleResults);
         }
 
         if (targetColor == TargetColor.GREEN || targetColor == TargetColor.BOTH) {
-            DetectionResult greenResult = detectColor(
+            List<DetectionResult> greenResults = detectAllBlobsOfColor(
                     TargetColor.GREEN,
                     new Scalar(GREEN_H_MIN, GREEN_S_MIN, GREEN_V_MIN),
                     new Scalar(GREEN_H_MAX, GREEN_S_MAX, GREEN_V_MAX),
                     fullW, fullH, analysis.scaleX, analysis.scaleY
             );
-            if (greenResult != null) {
-                detections.add(greenResult);
-            }
+            detections.addAll(greenResults);
         }
 
-        // Pick the closest target (smallest forward distance)
+        // Pick the blob with the highest compensated score
         if (detections.isEmpty()) {
             analysis.hasTarget = false;
             telemetryUpdateFromAnalysis(analysis);
@@ -185,7 +189,7 @@ public class LocalVision implements VisionProcessor {
 
         DetectionResult best = detections.get(0);
         for (DetectionResult d : detections) {
-            if (d.forwardCm < best.forwardCm) {
+            if (d.compensatedScore > best.compensatedScore) {
                 best = d;
             }
         }
@@ -197,8 +201,9 @@ public class LocalVision implements VisionProcessor {
         return analysis;
     }
 
-    private DetectionResult detectColor(TargetColor color, Scalar lower, Scalar upper,
-                                        int fullW, int fullH, double scaleX, double scaleY) {
+    private List<DetectionResult> detectAllBlobsOfColor(TargetColor color, Scalar lower, Scalar upper,
+                                                        int fullW, int fullH, double scaleX, double scaleY) {
+        List<DetectionResult> results = new ArrayList<>();
         Mat mask = (color == TargetColor.PURPLE) ? purpleMask : greenMask;
 
         // Threshold
@@ -219,66 +224,69 @@ public class LocalVision implements VisionProcessor {
         Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
         if (contours.isEmpty()) {
-            return null;
+            return results;
         }
 
-        // Find largest contour
-        MatOfPoint largest = null;
-        double maxArea = 0.0;
-        for (MatOfPoint c : contours) {
-            double area = Imgproc.contourArea(c);
-            if (area > maxArea) {
-                maxArea = area;
-                largest = c;
+        // Process ALL contours (not just the largest)
+        for (MatOfPoint contour : contours) {
+            double area = Imgproc.contourArea(contour);
+
+            // Min enclosing circle
+            contour2f.fromArray(contour.toArray());
+            Point centerSmall = new Point();
+            float[] radiusSmall = new float[1];
+            Imgproc.minEnclosingCircle(contour2f, centerSmall, radiusSmall);
+
+            if (radiusSmall[0] < MIN_RADIUS_PIXELS) {
+                continue;  // Skip too-small blobs
             }
+
+            // Scale to full resolution
+            double centerXFull = centerSmall.x * scaleX;
+            double centerYFull = centerSmall.y * scaleY;
+            double radiusFull = radiusSmall[0] * (scaleX + scaleY) * 0.5;
+            double pixBottomFull = fullH - centerYFull;
+
+            // Ground projection
+            CameraSettings.GroundPosition gp = CameraSettings.projectPixelToGround(
+                    centerXFull, centerYFull, fullW, fullH
+            );
+
+            if (!gp.valid) {
+                continue;  // Skip invalid projections
+            }
+
+            // Calculate compensated score
+            // Objects further away appear smaller due to perspective
+            // We compensate by: score = area * (distance ^ power)
+            // This makes distant clusters compete fairly with nearby ones
+            double distanceM = gp.forwardCm / 100.0;  // Convert to meters
+            if (distanceM < 0.01) distanceM = 0.01;  // Prevent division issues
+
+            double compensatedScore = area * Math.pow(distanceM, DISTANCE_COMPENSATION_POWER);
+
+            // Build result
+            DetectionResult result = new DetectionResult();
+            result.color = color;
+            result.contourSmall = contour;
+            result.centerXFull = centerXFull;
+            result.centerYFull = centerYFull;
+            result.radiusFull = radiusFull;
+            result.pixelsFromBottom = pixBottomFull;
+            result.forwardCm = gp.forwardCm;
+            result.lateralCm = gp.lateralCm;
+            result.hAngleDeg = gp.horizontalAngleDeg;
+            result.losAngleDeg = gp.verticalAngleFromHorizontalDeg;
+            result.vFromCenterDeg = gp.verticalFromCenterDeg;
+            result.scaleX = scaleX;
+            result.scaleY = scaleY;
+            result.pixelArea = area;
+            result.compensatedScore = compensatedScore;
+
+            results.add(result);
         }
 
-        if (largest == null) {
-            return null;
-        }
-
-        // Min enclosing circle
-        contour2f.fromArray(largest.toArray());
-        Point centerSmall = new Point();
-        float[] radiusSmall = new float[1];
-        Imgproc.minEnclosingCircle(contour2f, centerSmall, radiusSmall);
-
-        if (radiusSmall[0] < MIN_RADIUS_PIXELS) {
-            return null;
-        }
-
-        // Scale to full resolution
-        double centerXFull = centerSmall.x * scaleX;
-        double centerYFull = centerSmall.y * scaleY;
-        double radiusFull = radiusSmall[0] * (scaleX + scaleY) * 0.5;
-        double pixBottomFull = fullH - centerYFull;
-
-        // Ground projection
-        CameraSettings.GroundPosition gp = CameraSettings.projectPixelToGround(
-                centerXFull, centerYFull, fullW, fullH
-        );
-
-        if (!gp.valid) {
-            return null;
-        }
-
-        // Build result
-        DetectionResult result = new DetectionResult();
-        result.color = color;
-        result.contourSmall = largest;
-        result.centerXFull = centerXFull;
-        result.centerYFull = centerYFull;
-        result.radiusFull = radiusFull;
-        result.pixelsFromBottom = pixBottomFull;
-        result.forwardCm = gp.forwardCm;
-        result.lateralCm = gp.lateralCm;
-        result.hAngleDeg = gp.horizontalAngleDeg;
-        result.losAngleDeg = gp.verticalAngleFromHorizontalDeg;
-        result.vFromCenterDeg = gp.verticalFromCenterDeg;
-        result.scaleX = scaleX;
-        result.scaleY = scaleY;
-
-        return result;
+        return results;
     }
 
     @Override
@@ -387,6 +395,7 @@ public class LocalVision implements VisionProcessor {
             yPosCm = 0;
             pixelsFromBottom = 0;
             radiusPixels = 0;
+            compensatedScore = 0;
             return;
         }
 
@@ -400,5 +409,6 @@ public class LocalVision implements VisionProcessor {
         yPosCm = r.forwardCm;
         pixelsFromBottom = r.pixelsFromBottom;
         radiusPixels = r.radiusFull;
+        compensatedScore = r.compensatedScore;
     }
 }
