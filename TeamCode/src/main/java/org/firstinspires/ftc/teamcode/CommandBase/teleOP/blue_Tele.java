@@ -92,6 +92,7 @@ public class blue_Tele extends OpModeEX {
         veloTimer.reset();
         turret.mapOfset = 40;
         turret.turrofset = -1.5;
+        turret.TURRET_COMP_FACTOR = 0;
     }
 
     @Override public void stop() {
