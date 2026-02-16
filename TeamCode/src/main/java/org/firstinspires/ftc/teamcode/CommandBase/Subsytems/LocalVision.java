@@ -46,6 +46,9 @@ public class LocalVision implements VisionProcessor {
     // 1.0 = linear compensation, 2.0 = quadratic (accounts for area scaling)
     public static double DISTANCE_COMPENSATION_POWER = 2.0;
 
+    // Timeout settings (assuming 10fps = 100ms between frames)
+    public static long FRAME_TIMEOUT_MS = 100;
+
     // HSV ranges for PURPLE
     public static int PURPLE_H_MIN = 125;
     public static int PURPLE_H_MAX = 155;
@@ -76,6 +79,9 @@ public class LocalVision implements VisionProcessor {
     public volatile double compensatedScore = 0.0;  // New: the score used for selection
 
     private final TargetColor targetColor;
+
+    // Frame timeout tracking
+    private volatile long lastFrameTimeMs = 0;
 
     // Full image dims
     private int imageWidth = 0;
@@ -127,6 +133,46 @@ public class LocalVision implements VisionProcessor {
         this.targetColor = targetColor;
     }
 
+    /**
+     * Check if the current frame data is stale (camera disconnected or frozen)
+     * @return true if data is older than FRAME_TIMEOUT_MS
+     */
+    public boolean isDataStale() {
+        if (lastFrameTimeMs == 0) return true;  // No frames received yet
+        long elapsedMs = System.currentTimeMillis() - lastFrameTimeMs;
+        return elapsedMs > FRAME_TIMEOUT_MS;
+    }
+
+    /**
+     * Call this before reading detection values to ensure data is fresh.
+     * If data is stale, all values are cleared to defaults.
+     * @return true if data is fresh, false if stale/cleared
+     */
+    public boolean ensureFreshData() {
+        if (isDataStale()) {
+            clearDetection();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Clear all detection values to defaults (used on timeout)
+     */
+    private void clearDetection() {
+        hasTarget = false;
+        detectedColor = targetColor;
+        distanceCm = 0;
+        hAngleDeg = 0;
+        vAngleDeg = 0;
+        angleToBallDeg = 0;
+        xPosCm = 0;
+        yPosCm = 0;
+        pixelsFromBottom = 0;
+        radiusPixels = 0;
+        compensatedScore = 0;
+    }
+
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
         imageWidth = width;
@@ -135,6 +181,9 @@ public class LocalVision implements VisionProcessor {
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
+        // Update frame timestamp
+        lastFrameTimeMs = System.currentTimeMillis();
+
         int fullW = frame.width();
         int fullH = frame.height();
 
@@ -383,6 +432,12 @@ public class LocalVision implements VisionProcessor {
     }
 
     private void telemetryUpdateFromAnalysis(FrameAnalysis a) {
+        // First check if data is stale due to camera disconnect/timeout
+        if (isDataStale()) {
+            clearDetection();
+            return;
+        }
+
         hasTarget = a.hasTarget;
 
         if (!a.hasTarget || a.bestResult == null) {
