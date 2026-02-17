@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
-import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 import dev.weaponboy.nexus_pathing.Follower.follower;
@@ -78,7 +77,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
     boolean p3Qued = false;
     boolean PIDAtGate = false;
     boolean preQue = true;
-    boolean alreadyTweaked = true;
+    boolean alreadyFailed = false;
 
 
 
@@ -368,7 +367,6 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 if (pathing && follow.isFinished(10, 10)){
                     state = AutoState.driveToShoot1;
                     follow.setPath(paths.returnPath("driveToShoot1"));
-                    turret.turrofset= 0;
                     follow.usePathHeadings(true);
                     follow.setHeadingOffset(-90);
                     follow.setHeadingLookAheadDistance(100);
@@ -384,11 +382,11 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
 
 
-                if ( !built && shootTime.milliseconds() > shootWait && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo || !built && ballShot && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo  ){
+                if ( !built && shootTime.milliseconds() > 1700 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo){
                     follow.usePathHeadings(false);
                     pathing = false;
                     intake.InTake = true;
-                    turret.turrofset= 1;
+                    turret.turrofset= -1;
                     collectDone = false;
                     built = true;
                     intake.block = true;
@@ -431,14 +429,14 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 if (dontWaitForPoz || afterGateCollect){
                     maxToGetToShoot.reset();
                 }
-                if (maxToGetToShoot.milliseconds()> 2800){
+                if (maxToGetToShoot.milliseconds()> 2400){
                     follow.setPath(paths.returnPath("tryAgain"));
                     pathing = true;
                     maxToGetToShoot.reset();
-                    alreadyTweaked = true;
+                    alreadyFailed = true;
 
                 }
-                if (alreadyTweaked){
+                if (alreadyFailed && maxToGetToShoot.milliseconds() > 2200){
                     follow.usePathHeadings(false);
                     dontWaitForPoz = false;
                     built = true;
@@ -449,7 +447,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     driveBase.speed = 1;
                     collectDone = false;
                     maxWait.reset();
-                    alreadyTweaked = false;
+                    alreadyFailed = false;
                 }
 
 
@@ -466,9 +464,9 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 break;
             case backCollect:
                 if (built && !collectDone ){
-                    if (!preQue){
+                    if (!preQue && processor.hasTarget){
                         visionCollect = true;
-                    }else {
+                    }else if (preQue){
                         follow.setPath(paths.returnPath("pEsh"));
                         targetHeading = 270;
                         if (!pathing){
@@ -503,7 +501,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath(shootState.name()));
-                    turret.turrofset= 0;
+                    turret.turrofset= -1.5;
 
                     intakePathSelected = false;
                     maxToGetToShoot.reset();
