@@ -120,6 +120,9 @@ public class Turret extends SubSystem {
     public boolean Auto = false;
     public boolean toggle = true;
     public boolean  testOP = false;
+    public boolean  manuel = false;
+    public boolean  eject = false;
+
 
     double K1 = R1 /R2;
     double K2 = R1 /R4;
@@ -333,20 +336,23 @@ public class Turret extends SubSystem {
         }
 
         if (toggle) {
-            if (!testOP) {
+            if (!testOP && !manuel &&!eject) {
                 targetRPM = interpolatedPower + mapOfset;
                 setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation));
             }
+            if (manuel){
+                shooterMotorTwo.update(0.65);
+                shooterMotorOne.update(0.65);
+            }
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
-            if (!stopTurret) {
+            if (!stopTurret && !manuel) {
                 turretTurnOne.setPosition(((turretAngle + turrofset) / gearRatio));
                 turretTurnTwo.setPosition(((turretAngle + turrofset) / gearRatio));
             }
         } else if (Auto) {
             targetRPM = interpolatedPower + mapOfset;
             setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation));
-
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             if (!stopTurret) {

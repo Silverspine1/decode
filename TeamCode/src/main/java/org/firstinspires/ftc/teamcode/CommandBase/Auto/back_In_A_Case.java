@@ -77,6 +77,12 @@ public class back_In_A_Case extends OpModeEX {
     boolean dontWaitForPoz = false;
     boolean p3Qued = true;
     boolean PIDAtGate = false;
+    boolean alreadyFailed = false;
+    boolean waitAtEnd = false;
+    double IntakeOffWait = 200;
+
+
+
 
 
 
@@ -96,6 +102,8 @@ public class back_In_A_Case extends OpModeEX {
     ElapsedTime gateInTakeTime = new ElapsedTime();
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime waitForTurretToTarget = new ElapsedTime();
+    ElapsedTime endPath = new ElapsedTime();
+
 
 
 
@@ -163,6 +171,9 @@ public class back_In_A_Case extends OpModeEX {
     private final sectionBuilder[] pEsh = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(65, 284)),
     };
+    private final sectionBuilder[] tryAgain = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(105, 320), new Vector2D(136, 320)),
+    };
 
     @Override
     public void initEX() {
@@ -210,6 +221,8 @@ public class back_In_A_Case extends OpModeEX {
         paths.buildPath(S2);
         paths.addNewPath("S3");
         paths.buildPath(S3);
+        paths.addNewPath("tryAgain");
+        paths.buildPath(tryAgain);
 
 
         Apriltag.limelight.pipelineSwitch(0);
@@ -259,7 +272,7 @@ public class back_In_A_Case extends OpModeEX {
             reset = true;
         }
 
-        if (intakeOff && intake.ballCount >2 && intakeoff.milliseconds() >200){
+        if (intakeOff && intake.ballCount >2 && intakeoff.milliseconds() >IntakeOffWait){
             intake.InTake = false;
             intakeOff = false;
 
@@ -270,7 +283,7 @@ public class back_In_A_Case extends OpModeEX {
         }
 
         if (visionCollect){
-            if (processor.hAngleDeg >8 && !intakePathSelected){
+            if (processor.hAngleDeg >16 && !intakePathSelected){
                 follow.setPath(paths.returnPath("p3"));
                 pathing = true;
                 intakePathSelected = true;
@@ -280,7 +293,7 @@ public class back_In_A_Case extends OpModeEX {
                 intake.InTake = true;
                 maxWait.reset();
 
-            } else if (processor.hAngleDeg <-8 && !intakePathSelected) {
+            } else if (processor.hAngleDeg < -0.1 && !intakePathSelected) {
                 follow.setPath(paths.returnPath("p1"));
                 pathing = true;
                 intakePathSelected = true;
@@ -291,7 +304,7 @@ public class back_In_A_Case extends OpModeEX {
                 maxWait.reset();
 
 
-            }else if(!intakePathSelected) {
+            }else if(!intakePathSelected && processor.hAngleDeg >-0.1) {
                 follow.setPath(paths.returnPath("p2"));
                 pathing = true;
                 intakePathSelected = true;
@@ -303,7 +316,12 @@ public class back_In_A_Case extends OpModeEX {
 
 
             }
-            if (follow.isFinished(5,10) || maxWait.milliseconds() > 1700){
+            if (follow.isFinished(5,10) && !waitAtEnd || maxWait.milliseconds() > 1700 && !waitAtEnd){
+                waitAtEnd = true;
+                endPath.reset();
+            }
+            if (waitAtEnd && endPath.milliseconds() > 180){
+                waitAtEnd = false;
                 collectDone = true;
             }
 
@@ -532,12 +550,21 @@ public class back_In_A_Case extends OpModeEX {
                     pathing = false;
                     intake.block = false;
                     intake.InTake = true;
+                    IntakeOffWait = 350;
+
 
                 }
                 if (dontWaitForPoz || afterGateCollect){
                     maxToGetToShoot.reset();
                 }
                 if (maxToGetToShoot.milliseconds()> 2400){
+                    follow.setPath(paths.returnPath("tryAgain"));
+                    pathing = true;
+                    maxToGetToShoot.reset();
+                    alreadyFailed = true;
+
+                }
+                if (alreadyFailed && maxToGetToShoot.milliseconds() > 2200){
                     follow.usePathHeadings(false);
                     dontWaitForPoz = false;
                     built = true;
@@ -548,6 +575,7 @@ public class back_In_A_Case extends OpModeEX {
                     driveBase.speed = 1;
                     collectDone = false;
                     maxWait.reset();
+                    alreadyFailed = false;
                 }
 
 

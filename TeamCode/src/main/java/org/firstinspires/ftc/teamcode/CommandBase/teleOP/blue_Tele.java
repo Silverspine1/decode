@@ -81,6 +81,8 @@ public class blue_Tele extends OpModeEX {
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime maxWait = new ElapsedTime();
     ElapsedTime intakeoff = new ElapsedTime();
+    ElapsedTime ejectTimer = new ElapsedTime();
+
 
     private final sectionBuilder[] p1 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(60, 340)),
@@ -133,6 +135,7 @@ public class blue_Tele extends OpModeEX {
 
     @Override
     public void initEX() {
+
         turret.toggle = false;
         Apriltag.limelight.pipelineSwitch(0);
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -241,9 +244,9 @@ public class blue_Tele extends OpModeEX {
 
         }
         if (odometry.X()> 220){
-            turret.mapOfset = 125;
+            turret.mapOfset = 120;
         }else {
-            turret.mapOfset = 60;
+            turret.mapOfset = 40;
         }
 
         if (intake.ballCount >2){
@@ -252,7 +255,7 @@ public class blue_Tele extends OpModeEX {
             }
             shooterOffWait.reset();
 
-        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>500 ){
+        }else if(intake.ballCount < 1 && shooterOffWait.milliseconds()>500 && !turret.manuel){
             turret.toggle = false;
         }
         if (intake.ballCount > 2 && rumble.milliseconds() > 1500){
@@ -260,8 +263,9 @@ public class blue_Tele extends OpModeEX {
         }
 
         if (gamepad1.right_bumper ){
-
-            intake.block = true;
+            if (!turret.manuel) {
+                intake.block = true;
+            }
             intake.InTake = true;
 
 
@@ -296,21 +300,6 @@ public class blue_Tele extends OpModeEX {
             odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
             odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
             odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
-
-        }
-        if (!lastGamepad1.back && currentGamepad1.back && blue){
-            blue = false;
-            turret.targetX = 360;
-            gamepad1.rumble(800);
-            turret.turrofset = 0;
-
-
-        } else if (!lastGamepad1.back && currentGamepad1.back && !blue){
-            blue = true;
-            turret.targetX = 0;
-            gamepad1.rumble(800);
-            turret.turrofset = 0;
-
 
         }
         if (visionCollect){
@@ -384,19 +373,28 @@ public class blue_Tele extends OpModeEX {
                     -correctivePower.getVertical()
             );
         }
-        if (gamepad1.b){
-            autoCycles = true;
-            pathing = false;
-            intake.InTake = true;
-            collectDone = false;
-            built = true;
-            intake.block = true;
-            maxToGetToShoot.reset();
-            backstate = backState.backCollect;
-        }else if (Math.abs(gamepad1.left_stick_y) + Math.abs(gamepad1.left_stick_x) > 0.5){
-            autoCycles = false;
-            pathing = false;
+        if (!lastGamepad1.b && currentGamepad1.b && !turret.manuel){
+            turret.manuel = true;
+            intake.block = false;
+            turret.setHoodDegrees(36);
+
+        } else if (!lastGamepad1.b && currentGamepad1.b && turret.manuel) {
+            turret.manuel = false;
+
         }
+        if (gamepad1.x){
+            ejectTimer.reset();
+            turret.eject = true;
+            intake.block = false;
+            turret.targetRPM = 500;
+            intake.InTake = true;
+            turret.toggle = true;
+        }else if (ejectTimer.milliseconds() < 600 && ejectTimer.milliseconds()>150){
+            intake.block = true;
+            turret.eject = false;
+        }
+
+
         if (autoCycles) {
             switch (backstate) {
                 case backShoot:

@@ -77,6 +77,12 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
     boolean dontWaitForPoz = false;
     boolean p3Qued = true;
     boolean PIDAtGate = false;
+    boolean alreadyFailed = false;
+    double IntakeOffWait = 200;
+    boolean waitAtEnd = false;
+
+
+
 
 
 
@@ -96,6 +102,8 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
     ElapsedTime gateInTakeTime = new ElapsedTime();
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime waitForTurretToTarget = new ElapsedTime();
+    ElapsedTime endPath = new ElapsedTime();
+
 
 
 
@@ -115,10 +123,10 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
 
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(69, 207)),
+            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(66, 207)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(132, 165), new Vector2D(70, 255), new Vector2D(47, 200)),
+            () -> paths.addPoints(new Vector2D(132, 165), new Vector2D(70, 255), new Vector2D(45, 199)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(132, 165)),
@@ -146,7 +154,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
             () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(60, 340)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 317)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 311)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 284)),
@@ -155,13 +163,16 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
             () -> paths.addPoints(new Vector2D(56, 340), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] S2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(56, 320), new Vector2D(115, 320)),
+            () -> paths.addPoints(new Vector2D(56, 311), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] S3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(56, 284), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] pEsh = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(65, 315)),
+    };
+    private final sectionBuilder[] tryAgain = new sectionBuilder[]{
+            () -> paths.addPoints(new Vector2D(105, 320), new Vector2D(136, 320)),
     };
 
     @Override
@@ -210,6 +221,8 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
         paths.buildPath(S2);
         paths.addNewPath("S3");
         paths.buildPath(S3);
+        paths.addNewPath("tryAgain");
+        paths.buildPath(tryAgain);
 
 
         Apriltag.limelight.pipelineSwitch(0);
@@ -259,7 +272,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
             reset = true;
         }
 
-        if (intakeOff && intake.ballCount >2 && intakeoff.milliseconds() >200){
+        if (intakeOff && intake.ballCount >2 && intakeoff.milliseconds() >IntakeOffWait){
             intake.InTake = false;
             intakeOff = false;
 
@@ -270,7 +283,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
         }
 
         if (visionCollect){
-            if (processor.hAngleDeg >8 && !intakePathSelected){
+            if (processor.hAngleDeg >16 && !intakePathSelected){
                 follow.setPath(paths.returnPath("p3"));
                 pathing = true;
                 intakePathSelected = true;
@@ -280,7 +293,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 intake.InTake = true;
                 maxWait.reset();
 
-            } else if (processor.hAngleDeg <-8 && !intakePathSelected) {
+            } else if (processor.hAngleDeg < -0.1 && !intakePathSelected) {
                 follow.setPath(paths.returnPath("p1"));
                 pathing = true;
                 intakePathSelected = true;
@@ -291,7 +304,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 maxWait.reset();
 
 
-            }else if(!intakePathSelected) {
+            }else if(!intakePathSelected && processor.hAngleDeg >-0.1) {
                 follow.setPath(paths.returnPath("p2"));
                 pathing = true;
                 intakePathSelected = true;
@@ -303,7 +316,12 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
 
 
             }
-            if (follow.isFinished(5,10) || maxWait.milliseconds() > 1700){
+            if (follow.isFinished(5,10) && !waitAtEnd || maxWait.milliseconds() > 1700 && !waitAtEnd){
+                waitAtEnd = true;
+                endPath.reset();
+            }
+            if (waitAtEnd && endPath.milliseconds() > 180){
+                waitAtEnd = false;
                 collectDone = true;
             }
 
@@ -475,7 +493,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     targetHeading = 297;
                 }
 
-                if (follow.isFinished(12, 12) && !built) {
+                if (follow.isFinished(12, 6) && !built) {
                     pathing = false;
                     gateInTakeTime.reset();
                     built = true;
@@ -486,7 +504,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 }
 
 
-                if (built && gateInTakeTime.milliseconds() > 1600){
+                if (built && gateInTakeTime.milliseconds() > 1200){
                     turret.stopTurret = false;
                     pathing = true;
                     PIDAtGate = false;
@@ -511,6 +529,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     pathing = false;
                     p3Qued = true;
                     waitForTurretToTarget.reset();
+                    IntakeOffWait = 350;
 
                 }
                 if (afterGateCollect && odometry.Y() > 270){
@@ -519,9 +538,9 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 21){
                     pathing = false;
                 }
-                if ( !pathing && odometry.X() > 110 &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10 && waitForTurretToTarget.milliseconds() >850){
+                if ( !pathing && odometry.X() > 110 &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10 && waitForTurretToTarget.milliseconds() >150){
                     if (dontWaitForPoz){
-                        shootWait = 600;
+                        shootWait = 900;
                     }else {
                         shootWait = 500;
                     }
@@ -538,6 +557,13 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     maxToGetToShoot.reset();
                 }
                 if (maxToGetToShoot.milliseconds()> 2400){
+                    follow.setPath(paths.returnPath("tryAgain"));
+                    pathing = true;
+                    maxToGetToShoot.reset();
+                    alreadyFailed = true;
+
+                }
+                if (alreadyFailed && maxToGetToShoot.milliseconds() > 2200){
                     follow.usePathHeadings(false);
                     dontWaitForPoz = false;
                     built = true;
@@ -548,6 +574,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     driveBase.speed = 1;
                     collectDone = false;
                     maxWait.reset();
+                    alreadyFailed = false;
                 }
 
 

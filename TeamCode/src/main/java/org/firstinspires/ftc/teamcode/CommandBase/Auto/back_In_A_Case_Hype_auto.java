@@ -78,6 +78,14 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
     boolean PIDAtGate = false;
     boolean preQue = true;
     boolean alreadyFailed = false;
+    boolean waitAtEnd = false;
+    double IntakeOffWait = 200;
+    double Xdist = 110;
+    double cycleCount = 0;
+    boolean failSafeHasHappend = false;
+
+
+
 
 
 
@@ -96,9 +104,11 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
     ElapsedTime preload = new ElapsedTime();
     ElapsedTime gameTime = new ElapsedTime();
     ElapsedTime ballshot = new ElapsedTime();
-    ElapsedTime gateInTakeTime = new ElapsedTime();
+    ElapsedTime extraTurnWait = new ElapsedTime();
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime waitForTurretToTarget = new ElapsedTime();
+    ElapsedTime endPath = new ElapsedTime();
+
 
 
 
@@ -146,19 +156,19 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(60, 340)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(62, 340)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 317)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(62, 311)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 284)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(62, 284)),
     };
     private final sectionBuilder[] S1 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(56, 340), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] S2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(56, 320), new Vector2D(115, 320)),
+            () -> paths.addPoints(new Vector2D(56, 311), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] S3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(56, 284), new Vector2D(115, 320)),
@@ -267,7 +277,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             reset = true;
         }
 
-        if (intakeOff && intake.ballCount >2 && intakeoff.milliseconds() >200){
+        if (intakeOff && intake.ballCount >2 && intakeoff.milliseconds() > IntakeOffWait){
             intake.InTake = false;
             intakeOff = false;
 
@@ -278,7 +288,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
         }
 
         if (visionCollect){
-            if (processor.hAngleDeg >8 && !intakePathSelected){
+            if (processor.hAngleDeg >16 && !intakePathSelected){
                 follow.setPath(paths.returnPath("p3"));
                 pathing = true;
                 intakePathSelected = true;
@@ -288,7 +298,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 intake.InTake = true;
                 maxWait.reset();
 
-            } else if (processor.hAngleDeg <-8 && !intakePathSelected) {
+            } else if (processor.hAngleDeg < -0.1 && !intakePathSelected) {
                 follow.setPath(paths.returnPath("p1"));
                 pathing = true;
                 intakePathSelected = true;
@@ -299,7 +309,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 maxWait.reset();
 
 
-            }else if(!intakePathSelected) {
+            }else if(!intakePathSelected && processor.hAngleDeg >-0.1) {
                 follow.setPath(paths.returnPath("p2"));
                 pathing = true;
                 intakePathSelected = true;
@@ -311,7 +321,12 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
 
 
             }
-            if (follow.isFinished(5,10) || maxWait.milliseconds() > 1700){
+            if (follow.isFinished(5,10) && !waitAtEnd || maxWait.milliseconds() > 1700 && !waitAtEnd){
+                waitAtEnd = true;
+                endPath.reset();
+            }
+            if (waitAtEnd && endPath.milliseconds() > 180){
+                waitAtEnd = false;
                 collectDone = true;
             }
 
@@ -373,7 +388,8 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
                 break;
             case driveToShoot1:
-                if (built && follow.isFinished(15,15) && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo/1.6 ){
+
+                if (built && follow.isFinished(15,15) && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo/1.6 && extraTurnWait.milliseconds() > 400){
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -382,7 +398,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
 
 
-                if ( !built && shootTime.milliseconds() > 1700 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo){
+                if ( !built && shootTime.milliseconds() > 450 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo){
                     follow.usePathHeadings(false);
                     pathing = false;
                     intake.InTake = true;
@@ -403,20 +419,26 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     pathing = false;
                     p3Qued = true;
                     waitForTurretToTarget.reset();
+                    IntakeOffWait = 350;
+
 
                 }
+                if (shootState == shootPath.S3){
+                    Xdist = 123;
+                }else {
+                    Xdist = 117;
+                }
+
                 if (afterGateCollect && odometry.Y() > 270){
                     targetHeading = 292;
                 }
-                if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 21){
+                if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 18){
                     pathing = false;
                 }
-                if ( !pathing && odometry.X() > 110 &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10 && waitForTurretToTarget.milliseconds() >850){
-                    if (dontWaitForPoz){
-                        shootWait = 600;
-                    }else {
-                        shootWait = 500;
-                    }
+                if ( !pathing && odometry.X() > Xdist &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 8 ){
+
+                    shootWait = 450;
+
                     shootTime.reset();
                     follow.usePathHeadings(false);
                     dontWaitForPoz = false;
@@ -424,8 +446,16 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     pathing = false;
                     intake.block = false;
                     intake.InTake = true;
+                    cycleCount += 1;
+                    IntakeOffWait = 350;
+
 
                 }
+                if (!failSafeHasHappend && cycleCount == 4){
+                    preQue = true;
+
+                }
+
                 if (dontWaitForPoz || afterGateCollect){
                     maxToGetToShoot.reset();
                 }
@@ -433,6 +463,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     follow.setPath(paths.returnPath("tryAgain"));
                     pathing = true;
                     maxToGetToShoot.reset();
+                    failSafeHasHappend = true;
                     alreadyFailed = true;
 
                 }
@@ -464,7 +495,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 break;
             case backCollect:
                 if (built && !collectDone ){
-                    if (!preQue && processor.hasTarget){
+                    if (!preQue ){
                         visionCollect = true;
                     }else if (preQue){
                         follow.setPath(paths.returnPath("pEsh"));
