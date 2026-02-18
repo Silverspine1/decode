@@ -128,7 +128,7 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(67, 208.5)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(47, 192)),
+            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(47, 193.5)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(117, 150)),
@@ -153,13 +153,13 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(72, 340)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(69, 340)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(72, 311)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(69, 311)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(72, 284)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(69, 284)),
     };
     private final sectionBuilder[] S1 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(72, 340), new Vector2D(115, 320)),
@@ -544,7 +544,7 @@ public class back_In_A_Case extends OpModeEX {
                 if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 18){
                     pathing = false;
                 }
-                if ( !pathing && odometry.X() > Xdist &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 4  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 8 && waitForTurretToTarget.milliseconds() >350){
+                if ( !pathing && odometry.X() > Xdist &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 2  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 4 && waitForTurretToTarget.milliseconds() >350){
                     if (dontWaitForPoz){
                         shootWait = 700;
                     }else {

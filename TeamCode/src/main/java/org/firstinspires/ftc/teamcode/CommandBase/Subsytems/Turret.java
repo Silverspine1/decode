@@ -169,7 +169,7 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(180);
+        turretTurnOne.setOffset(181.3);
         turretTurnTwo.setOffset(195);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
 
