@@ -126,7 +126,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
             () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(67, 207)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(47, 199)),
+            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(48, 196)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(132, 165)),
@@ -519,6 +519,8 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     intakeoff.reset();
                     intakeOff = true;
                     built = false;
+                    turret.turrofset= 0.5;
+
                 }
 
                 break;
@@ -538,7 +540,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 21){
                     pathing = false;
                 }
-                if ( !pathing && odometry.X() > 110 &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10 && waitForTurretToTarget.milliseconds() >150){
+                if ( !pathing && odometry.X() > 110 &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 4  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 6 && waitForTurretToTarget.milliseconds() >550){
                     if (dontWaitForPoz){
                         shootWait = 900;
                     }else {

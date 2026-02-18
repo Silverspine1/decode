@@ -128,7 +128,7 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(67, 208.5)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(47, 193.5)),
+            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(47, 195.5)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(117, 150)),
@@ -557,7 +557,7 @@ public class back_In_A_Case extends OpModeEX {
                     pathing = false;
                     intake.block = false;
                     intake.InTake = true;
-                    IntakeOffWait = 350;
+                    IntakeOffWait = 200;
 
 
                 }
@@ -601,14 +601,14 @@ public class back_In_A_Case extends OpModeEX {
                     if (!p3Qued){
                         visionCollect = true;
                     }else {
-                        follow.setPath(paths.returnPath("p1"));
+                        follow.setPath(paths.returnPath("p2"));
                         targetHeading = 270;
                         if (!pathing){
                             maxWait.reset();
                         }
                         pathing = true;
                         intakePathSelected = true;
-                        shootState = shootPath.S1;
+                        shootState = shootPath.S2;
                         visionCollect = true;
                         p3Qued = false;
 
