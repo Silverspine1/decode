@@ -123,10 +123,10 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
 
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(66, 207)),
+            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(67, 207)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(132, 165), new Vector2D(70, 255), new Vector2D(45, 199)),
+            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(47, 199)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(132, 165)),
@@ -151,13 +151,13 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(60, 340)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(62, 340)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 311)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(62, 311)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 284)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(62, 284)),
     };
     private final sectionBuilder[] S1 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(56, 340), new Vector2D(115, 320)),
@@ -408,7 +408,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 }
                 break;
             case collect2:
-                if (pathing && odometry.X() < 125){
+                if (pathing && odometry.X() < 135){
                     targetHeading = 286;
                     follow.usePathHeadings(false);
                 }
@@ -493,7 +493,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     targetHeading = 297;
                 }
 
-                if (follow.isFinished(12, 6) && !built) {
+                if (follow.isFinished(12, 12) && !built) {
                     pathing = false;
                     gateInTakeTime.reset();
                     built = true;

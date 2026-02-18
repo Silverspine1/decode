@@ -80,6 +80,8 @@ public class back_In_A_Case extends OpModeEX {
     boolean alreadyFailed = false;
     boolean waitAtEnd = false;
     double IntakeOffWait = 200;
+    double Xdist = 110;
+
 
 
 
@@ -123,10 +125,10 @@ public class back_In_A_Case extends OpModeEX {
 
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(69, 209)),
+            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(67, 208.5)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(50, 197)),
+            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(47, 192)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(117, 150)),
@@ -151,25 +153,25 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(60, 340)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(72, 340)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 317)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(72, 311)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 284)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(72, 284)),
     };
     private final sectionBuilder[] S1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(56, 340), new Vector2D(115, 320)),
+            () -> paths.addPoints(new Vector2D(72, 340), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] S2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(56, 320), new Vector2D(115, 320)),
+            () -> paths.addPoints(new Vector2D(72, 311), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] S3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(56, 284), new Vector2D(115, 320)),
+            () -> paths.addPoints(new Vector2D(72, 284), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] pEsh = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(65, 284)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(65, 310)),
     };
     private final sectionBuilder[] tryAgain = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(105, 320), new Vector2D(136, 320)),
@@ -345,7 +347,7 @@ public class back_In_A_Case extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 30;
+                    turret.mapOfset = 45;
 
                 }
                 if (built && preload.milliseconds() >1480|| built && turret.diff < 100 && turret.rpm > 1200 ){
@@ -360,7 +362,7 @@ public class back_In_A_Case extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 500){
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.mapOfset = 10;
+                    turret.mapOfset = 38;
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
                     pathing = true;
@@ -408,7 +410,7 @@ public class back_In_A_Case extends OpModeEX {
                 }
                 break;
             case collect2:
-                if (pathing && odometry.X() < 130){
+                if (pathing && odometry.X() < 135){
                     targetHeading = 286;
                     follow.usePathHeadings(false);
                 }
@@ -504,7 +506,7 @@ public class back_In_A_Case extends OpModeEX {
                 }
 
 
-                if (built && gateInTakeTime.milliseconds() > 1600){
+                if (built && gateInTakeTime.milliseconds() > 1400){
                     turret.stopTurret = false;
                     pathing = true;
                     PIDAtGate = false;
@@ -515,7 +517,7 @@ public class back_In_A_Case extends OpModeEX {
                     driveBase.speed = 1;
                     targetHeading = 308;
                     maxToGetToShoot.reset();
-                    turret.mapOfset = 50;
+                    turret.mapOfset = 65;
                     intakeoff.reset();
                     intakeOff = true;
                     built = false;
@@ -534,12 +536,17 @@ public class back_In_A_Case extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 270){
                    targetHeading = 292;
                 }
-                if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 21){
+                if (shootState == shootPath.S3){
+                    Xdist = 123;
+                }else {
+                    Xdist = 117;
+                }
+                if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 18){
                     pathing = false;
                 }
-                if ( !pathing && odometry.X() > 110 &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 10 && waitForTurretToTarget.milliseconds() >850){
+                if ( !pathing && odometry.X() > Xdist &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 4  && !dontWaitForPoz||!built && dontWaitForPoz && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 8 && waitForTurretToTarget.milliseconds() >350){
                     if (dontWaitForPoz){
-                        shootWait = 600;
+                        shootWait = 700;
                     }else {
                         shootWait = 500;
                     }
@@ -594,14 +601,14 @@ public class back_In_A_Case extends OpModeEX {
                     if (!p3Qued){
                         visionCollect = true;
                     }else {
-                        follow.setPath(paths.returnPath("pEsh"));
+                        follow.setPath(paths.returnPath("p1"));
                         targetHeading = 270;
                         if (!pathing){
                             maxWait.reset();
                         }
                         pathing = true;
                         intakePathSelected = true;
-                        shootState = shootPath.S3;
+                        shootState = shootPath.S1;
                         visionCollect = true;
                         p3Qued = false;
 
