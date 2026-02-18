@@ -115,13 +115,13 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
 
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(69, 209)),
+            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(69, 207)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(117, 150), new Vector2D(70, 255), new Vector2D(50, 197)),
+            () -> paths.addPoints(new Vector2D(132, 165), new Vector2D(70, 255), new Vector2D(47, 200)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(117, 150)),
+            () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(132, 165)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(130, 155), new Vector2D(73, 146)),
@@ -161,7 +161,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
             () -> paths.addPoints(new Vector2D(56, 284), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] pEsh = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(65, 284)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(65, 315)),
     };
 
     @Override
@@ -330,7 +330,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     turret.mapOfset = 30;
 
                 }
-                if (built && preload.milliseconds() >1480|| built && turret.diff < 100 && turret.rpm > 1200 ){
+                if (built && preload.milliseconds() >1580|| built && turret.diff < 70 && turret.rpm > 1200 ){
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -342,7 +342,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 500){
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.mapOfset = 10;
+                    turret.mapOfset = 20;
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
                     pathing = true;
@@ -390,7 +390,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                 }
                 break;
             case collect2:
-                if (pathing && odometry.X() < 130){
+                if (pathing && odometry.X() < 125){
                     targetHeading = 286;
                     follow.usePathHeadings(false);
                 }
@@ -497,7 +497,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     driveBase.speed = 1;
                     targetHeading = 308;
                     maxToGetToShoot.reset();
-                    turret.mapOfset = 50;
+                    turret.mapOfset = 90;
                     intakeoff.reset();
                     intakeOff = true;
                     built = false;
@@ -573,7 +573,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                         }
                         pathing = true;
                         intakePathSelected = true;
-                        shootState = shootPath.S3;
+                        shootState = shootPath.S2;
                         visionCollect = true;
                         p3Qued = false;
 

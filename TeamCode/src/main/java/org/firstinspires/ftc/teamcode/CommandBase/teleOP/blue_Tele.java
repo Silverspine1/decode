@@ -241,9 +241,9 @@ public class blue_Tele extends OpModeEX {
 
         }
         if (odometry.X()> 220){
-            turret.mapOfset = 80;
+            turret.mapOfset = 125;
         }else {
-            turret.mapOfset = 40;
+            turret.mapOfset = 60;
         }
 
         if (intake.ballCount >2){
