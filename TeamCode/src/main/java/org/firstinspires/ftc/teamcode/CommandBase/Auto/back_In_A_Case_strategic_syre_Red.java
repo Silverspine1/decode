@@ -126,7 +126,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
             () -> paths.addPoints(new Vector2D(215, 310), new Vector2D(228, 218), new Vector2D(293, 207)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(243, 150), new Vector2D(290, 255), new Vector2D(312, 196)),
+            () -> paths.addPoints(new Vector2D(243, 150), new Vector2D(290, 255), new Vector2D(312, 194.5)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(303, 210), new Vector2D(228, 165)),
@@ -254,6 +254,8 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
 
 // Dashboard camera stream
         dashboard.startCameraStream(visionPortal, 15);
+        turret.turrofset= -3.5;
+
 
 
     }
@@ -346,7 +348,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 30;
+                    turret.mapOfset = 40;
 
                 }
                 if (built && preload.milliseconds() >1580|| built && turret.diff < 70 && turret.rpm > 1200 ){
@@ -361,7 +363,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 500){
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.mapOfset = 20;
+                    turret.mapOfset = 30;
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
                     pathing = true;
@@ -378,7 +380,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                 if (pathing && follow.isFinished(10, 10)){
                     state = AutoState.driveToShoot1;
                     follow.setPath(paths.returnPath("driveToShoot1"));
-                    turret.turrofset= 0;
+                    turret.turrofset= -4.5;
                     follow.usePathHeadings(true);
                     follow.setHeadingOffset(-90);
                     follow.setHeadingLookAheadDistance(100);
@@ -400,7 +402,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                     follow.setHeadingOffset(90);
                     pathing = true;
                     intake.InTake = true;
-                    turret.turrofset= 1;
+                    turret.turrofset= - 2;
 
 
                     built = true;
@@ -516,11 +518,11 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                     driveBase.speed = 1;
                     targetHeading = 52;
                     maxToGetToShoot.reset();
-                    turret.mapOfset = 90;
+                    turret.mapOfset = 65;
                     intakeoff.reset();
                     intakeOff = true;
                     built = false;
-                    turret.turrofset= -0.5;
+                    turret.turrofset= -5;
 
                 }
 
@@ -630,7 +632,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath(shootState.name()));
-                    turret.turrofset= 0;
+                    turret.turrofset= -5;
 
                     intakePathSelected = false;
                     maxToGetToShoot.reset();
