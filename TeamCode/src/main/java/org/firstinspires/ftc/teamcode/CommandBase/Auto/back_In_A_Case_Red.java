@@ -128,7 +128,7 @@ public class back_In_A_Case_Red extends OpModeEX {
             () -> paths.addPoints(new Vector2D(215, 310), new Vector2D(228, 218), new Vector2D(293, 208.5)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(243, 150), new Vector2D(290, 255), new Vector2D(313, 195.5)),
+            () -> paths.addPoints(new Vector2D(243, 150), new Vector2D(290, 255), new Vector2D(314.5, 198)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(303, 210), new Vector2D(243, 150)),
@@ -349,7 +349,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 30;
+                    turret.mapOfset = 60;
 
                 }
                 if (built && preload.milliseconds() >1480|| built && turret.diff < 100 && turret.rpm > 1200 ){
@@ -364,7 +364,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 500){
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.mapOfset = 17;
+                    turret.mapOfset = 30;
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
                     pathing = true;
@@ -489,6 +489,8 @@ public class back_In_A_Case_Red extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
+                    turret.turrofset= -4.5;
+
                 }
                 break;
             case gate:
@@ -519,7 +521,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     driveBase.speed = 1;
                     targetHeading = 52;
                     maxToGetToShoot.reset();
-                    turret.mapOfset = 60;
+                    turret.mapOfset = 70;
                     intakeoff.reset();
                     intakeOff = true;
                     built = false;
@@ -527,7 +529,7 @@ public class back_In_A_Case_Red extends OpModeEX {
 
                 break;
             case driveToShootBack:
-                if (afterGateCollect && odometry.Y() > 305){
+                if (afterGateCollect && odometry.Y() > 302){
                     afterGateCollect = false;
                     dontWaitForPoz = true;
                     pathing = false;
@@ -535,7 +537,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     waitForTurretToTarget.reset();
 
                 }
-                if (afterGateCollect && odometry.Y() > 270){
+                if (afterGateCollect && odometry.Y() > 268){
                     targetHeading = 68;
                 }
                 if (shootState == shootPath.S3){

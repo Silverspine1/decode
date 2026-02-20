@@ -128,6 +128,7 @@ public class red_Tele extends OpModeEX {
 
     private double currentMaxVelo = 0;
     private double currentMaxAccel = 0;
+    boolean autoShootOff = false;
 
 
     @Override
@@ -242,9 +243,9 @@ public class red_Tele extends OpModeEX {
 
         }
         if (odometry.X()> 220){
-            turret.mapOfset = 120;
+            turret.mapOfset = 100;
         }else {
-            turret.mapOfset = 40;
+            turret.mapOfset = 20;
         }
 
         if (intake.ballCount >2){
@@ -267,7 +268,7 @@ public class red_Tele extends OpModeEX {
             intake.InTake = true;
 
 
-        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange && odometry.getHVelocity() < 1 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 17){
+        }else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange && odometry.getHVelocity() < 1 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 17 && !autoShootOff){
             intake.InTake = true;
             intake.block = false;
 
@@ -378,16 +379,11 @@ public class red_Tele extends OpModeEX {
             turret.manuel = false;
 
         }
-        if (gamepad1.x){
-            ejectTimer.reset();
-            turret.eject = true;
-            intake.block = false;
-            turret.targetRPM = 500;
-            intake.InTake = true;
-            turret.toggle = true;
-        }else if (ejectTimer.milliseconds() < 600 && ejectTimer.milliseconds()>150){
-            intake.block = true;
-            turret.eject = false;
+        if (!lastGamepad1.x && currentGamepad1.x && !autoShootOff){
+            autoShootOff = true;
+
+        }else if (!lastGamepad1.x && currentGamepad1.x && autoShootOff){
+            autoShootOff = false;
         }
 
 

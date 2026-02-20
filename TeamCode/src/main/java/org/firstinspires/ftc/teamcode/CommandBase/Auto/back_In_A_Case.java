@@ -347,10 +347,10 @@ public class back_In_A_Case extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 45;
+                    turret.mapOfset = 60;
 
                 }
-                if (built && preload.milliseconds() >1480|| built && turret.diff < 100 && turret.rpm > 1200 ){
+                if (built && preload.milliseconds() >1480|| built && turret.diff < 70 && turret.rpm > 1200 ){
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -362,7 +362,7 @@ public class back_In_A_Case extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 500){
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.mapOfset = 38;
+                    turret.mapOfset = 30;
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
                     pathing = true;

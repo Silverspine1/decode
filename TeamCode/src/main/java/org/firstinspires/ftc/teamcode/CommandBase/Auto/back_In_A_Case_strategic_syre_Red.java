@@ -348,7 +348,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 40;
+                    turret.mapOfset = 20;
 
                 }
                 if (built && preload.milliseconds() >1580|| built && turret.diff < 70 && turret.rpm > 1200 ){
@@ -528,7 +528,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
 
                 break;
             case driveToShootBack:
-                if (afterGateCollect && odometry.Y() > 305){
+                if (afterGateCollect && odometry.Y() > 302){
                     afterGateCollect = false;
                     dontWaitForPoz = true;
                     pathing = false;
@@ -537,7 +537,7 @@ public class back_In_A_Case_strategic_syre_Red extends OpModeEX {
                     IntakeOffWait = 350;
 
                 }
-                if (afterGateCollect && odometry.Y() > 270){
+                if (afterGateCollect && odometry.Y() > 267.5){
                     targetHeading = 68;
                 }
                 if (follow.isFinished(10, 10)&& Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 21){

@@ -345,7 +345,7 @@ public class back_In_A_Case_strategic_syre extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 30;
+                    turret.mapOfset = 10;
 
                 }
                 if (built && preload.milliseconds() >1580|| built && turret.diff < 70 && turret.rpm > 1200 ){

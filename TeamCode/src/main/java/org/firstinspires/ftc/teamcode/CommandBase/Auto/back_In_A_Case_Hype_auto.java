@@ -156,13 +156,13 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
     private final sectionBuilder[] p1 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(62, 340)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(63, 340)),
     };
     private final sectionBuilder[] p2 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(62, 311)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(63, 311)),
     };
     private final sectionBuilder[] p3 = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(62, 284)),
+            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(63, 284)),
     };
     private final sectionBuilder[] S1 = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(56, 340), new Vector2D(115, 320)),
@@ -174,7 +174,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
             () -> paths.addPoints(new Vector2D(56, 284), new Vector2D(115, 320)),
     };
     private final sectionBuilder[] pEsh = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(130, 306), new Vector2D(140, 340), new Vector2D(58, 340)),
+            () -> paths.addPoints(new Vector2D(130, 306), new Vector2D(140, 340), new Vector2D(64, 340)),
     };
     private final sectionBuilder[] tryAgain = new sectionBuilder[]{
             () -> paths.addPoints(new Vector2D(105, 320), new Vector2D(136, 320)),
@@ -353,7 +353,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                     turret.mapOfset = 50;
 
                 }
-                if (built && preload.milliseconds() >1480|| built && turret.diff < 100 && turret.rpm > 1200 ){
+                if (built && preload.milliseconds() >1480|| built && turret.diff < 70 && turret.rpm > 1200 ){
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -398,7 +398,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
 
 
-                if ( !built && shootTime.milliseconds() > 450 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo){
+                if ( !built && shootTime.milliseconds() > 1350 && (Math.abs(odometry.getXVelocity())+ Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()))< velo){
                     follow.usePathHeadings(false);
                     pathing = false;
                     intake.InTake = true;
@@ -437,7 +437,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
                 }
                 if ( !pathing && odometry.X() > Xdist &&!built && Math.abs(odometry.getXVelocity() +odometry.getYVelocity()) + Math.abs(odometry.getHVelocity()*2)< 8 ){
 
-                    shootWait = 450;
+                    shootWait = 400;
 
                     shootTime.reset();
                     follow.usePathHeadings(false);
@@ -451,7 +451,7 @@ public class back_In_A_Case_Hype_auto extends OpModeEX {
 
 
                 }
-                if (!failSafeHasHappend && cycleCount == 4){
+                if (!failSafeHasHappend && cycleCount == 4 || !failSafeHasHappend && cycleCount == 2){
                     preQue = true;
 
                 }
