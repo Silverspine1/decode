@@ -517,7 +517,8 @@ public class back_In_A_Case extends OpModeEX {
                     driveBase.speed = 1;
                     targetHeading = 308;
                     maxToGetToShoot.reset();
-                    turret.mapOfset = 65;
+                    turret.turrofset= 1;
+                    turret.mapOfset = 75;
                     intakeoff.reset();
                     intakeOff = true;
                     built = false;

@@ -226,7 +226,7 @@ public class back_In_A_Case_Red extends OpModeEX {
         paths.buildPath(S3);
         paths.addNewPath("tryAgain");
         paths.buildPath(tryAgain);
-        turret.turrofset= -3.5;
+        turret.turrofset= -4;
 
 
         Apriltag.limelight.pipelineSwitch(0);
@@ -349,7 +349,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 60;
+                    turret.mapOfset = 68;
 
                 }
                 if (built && preload.milliseconds() >1480|| built && turret.diff < 100 && turret.rpm > 1200 ){
@@ -364,7 +364,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 500){
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.mapOfset = 30;
+                    turret.mapOfset = 35;
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
                     pathing = true;
@@ -381,7 +381,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                 if (pathing && follow.isFinished(10, 10)){
                     state = AutoState.driveToShoot1;
                     follow.setPath(paths.returnPath("driveToShoot1"));
-                    turret.turrofset= -4.5;
+                    turret.turrofset= -6.5;
                     follow.usePathHeadings(true);
                     follow.setHeadingOffset(-90);
                     follow.setHeadingLookAheadDistance(100);
@@ -404,6 +404,8 @@ public class back_In_A_Case_Red extends OpModeEX {
                     pathing = true;
                     intake.InTake = true;
                     turret.turrofset= -2.0;
+                    turret.mapOfset = 40;
+
 
 
                     built = true;
@@ -521,8 +523,10 @@ public class back_In_A_Case_Red extends OpModeEX {
                     driveBase.speed = 1;
                     targetHeading = 52;
                     maxToGetToShoot.reset();
-                    turret.mapOfset = 70;
+                    turret.mapOfset = 95;
                     intakeoff.reset();
+                    turret.turrofset= -4.0;
+
                     intakeOff = true;
                     built = false;
                 }
@@ -639,7 +643,7 @@ public class back_In_A_Case_Red extends OpModeEX {
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     follow.setPath(paths.returnPath(shootState.name()));
-                    turret.turrofset= -5;
+                    turret.turrofset= -4;
 
                     intakePathSelected = false;
                     maxToGetToShoot.reset();
