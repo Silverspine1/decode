@@ -510,7 +510,6 @@ public class red_Tele extends OpModeEX {
         telemetry.addData("Max Accel (avg)", "%.1f cm/s²", getAverageMaxAccel());
         telemetry.addData("Current Accel", "%.1f cm/s²", currentMaxAccel);
 
-        telemetry.update();
 
     }
 

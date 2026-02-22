@@ -477,44 +477,10 @@ public class blue_Tele extends OpModeEX {
                     -gamepad1.right_stick_x);
         }
 
-        telemetry.addData("Intake Rpm", intake.secondIntakeMotor.getVelocity());
-        telemetry.addData("in zone", turret.inZone);
-        telemetry.addData("odometry x", odometry.X());
-        telemetry.addData("odometry y", odometry.Y());
-        telemetry.addData("Heading", odometry.Heading());
-        telemetry.addData("distance", turret.distance);
-        telemetry.addData("diff", turret.diff);
-        telemetry.addData("hood", targetHood);
-        telemetry.addData("rpm", turret.targetRPM);
-        telemetry.addData("limeX", Apriltag.getX());
-        telemetry.addData("limeY", Apriltag.getY());
-        telemetry.addData("limeH", Apriltag.getH());
-        telemetry.addData("ball x ", processor.xPosCm);
 
-        telemetry.addData("block ", intake.block);
 
-        telemetry.addData("ball", intake.ballCount);
-        telemetry.addData("turretservang ", turret.turretAngle / turret.gearRatio + 180);
+        telemetry.addData("Loop Time", "%.1f ms", loopTime);
 
-        ElapsedTime loopTimer = new ElapsedTime();
-
-        telemetry.addData("Loop Time", "%.1f ms", loopTimer.milliseconds());
-
-        telemetry.addData("ball", intake.ballCount);
-        telemetry.addData("distance velo", turret.distanceVelocity);
-        telemetry.addData("distance offset", turret.ofsetDistance);
-        telemetry.addData("vision angle", processor.hAngleDeg);
-
-        telemetry.addData("turretservang ", turret.turretAngle / turret.gearRatio + 180);
-
-        // Display velocity and acceleration data
-        telemetry.addData("--- PERFORMANCE METRICS ---", "");
-        telemetry.addData("Max Velocity (avg)", "%.1f cm/s", getAverageMaxVelo());
-        telemetry.addData("Current Velocity", "%.1f cm/s", currentMaxVelo);
-        telemetry.addData("Max Accel (avg)", "%.1f cm/s²", getAverageMaxAccel());
-        telemetry.addData("Current Accel", "%.1f cm/s²", currentMaxAccel);
-
-        telemetry.update();
 
     }
 
