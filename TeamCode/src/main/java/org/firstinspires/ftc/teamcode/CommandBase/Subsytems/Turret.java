@@ -23,7 +23,7 @@ public class Turret extends SubSystem {
     public MotorEx shooterMotorTwo = new MotorEx();
 
     public ServoDegrees turretTurnOne = new ServoDegrees();
-    public ServoDegrees turretTurnTwo =new ServoDegrees();
+    public ServoDegrees turretTurnTwo = new ServoDegrees();
     public ServoDegrees hoodAdjust = new ServoDegrees();
 
     public double TURRET_COMP_FACTOR = 0.4;
@@ -33,13 +33,14 @@ public class Turret extends SubSystem {
         medium,
         high
     }
+
     public LowMediumHigh shootingLevel = LowMediumHigh.low;
 
     double Xoffset = 16.6;
     double Yoffset = 16.6;
     double shootPower;
 
-    public double targetX =  0;
+    public double targetX = 0;
     public double targetY = 0;
     public double robotX;
     public double robotY;
@@ -51,10 +52,10 @@ public class Turret extends SubSystem {
     public double targetRPM = 0;
     public double rpm;
     public double mapOfset = 0;
-    public double turrofset= -1;
+    public double turrofset = -1;
     public double turretAngle;
     public final double gearRatio = 0.72;
-    final double turretLimitAngle =123;
+    final double turretLimitAngle = 123;
 
     public double distance;
     public double ofsetDistance;
@@ -114,18 +115,20 @@ public class Turret extends SubSystem {
     final double R4 = 153;
 
     public boolean inZone = false;
+
+    // Pre-allocated array for expandTriangle (avoids per-loop allocation)
+    private final double[] expandedT = new double[6];
     public boolean intakeTime;
     public boolean turretInRange = false;
     public boolean spinDown = false;
     public boolean Auto = false;
     public boolean toggle = true;
-    public boolean  testOP = false;
-    public boolean  manuel = false;
-    public boolean  eject = false;
+    public boolean testOP = false;
+    public boolean manuel = false;
+    public boolean eject = false;
 
-
-    double K1 = R1 /R2;
-    double K2 = R1 /R4;
+    double K1 = R1 / R2;
+    double K2 = R1 / R4;
     public double K = (R1 * R1 + R2 * R2 + R4 * R4 - R3 * R3) / (2 * R2 * R4);
 
     public double U;
@@ -141,17 +144,18 @@ public class Turret extends SubSystem {
 
     public boolean stopTurret = false;
 
-    public PIDController shootPID = new PIDController(0.004,0.000,0.00);
+    public PIDController shootPID = new PIDController(0.004, 0.000, 0.00);
 
-    public Turret(OpModeEX opModeEX){
-        registerSubsystem(opModeEX,defaultCommand);
+    public Turret(OpModeEX opModeEX) {
+        registerSubsystem(opModeEX, defaultCommand);
     }
 
     public Command defaultCommand = new LambdaCommand(
-            () -> {},
-            () -> {},
-            () -> true
-    );
+            () -> {
+            },
+            () -> {
+            },
+            () -> true);
 
     @Override
     public void init() {
@@ -178,8 +182,8 @@ public class Turret extends SubSystem {
         distanceTimer.reset();
     }
 
-    public void setHoodDegrees(double theta){
-        double U2 = Math.toRadians(theta-5);
+    public void setHoodDegrees(double theta) {
+        double U2 = Math.toRadians(theta - 5);
         A = Math.sin(U2);
         B = K2 - Math.cos(U2);
         C = K1 * Math.cos(U2) - K;
@@ -193,7 +197,8 @@ public class Turret extends SubSystem {
         hoodAdjust.setPosition(T2);
     }
 
-    private double interpolateValue(double currentDistance, double d1, double v1, double d2, double v2, double d3, double v3, double d4, double v4) {
+    private double interpolateValue(double currentDistance, double d1, double v1, double d2, double v2, double d3,
+            double v3, double d4, double v4) {
         if (currentDistance <= d1) {
             return v1;
         } else if (currentDistance <= d2) {
@@ -212,9 +217,9 @@ public class Turret extends SubSystem {
     }
 
     static boolean pointInTriangle(double px, double py,
-                                   double x1, double y1,
-                                   double x2, double y2,
-                                   double x3, double y3) {
+            double x1, double y1,
+            double x2, double y2,
+            double x3, double y3) {
         double d1 = sign(px, py, x1, y1, x2, y2);
         double d2 = sign(px, py, x2, y2, x3, y3);
         double d3 = sign(px, py, x3, y3, x1, y1);
@@ -225,9 +230,14 @@ public class Turret extends SubSystem {
         return !(hasNeg && hasPos);
     }
 
-    static double[] expandTriangle(double x1, double y1,
-                                   double x2, double y2,
-                                   double x3, double y3, double offset) {
+    /**
+     * Expands a triangle by pushing each vertex outward from the centroid.
+     * Writes into the pre-allocated expandedT array and returns it.
+     * WARNING: Not thread-safe — do not call from multiple threads.
+     */
+    private double[] expandTriangle(double x1, double y1,
+            double x2, double y2,
+            double x3, double y3, double offset) {
         double cx = (x1 + x2 + x3) / 3.0;
         double cy = (y1 + y2 + y3) / 3.0;
 
@@ -246,7 +256,13 @@ public class Turret extends SubSystem {
         x3 += (dx3 / len3) * offset;
         y3 += (dy3 / len3) * offset;
 
-        return new double[]{x1, y1, x2, y2, x3, y3};
+        expandedT[0] = x1;
+        expandedT[1] = y1;
+        expandedT[2] = x2;
+        expandedT[3] = y2;
+        expandedT[4] = x3;
+        expandedT[5] = y3;
+        return expandedT;
     }
 
     @Override
@@ -259,18 +275,16 @@ public class Turret extends SubSystem {
 
         // Calculate distance velocity (rate of change of distance)
         double dt = distanceTimer.seconds();
-        if (dt > 0.001) {  // Avoid division by zero
+        if (dt > 0.001) { // Avoid division by zero
             distanceVelocity = (distance - lastDistance) / dt;
             lastDistance = distance;
             distanceTimer.reset();
         }
 
-
-        rpm = ((shooterMotorOne.getVelocity()/28)*60);
+        rpm = ((shooterMotorOne.getVelocity() / 28) * 60);
 
         shootPower = Math.max(0, shootPID.calculate(targetRPM, rpm));
         diff = Math.abs(targetRPM - rpm);
-
 
         double[] t1 = expandTriangle(-10, 0, 180, 190, 370, 0, 0);
 
@@ -282,21 +296,27 @@ public class Turret extends SubSystem {
 
         switch (shootingLevel) {
             case low:
-                interpolatedTOF = interpolateValue(distance, distance1, lowTOF1, distance2, lowTOF2, distance3, lowTOF3, distance4, lowTOF4);
+                interpolatedTOF = interpolateValue(distance, distance1, lowTOF1, distance2, lowTOF2, distance3, lowTOF3,
+                        distance4, lowTOF4);
                 ofsetDistance = distanceVelocity * interpolatedTOF;
-                interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, lowPower1, distance2, lowPower2, distance3, lowPower3, distance4, lowPower4);
-                interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, lowHoodAngle1, distance2, lowHoodAngle2, distance3, lowHoodAngle3, distance4, lowHoodAngle4);
+                interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, lowPower1, distance2,
+                        lowPower2, distance3, lowPower3, distance4, lowPower4);
+                interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, lowHoodAngle1, distance2,
+                        lowHoodAngle2, distance3, lowHoodAngle3, distance4, lowHoodAngle4);
                 break;
             case medium:
-                interpolatedTOF = interpolateValue(distance, distance1, mediumTOF1, distance2, mediumTOF2, distance3, mediumTOF3, distance4, mediumTOF4);
+                interpolatedTOF = interpolateValue(distance, distance1, mediumTOF1, distance2, mediumTOF2, distance3,
+                        mediumTOF3, distance4, mediumTOF4);
                 ofsetDistance = distanceVelocity * interpolatedTOF;
-                interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, mediumPower1, distance2, mediumPower2, distance3, mediumPower3, distance4, mediumPower4);
-                interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, mediumHoodAngle1, distance2, mediumHoodAngle2, distance3, mediumHoodAngle3, distance4, mediumHoodAngle4);
+                interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, mediumPower1, distance2,
+                        mediumPower2, distance3, mediumPower3, distance4, mediumPower4);
+                interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, mediumHoodAngle1,
+                        distance2, mediumHoodAngle2, distance3, mediumHoodAngle3, distance4, mediumHoodAngle4);
                 break;
             case high:
                 break;
         }
-        if (Auto){
+        if (Auto) {
             TURRET_COMP_FACTOR = 2.4;
         }
 
@@ -314,7 +334,7 @@ public class Turret extends SubSystem {
             // Calculate tangential and radial velocities
             vTangential = robotXVelo * dirX + robotYVelo * dirY;
 
-            vRadial =  robotXVelo * (-dirY) + robotYVelo * dirX;
+            vRadial = robotXVelo * (-dirY) + robotYVelo * dirX;
 
             // Calculate drift and compensation using tangential velocity
             double drift = vTangential * interpolatedTOF * TURRET_COMP_FACTOR;
@@ -336,11 +356,11 @@ public class Turret extends SubSystem {
         }
 
         if (toggle) {
-            if (!testOP && !manuel &&!eject) {
+            if (!testOP && !manuel && !eject) {
                 targetRPM = interpolatedPower + mapOfset;
                 setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation));
             }
-            if (manuel){
+            if (manuel) {
                 shooterMotorTwo.update(0.65);
                 shooterMotorOne.update(0.65);
             }

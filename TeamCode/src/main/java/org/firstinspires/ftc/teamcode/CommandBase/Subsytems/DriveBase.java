@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
 
-
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -30,29 +29,22 @@ public class DriveBase extends SubSystem {
     public TouchSensor intakeSensor;
     Servo pto1;
     Servo pto2;
-    ServoDegrees baseServo =new ServoDegrees();
-
+    ServoDegrees baseServo = new ServoDegrees();
 
     public double speed = 1;
     public boolean engage = false;
     public boolean lift = false;
 
+    PIDController headingPID = new PIDController(0.025, 0, 0.0003);
 
-
-
-
-    PIDController headingPID = new PIDController(0.025,0,0.0003);
-
-
-    double vertikal ;
-    double turn ;
+    double vertikal;
+    double turn;
     double strafe;
     public boolean tele = true;
 
-
-    public DriveBase(OpModeEX opModeEX){
-       registerSubsystem(opModeEX,driveCommand);
-   }
+    public DriveBase(OpModeEX opModeEX) {
+        registerSubsystem(opModeEX, driveCommand);
+    }
 
     @Override
     public void init() {
@@ -64,24 +56,15 @@ public class DriveBase extends SubSystem {
         pto2 = getOpMode().hardwareMap.get(Servo.class, "pto2");
         baseServo.initServo("base", getOpMode().hardwareMap);
         baseServo.setRange(180);
-        baseServo.setDirection(Servo.Direction.REVERSE );
-
-
-
+        baseServo.setDirection(Servo.Direction.REVERSE);
 
         intakeSensor = getOpMode().hardwareMap.get(TouchSensor.class, "intakeSensor");
-
-
-
-
-
-
 
         LF.setDirection(DcMotorSimple.Direction.REVERSE);
         LB.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public double headingLock (double headingError , boolean on){
+    public double headingLock(double headingError, boolean on) {
         if (on) {
             turn = headingPID.calculate(headingError);
         }
@@ -93,7 +76,7 @@ public class DriveBase extends SubSystem {
     public void execute() {
         executeEX();
 
-        if (engage){
+        if (engage) {
             pto1.setPosition(0.64);
             pto2.setPosition(0.32);
             baseServo.setPosition(35);
@@ -103,19 +86,16 @@ public class DriveBase extends SubSystem {
             pto2.setPosition(0.5);
             baseServo.setPosition(0);
 
-
         }
-//        if (lift){
-//            baseServo.setPosition(90);
-//        }else {
-//            baseServo.setPosition(0);
-//        }
-
+        // if (lift){
+        // baseServo.setPosition(90);
+        // }else {
+        // baseServo.setPosition(0);
+        // }
 
     }
 
-
-    public Command drivePowers (double vertical, double turn, double strafe){
+    public Command drivePowers(double vertical, double turn, double strafe) {
         this.turn = turn;
         this.strafe = strafe;
         this.vertikal = vertical;
@@ -124,7 +104,7 @@ public class DriveBase extends SubSystem {
 
     }
 
-    public Command drivePowers (RobotPower power){
+    public Command drivePowers(RobotPower power) {
         this.turn = power.getPivot();
         this.strafe = -power.getVertical();
         this.vertikal = -power.getHorizontal();
@@ -136,7 +116,7 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
-                double denominator = Math.max(1.0, Math.abs(vertikal)+Math.abs(strafe)+Math.abs(turn));
+                double denominator = Math.max(1.0, Math.abs(vertikal) + Math.abs(strafe) + Math.abs(turn));
                 if (!engage) {
                     LF.update(((vertikal - strafe - turn) / denominator) * speed);
                     RF.update(((vertikal + strafe + turn) / denominator) * speed);
@@ -149,24 +129,18 @@ public class DriveBase extends SubSystem {
                     RB.update(0);
                 }
 
-                System.out.println("vertikal power" + vertikal);
-                System.out.println("Left front power" + LF.getPower());
             },
-            () -> true
-    );
+            () -> true);
 
-
-
-    public void setAll(double power){
+    public void setAll(double power) {
         LF.update(power);
         RF.update(power);
         LB.update(power);
         RB.update(power);
     }
 
-
     public void driveFieldCentric(double drive, double strafe, double turn, double robotHeading) {
-        // Convert degrees → radians  (most common IMU method in FTC)
+        // Convert degrees → radians (most common IMU method in FTC)
         double headingRadians = Math.toRadians(robotHeading);
 
         // Now rotate the translation vector opposite to the robot's heading
@@ -175,7 +149,5 @@ public class DriveBase extends SubSystem {
 
         drivePowers(rotY, turn, rotX);
     }
-
-
 
 }

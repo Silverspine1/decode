@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Subsytems;
+
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -18,88 +19,83 @@ import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class AprilTags extends SubSystem {
-   public LLResult llResult;
-   public Limelight3A limelight;
+    public LLResult llResult;
+    public Limelight3A limelight;
 
-   double X;
-   double Y;
-   double H;
-   boolean valid = false;
+    double X;
+    double Y;
+    double H;
+    boolean valid = false;
 
     public JSONObject jsonData;
-           public java.util.List<LLResultTypes.FiducialResult> fiducialResults;
-           public java.util.List<LLResultTypes.DetectorResult> detectorResults;
-   public AprilTags(JSONObject json) throws JSONException{
-       this.jsonData = json;
-       this.fiducialResults = new ArrayList<>();
+    public java.util.List<LLResultTypes.FiducialResult> fiducialResults;
+    public java.util.List<LLResultTypes.DetectorResult> detectorResults;
 
-   }
+    public AprilTags(JSONObject json) throws JSONException {
+        this.jsonData = json;
+        this.fiducialResults = new ArrayList<>();
 
-   Pose3D botPose;
+    }
 
-   public AprilTags(OpModeEX opModeEX) {
-       registerSubsystem(opModeEX, defaultCommand);
-   }
+    Pose3D botPose;
 
-
+    public AprilTags(OpModeEX opModeEX) {
+        registerSubsystem(opModeEX, defaultCommand);
+    }
 
     @Override
     public void init() {
-        limelight = getOpMode().hardwareMap.get(Limelight3A.class,"limelight" );
+        limelight = getOpMode().hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
     }
 
-
-    public void start(){
+    public void start() {
 
         limelight.start();
     }
 
     public double getX() {
 
-        return X +180;
+        return X + 180;
     }
+
     public double getY() {
 
-        return Y  + 180;
+        return Y + 180;
     }
+
     public double getH() {
-        return  H;
+        return H;
     }
+
     public boolean getValid() {
 
         return valid;
     }
-
-
-
 
     public Command defaultCommand = new LambdaCommand(
             () -> {
             },
             () -> {
             },
-            () -> true
-    );
+            () -> true);
 
     @Override
     public void execute() {
 
-
-
-
-
-
         LLResult llResult = limelight.getLatestResult();
+        if (llResult == null) {
+            valid = false;
+            return;
+        }
         this.llResult = llResult;
-        X = llResult.getBotpose().getPosition().y*100;
-        Y = llResult.getBotpose().getPosition().x*100;
+        X = llResult.getBotpose().getPosition().y * 100;
+        Y = llResult.getBotpose().getPosition().x * 100;
         H = llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES);
-        if (llResult.isValid()){
+        if (llResult.isValid()) {
             valid = true;
         }
         H = 180 - H;
-
 
     }
 }
