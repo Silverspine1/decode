@@ -281,15 +281,19 @@ public class blue_Tele extends OpModeEX {
             turret.turrofset += 1;
         }
 
-        if (gamepad1.left_stick_y < -0.3 && Apriltag.getH() != 0 && Apriltag.getH() != 180) {
-            togle = true;
-            gamepad1.rumble(200);
-            rest = true;
+        if (gamepad1.left_stick_y < -0.3) {
+            Apriltag.enabled = true; // High-latency read only when button held
+            if (Apriltag.getH() != 0 && Apriltag.getH() != 180) {
+                togle = true;
+                gamepad1.rumble(200);
+                rest = true;
 
-            odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
-            odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
-            odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
-
+                odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
+                odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
+                odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
+            }
+        } else {
+            Apriltag.enabled = false;
         }
         if (visionCollect) {
             if (processor.hAngleDeg > 8 && !intakePathSelected) {
@@ -404,10 +408,9 @@ public class blue_Tele extends OpModeEX {
                     -gamepad1.right_stick_x);
         }
 
-        // --- Throttled Telemetry (10 Hz) ---
         if (Timer.milliseconds() > 100) {
             Timer.reset();
-            telemetry.addData("Intake Rpm", intake.secondIntakeMotor.getVelocity());
+            telemetry.addData("Intake Rpm", intake.intakeRPM); // Use cached value from subsystem execute
             telemetry.addData("in zone", turret.inZone);
             telemetry.addData("odometry x", odometry.X());
             telemetry.addData("odometry y", odometry.Y());
@@ -415,7 +418,7 @@ public class blue_Tele extends OpModeEX {
             telemetry.addData("distance", turret.distance);
             telemetry.addData("diff", turret.diff);
             telemetry.addData("hood", targetHood);
-            telemetry.addData("rpm", turret.targetRPM);
+            telemetry.addData("rpm", turret.rpm); // Use cached value
             telemetry.addData("limeX", Apriltag.getX());
             telemetry.addData("limeY", Apriltag.getY());
             telemetry.addData("limeH", Apriltag.getH());

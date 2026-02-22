@@ -26,6 +26,7 @@ public class AprilTags extends SubSystem {
     double Y;
     double H;
     boolean valid = false;
+    public boolean enabled = false; // Gating: only update when actually requested
 
     public JSONObject jsonData;
     public java.util.List<LLResultTypes.FiducialResult> fiducialResults;
@@ -82,20 +83,24 @@ public class AprilTags extends SubSystem {
 
     @Override
     public void execute() {
-
-        LLResult llResult = limelight.getLatestResult();
-        if (llResult == null) {
+        // Only run if explicitly enabled by the OpMode (e.g. during recalibration)
+        if (!enabled) {
             valid = false;
             return;
         }
-        this.llResult = llResult;
-        X = llResult.getBotpose().getPosition().y * 100;
-        Y = llResult.getBotpose().getPosition().x * 100;
-        H = llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES);
-        if (llResult.isValid()) {
+
+        LLResult lr = limelight.getLatestResult();
+        if (lr == null) {
+            valid = false;
+            return;
+        }
+        this.llResult = lr;
+        X = lr.getBotpose().getPosition().y * 100;
+        Y = lr.getBotpose().getPosition().x * 100;
+        H = lr.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES);
+        if (lr.isValid()) {
             valid = true;
         }
         H = 180 - H;
-
     }
 }
