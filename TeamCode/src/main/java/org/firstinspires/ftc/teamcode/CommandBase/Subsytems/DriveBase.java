@@ -42,6 +42,12 @@ public class DriveBase extends SubSystem {
     double strafe;
     public boolean tele = true;
 
+    // --- Hardware Caching Fields ---
+    private double lLF = 0, lRF = 0, lRB = 0, lLB = 0;
+    private double lP1 = -1, lP2 = -1, lBase = -1;
+    private final double MOTOR_EPSILON = 0.005;
+    private final double SERVO_EPSILON = 0.001;
+
     public DriveBase(OpModeEX opModeEX) {
         registerSubsystem(opModeEX, driveCommand);
     }
@@ -77,22 +83,32 @@ public class DriveBase extends SubSystem {
         executeEX();
 
         if (engage) {
-            pto1.setPosition(0.64);
-            pto2.setPosition(0.32);
-            baseServo.setPosition(35);
-
+            if (Math.abs(0.64 - lP1) > SERVO_EPSILON) {
+                pto1.setPosition(0.64);
+                lP1 = 0.64;
+            }
+            if (Math.abs(0.32 - lP2) > SERVO_EPSILON) {
+                pto2.setPosition(0.32);
+                lP2 = 0.32;
+            }
+            if (Math.abs(35 - lBase) > SERVO_EPSILON) {
+                baseServo.setPosition(35);
+                lBase = 35;
+            }
         } else {
-            pto1.setPosition(0.5);
-            pto2.setPosition(0.5);
-            baseServo.setPosition(0);
-
+            if (Math.abs(0.5 - lP1) > SERVO_EPSILON) {
+                pto1.setPosition(0.5);
+                lP1 = 0.5;
+            }
+            if (Math.abs(0.5 - lP2) > SERVO_EPSILON) {
+                pto2.setPosition(0.5);
+                lP2 = 0.5;
+            }
+            if (Math.abs(0 - lBase) > SERVO_EPSILON) {
+                baseServo.setPosition(0);
+                lBase = 0;
+            }
         }
-        // if (lift){
-        // baseServo.setPosition(90);
-        // }else {
-        // baseServo.setPosition(0);
-        // }
-
     }
 
     public Command drivePowers(double vertical, double turn, double strafe) {
@@ -117,16 +133,45 @@ public class DriveBase extends SubSystem {
             },
             () -> {
                 double denominator = Math.max(1.0, Math.abs(vertikal) + Math.abs(strafe) + Math.abs(turn));
+                double lfT = ((vertikal - strafe - turn) / denominator) * speed;
+                double rfT = ((vertikal + strafe + turn) / denominator) * speed;
+                double lbT = ((vertikal + strafe - turn) / denominator) * speed;
+                double rbT = ((vertikal - strafe + turn) / denominator) * speed;
+
                 if (!engage) {
-                    LF.update(((vertikal - strafe - turn) / denominator) * speed);
-                    RF.update(((vertikal + strafe + turn) / denominator) * speed);
-                    LB.update(((vertikal + strafe - turn) / denominator) * speed);
-                    RB.update(((vertikal - strafe + turn) / denominator) * speed);
+                    if (Math.abs(lfT - lLF) > MOTOR_EPSILON || (lfT == 0 && lLF != 0)) {
+                        LF.update(lfT);
+                        lLF = lfT;
+                    }
+                    if (Math.abs(rfT - lRF) > MOTOR_EPSILON || (rfT == 0 && lRF != 0)) {
+                        RF.update(rfT);
+                        lRF = rfT;
+                    }
+                    if (Math.abs(lbT - lLB) > MOTOR_EPSILON || (lbT == 0 && lLB != 0)) {
+                        LB.update(lbT);
+                        lLB = lbT;
+                    }
+                    if (Math.abs(rbT - lRB) > MOTOR_EPSILON || (rbT == 0 && lRB != 0)) {
+                        RB.update(rbT);
+                        lRB = rbT;
+                    }
                 } else {
-                    LF.update(((vertikal - strafe - turn) / denominator) * speed);
-                    RF.update(((vertikal + strafe + turn) / denominator) * speed);
-                    LB.update(0);
-                    RB.update(0);
+                    if (Math.abs(lfT - lLF) > MOTOR_EPSILON || (lfT == 0 && lLF != 0)) {
+                        LF.update(lfT);
+                        lLF = lfT;
+                    }
+                    if (Math.abs(rfT - lRF) > MOTOR_EPSILON || (rfT == 0 && lRF != 0)) {
+                        RF.update(rfT);
+                        lRF = rfT;
+                    }
+                    if (lLB != 0) {
+                        LB.update(0);
+                        lLB = 0;
+                    }
+                    if (lRB != 0) {
+                        RB.update(0);
+                        lRB = 0;
+                    }
                 }
 
             },

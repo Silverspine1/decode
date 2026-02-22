@@ -31,12 +31,17 @@ public class Intake extends SubSystem {
     public boolean reverse = false;
     ElapsedTime intakeTime = new ElapsedTime();
 
-
     public int ballCount = 0;
     public double intakeRPM = 0;
 
-    public Intake(OpModeEX opModeEX){
-        registerSubsystem(opModeEX,defaultCommand);
+    // --- Hardware Caching Fields ---
+    private double lIM = 0, lSIM = 0;
+    private double lIB = -1, lIP = -1;
+    private final double MOTOR_EPSILON = 0.01;
+    private final double SERVO_EPSILON = 0.001;
+
+    public Intake(OpModeEX opModeEX) {
+        registerSubsystem(opModeEX, defaultCommand);
     }
 
     @Override
@@ -59,10 +64,11 @@ public class Intake extends SubSystem {
     }
 
     public Command defaultCommand = new LambdaCommand(
-            () -> {},
-            () -> {},
-            () -> true
-    );
+            () -> {
+            },
+            () -> {
+            },
+            () -> true);
 
     /**
      * Updates ballCount by checking the current state of all three sensors.
@@ -70,9 +76,12 @@ public class Intake extends SubSystem {
      */
     private void updateBallCount() {
         int count = 0;
-        if (sensorPos1.getState()) count++;
-        if (sensorPos2.getState()) count++;
-        if (sensorPos3.getState()) count++;
+        if (sensorPos1.getState())
+            count++;
+        if (sensorPos2.getState())
+            count++;
+        if (sensorPos3.getState())
+            count++;
 
         ballCount = count;
     }
@@ -84,33 +93,53 @@ public class Intake extends SubSystem {
         updateBallCount();
         intakeRPM = secondIntakeMotor.getVelocity();
 
-
-        if (block && intakeTime.milliseconds() >50) {
-            intakeBlocker.setPosition(0.60);
-            intakePTO.setPosition(0.37);
-        } else if (!block ){
-            intakeBlocker.setPosition(0.29);
-            intakePTO.setPosition(0.52);
+        if (block && intakeTime.milliseconds() > 50) {
+            if (Math.abs(0.60 - lIB) > SERVO_EPSILON) {
+                intakeBlocker.setPosition(0.60);
+                lIB = 0.60;
+            }
+            if (Math.abs(0.37 - lIP) > SERVO_EPSILON) {
+                intakePTO.setPosition(0.37);
+                lIP = 0.37;
+            }
+        } else if (!block) {
+            if (Math.abs(0.29 - lIB) > SERVO_EPSILON) {
+                intakeBlocker.setPosition(0.29);
+                lIB = 0.29;
+            }
+            if (Math.abs(0.52 - lIP) > SERVO_EPSILON) {
+                intakePTO.setPosition(0.52);
+                lIP = 0.52;
+            }
             intakeTime.reset();
-
         }
 
         if (InTake) {
-            intakeMotor.update(-1);
-            secondIntakeMotor.update(-1);
+            if (Math.abs(-1 - lIM) > MOTOR_EPSILON) {
+                intakeMotor.update(-1);
+                lIM = -1;
+            }
+            if (Math.abs(-1 - lSIM) > MOTOR_EPSILON) {
+                secondIntakeMotor.update(-1);
+                lSIM = -1;
+            }
             reverse = false;
-
         } else {
-            intakeMotor.update(0);
-            secondIntakeMotor.update(0);
-        }
-        if (reverse){
-//            intakeMotor.update(1);
-
+            if (lIM != 0) {
+                intakeMotor.update(0);
+                lIM = 0;
+            }
+            if (lSIM != 0) {
+                secondIntakeMotor.update(0);
+                lSIM = 0;
+            }
         }
 
         if (InTake && !block) {
-            secondIntakeMotor.update(-1);
+            if (Math.abs(-1 - lSIM) > MOTOR_EPSILON) {
+                secondIntakeMotor.update(-1);
+                lSIM = -1;
+            }
         }
     }
 }
