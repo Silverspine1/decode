@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.CommandBase.teleOP;
 
 import android.util.Size;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -36,8 +34,6 @@ public class testOP extends OpModeEX {
     public void initEX() {
         turret.toggle = false;
         Apriltag.limelight.pipelineSwitch(0);
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         processor = new LocalVision(LocalVision.TargetColor.BOTH);
 
@@ -60,8 +56,11 @@ public class testOP extends OpModeEX {
         // Now actually create the portal
         visionPortal = builder.build();
 
-        // Dashboard camera stream
-        dashboard.startCameraStream(visionPortal, 15);
+        // --- Vision Optimization (Phase 2) ---
+        // Stop streaming by default to save CPU.
+        if (visionPortal != null) {
+            visionPortal.stopStreaming();
+        }
 
         turret.testOP = true;
 

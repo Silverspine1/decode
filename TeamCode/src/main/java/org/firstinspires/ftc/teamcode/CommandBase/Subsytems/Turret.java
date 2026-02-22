@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.firstinspires.ftc.teamcode.CommandBase.LoopProfiler;
 
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
@@ -277,6 +278,7 @@ public class Turret extends SubSystem {
 
     @Override
     public void execute() {
+        long start = System.nanoTime();
         executeEX();
 
         double deltaX = robotX - targetX;
@@ -291,7 +293,13 @@ public class Turret extends SubSystem {
             distanceTimer.reset();
         }
 
-        rpm = ((shooterMotorOne.getVelocity() / 28) * 60);
+        // --- Velocity Gating (0.01) ---
+        // Only read velocity (slow hub request) if shooter is active
+        if (toggle || Auto) {
+            rpm = ((shooterMotorOne.getVelocity() / 28) * 60);
+        } else {
+            rpm = 0;
+        }
 
         shootPower = Math.max(0, shootPID.calculate(targetRPM, rpm));
         diff = Math.abs(targetRPM - rpm);
@@ -432,5 +440,6 @@ public class Turret extends SubSystem {
                 lS1 = 0;
             }
         }
+        ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.TURRET, System.nanoTime() - start);
     }
 }

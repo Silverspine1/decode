@@ -21,7 +21,15 @@ public class LoopProfiler {
     public static final int LOOP_EX = 3;
     public static final int TELEMETRY = 4;
     public static final int TOTAL_LOOP = 5;
-    private static final int PHASE_COUNT = 6;
+
+    // --- Subsystem Sub-Phases ---
+    public static final int DRIVE_BASE = 6;
+    public static final int ODOMETRY = 7;
+    public static final int TURRET = 8;
+    public static final int INTAKE = 9;
+    public static final int APRIL_TAG = 10;
+
+    private static final int PHASE_COUNT = 11;
 
     private static final String[] PHASE_NAMES = {
             "bulkCacheClear",
@@ -29,7 +37,12 @@ public class LoopProfiler {
             "schedulerExec",
             "loopEX",
             "telemetry",
-            "totalLoop"
+            "totalLoop",
+            "sub_Drive",
+            "sub_Odo",
+            "sub_Turret",
+            "sub_Intake",
+            "sub_Limelight"
     };
 
     // ── Configuration ──────────────────────────────────────────
@@ -90,9 +103,13 @@ public class LoopProfiler {
 
     /** Call immediately after a phase ends; records the elapsed time. */
     public void endPhase(int phaseIndex) {
-        long elapsed = System.nanoTime() - phaseStartNs;
+        recordDuration(phaseIndex, System.nanoTime() - phaseStartNs);
+    }
+
+    /** Manually record a duration for a phase (useful for nested/sub-profiling). */
+    public void recordDuration(int phaseIndex, long durationNs) {
         int idx = writeIndex[phaseIndex];
-        buffers[phaseIndex][idx] = elapsed;
+        buffers[phaseIndex][idx] = durationNs;
         writeIndex[phaseIndex] = (idx + 1) % BUFFER_SIZE;
         if (sampleCount[phaseIndex] < BUFFER_SIZE) {
             sampleCount[phaseIndex]++;

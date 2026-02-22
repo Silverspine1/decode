@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.firstinspires.ftc.teamcode.CommandBase.LoopProfiler;
 
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
@@ -88,10 +89,17 @@ public class Intake extends SubSystem {
 
     @Override
     public void execute() {
+        long start = System.nanoTime();
         executeEX();
 
         updateBallCount();
-        intakeRPM = secondIntakeMotor.getVelocity();
+
+        // --- Velocity Gating ---
+        if (InTake) {
+            intakeRPM = secondIntakeMotor.getVelocity();
+        } else {
+            intakeRPM = 0;
+        }
 
         if (block && intakeTime.milliseconds() > 50) {
             if (Math.abs(0.60 - lIB) > SERVO_EPSILON) {
@@ -141,5 +149,6 @@ public class Intake extends SubSystem {
                 lSIM = -1;
             }
         }
+        ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.INTAKE, System.nanoTime() - start);
     }
 }

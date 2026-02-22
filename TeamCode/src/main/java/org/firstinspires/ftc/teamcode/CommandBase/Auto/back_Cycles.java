@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.CommandBase.Auto;
 
 import android.util.Size;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -180,8 +178,6 @@ public class back_Cycles extends OpModeEX {
         paths.buildPath(S3);
 
         Apriltag.limelight.pipelineSwitch(0);
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         processor = new LocalVision(LocalVision.TargetColor.BOTH);
 
@@ -204,8 +200,11 @@ public class back_Cycles extends OpModeEX {
         // Now actually create the portal
         visionPortal = builder.build();
 
-        // Dashboard camera stream
-        dashboard.startCameraStream(visionPortal, 15);
+        // --- Vision Optimization (Phase 2) ---
+        // Stop streaming by default to save CPU.
+        if (visionPortal != null) {
+            visionPortal.stopStreaming();
+        }
 
     }
 
@@ -509,8 +508,10 @@ public class back_Cycles extends OpModeEX {
         } else {
             driveBase.queueCommand(driveBase.drivePowers(0, 0, 0));
         }
-        telemetry.addData("block ", intake.block);
-        telemetry.update();
-
+        if (telemetryTimer.milliseconds() > 100) {
+            telemetryTimer.reset();
+            telemetry.addData("block ", intake.block);
+            telemetry.update();
+        }
     }
 }

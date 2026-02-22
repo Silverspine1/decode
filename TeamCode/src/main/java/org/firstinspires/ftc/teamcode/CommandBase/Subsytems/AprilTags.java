@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import org.firstinspires.ftc.teamcode.CommandBase.LoopProfiler;
 
 import java.util.ArrayList;
 
@@ -83,24 +84,32 @@ public class AprilTags extends SubSystem {
 
     @Override
     public void execute() {
+        long start = System.nanoTime();
         // Only run if explicitly enabled by the OpMode (e.g. during recalibration)
         if (!enabled) {
             valid = false;
+            ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.APRIL_TAG, System.nanoTime() - start);
             return;
         }
 
         LLResult lr = limelight.getLatestResult();
-        if (lr == null) {
+        if (lr == null || !lr.isValid()) {
             valid = false;
+            ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.APRIL_TAG, System.nanoTime() - start);
             return;
         }
-        this.llResult = lr;
-        X = lr.getBotpose().getPosition().y * 100;
-        Y = lr.getBotpose().getPosition().x * 100;
-        H = lr.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES);
-        if (lr.isValid()) {
-            valid = true;
+
+        valid = true;
+        // Use botpose() (WPI Blue coordinate system equivalent usually)
+        Pose3D botpose = lr.getBotpose();
+
+        if (botpose != null) {
+            X = botpose.getPosition().y * 100; // cm
+            Y = botpose.getPosition().x * 100; // cm
+            H = 180 - botpose.getOrientation().getYaw(AngleUnit.DEGREES);
+        } else {
+            valid = false;
         }
-        H = 180 - H;
+        ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.APRIL_TAG, System.nanoTime() - start);
     }
 }

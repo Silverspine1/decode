@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.firstinspires.ftc.teamcode.CommandBase.LoopProfiler;
 
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
@@ -80,6 +81,7 @@ public class DriveBase extends SubSystem {
 
     @Override
     public void execute() {
+        long start = System.nanoTime();
         executeEX();
 
         if (engage) {
@@ -109,6 +111,7 @@ public class DriveBase extends SubSystem {
                 lBase = 0;
             }
         }
+        ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.DRIVE_BASE, System.nanoTime() - start);
     }
 
     public Command drivePowers(double vertical, double turn, double strafe) {
@@ -132,11 +135,14 @@ public class DriveBase extends SubSystem {
             () -> {
             },
             () -> {
+                long start = System.nanoTime();
                 double denominator = Math.max(1.0, Math.abs(vertikal) + Math.abs(strafe) + Math.abs(turn));
-                double lfT = ((vertikal - strafe - turn) / denominator) * speed;
-                double rfT = ((vertikal + strafe + turn) / denominator) * speed;
-                double lbT = ((vertikal + strafe - turn) / denominator) * speed;
-                double rbT = ((vertikal - strafe + turn) / denominator) * speed;
+
+                // --- Quantization (0.01) to ignore micro-jitter ---
+                double lfT = Math.round(((vertikal - strafe - turn) / denominator) * speed * 100.0) / 100.0;
+                double rfT = Math.round(((vertikal + strafe + turn) / denominator) * speed * 100.0) / 100.0;
+                double lbT = Math.round(((vertikal + strafe - turn) / denominator) * speed * 100.0) / 100.0;
+                double rbT = Math.round(((vertikal - strafe + turn) / denominator) * speed * 100.0) / 100.0;
 
                 if (!engage) {
                     if (Math.abs(lfT - lLF) > MOTOR_EPSILON || (lfT == 0 && lLF != 0)) {
@@ -173,7 +179,7 @@ public class DriveBase extends SubSystem {
                         lRB = 0;
                     }
                 }
-
+                ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.DRIVE_BASE, System.nanoTime() - start);
             },
             () -> true);
 
