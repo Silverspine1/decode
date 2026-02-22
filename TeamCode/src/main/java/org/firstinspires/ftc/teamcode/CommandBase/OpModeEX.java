@@ -18,18 +18,17 @@ import java.util.List;
 
 public abstract class OpModeEX extends OpMode {
 
+    public DriveBase driveBase = new DriveBase(this);
 
-   public DriveBase driveBase = new DriveBase(this);
-
-   public Odometry odometry = new Odometry(this);
+    public Odometry odometry = new Odometry(this);
 
     public Turret turret = new Turret(this);
     public AprilTags Apriltag = new AprilTags(this);
 
     public Intake intake = new Intake(this);
 
-
-    private final Scheduler scheduler = new Scheduler(this, new SubSystem[] {driveBase,odometry,turret,intake,Apriltag});
+    private final Scheduler scheduler = new Scheduler(this,
+            new SubSystem[] { driveBase, odometry, turret, intake, Apriltag });
 
     List<LynxModule> allHubs;
 
@@ -45,6 +44,9 @@ public abstract class OpModeEX extends OpMode {
     public Gamepad currentGamepad2 = new Gamepad();
     public Gamepad lastGamepad2 = new Gamepad();
 
+    // ── Profiler ───────────────────────────────────────────────
+    public final LoopProfiler profiler = new LoopProfiler();
+
     public abstract void initEX();
 
     public abstract void loopEX();
@@ -57,6 +59,9 @@ public abstract class OpModeEX extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
+
+        // Throttle telemetry transmission to 5 Hz (both explicit and SDK auto)
+        telemetry.setMsTransmissionInterval(200);
 
         timer.reset();
         scheduler.init();
@@ -71,29 +76,48 @@ public abstract class OpModeEX extends OpMode {
 
     @Override
     public void loop() {
+        profiler.startTotalLoop(); // totalLoop start
 
+        // ── Phase: bulkCacheClear ──
+        profiler.startPhase();
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
         }
+        profiler.endPhase(LoopProfiler.BULK_CACHE_CLEAR);
 
+        // ── Phase: gamepadCopy ──
+        profiler.startPhase();
         lastGamepad1.copy(currentGamepad1);
         currentGamepad1.copy(gamepad1);
-
         lastGamepad2.copy(currentGamepad2);
         currentGamepad2.copy(gamepad2);
+        profiler.endPhase(LoopProfiler.GAMEPAD_COPY);
 
         lastTime = timer.milliseconds();
 
+        // ── Phase: schedulerExecute ──
+        profiler.startPhase();
         scheduler.execute();
-        loopEX();
+        profiler.endPhase(LoopProfiler.SCHEDULER_EXECUTE);
 
+        // ── Phase: loopEX ──
+        profiler.startPhase();
+        loopEX();
+        profiler.endPhase(LoopProfiler.LOOP_EX);
+
+        // ── Phase: telemetry ──
+        profiler.startPhase();
         loopTime = timer.milliseconds() - lastTime;
-//        System.out.println("loop time: " + loopTime);
+        profiler.update(telemetry);
+        profiler.endPhase(LoopProfiler.TELEMETRY);
+
+        // ── Record totalLoop ──
+        profiler.endTotalLoop();
     }
 
     /**
      * Use this to write data to the log
-     * */
+     */
     @Override
     public void stop() {
 
