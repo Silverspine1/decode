@@ -28,7 +28,7 @@ public abstract class OpModeEX extends OpMode {
     public Intake intake = new Intake(this);
 
     private final Scheduler scheduler = new Scheduler(this,
-            new SubSystem[] { driveBase, odometry, turret, intake, Apriltag });
+             new SubSystem[] { driveBase, odometry, turret, intake, Apriltag });
 
     List<LynxModule> allHubs;
 
