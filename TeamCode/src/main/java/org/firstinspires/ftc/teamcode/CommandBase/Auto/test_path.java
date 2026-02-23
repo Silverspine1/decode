@@ -16,7 +16,7 @@ public class test_path extends OpModeEX {
             0.0005, 0.012, 0.002, 170, 193, 270, 920));
 
     follower follow = new follower(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01, 0.0005,
-            0.012, 0.002, 150, 193, 700, 920));
+            0.012, 0.002, 150, 193, 270, 920));
     double targetHeading = 0;
     boolean pathing = false;
     private final sectionBuilder[] shoot = new sectionBuilder[]{

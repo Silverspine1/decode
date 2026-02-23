@@ -354,10 +354,7 @@ public class blue_Tele extends OpModeEX {
             PathingPower correctivePower = new PathingPower();
             correctivePower.set(xPower, yPower);
 
-            driveBase.drivePowers(
-                    -correctivePower.getHorizontal(),
-                    headingPID.calculate(currentHeading - 90),
-                    -correctivePower.getVertical());
+            driveBase.drivePowers(-correctivePower.getHorizontal(), headingPID.calculate(currentHeading - 90), -correctivePower.getVertical());
         }
         if (!lastGamepad1.b && currentGamepad1.b && !turret.manuel) {
             turret.manuel = true;
