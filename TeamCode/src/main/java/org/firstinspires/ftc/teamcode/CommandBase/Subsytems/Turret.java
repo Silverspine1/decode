@@ -118,12 +118,6 @@ public class Turret extends SubSystem {
     public boolean inZone = false;
     private double[] t1; // Optimization: move fixed triangle out of loop
 
-    // --- Hardware Caching Fields ---
-    private double lS1 = 0, lS2 = 0;
-    private double lT1 = -1, lT2 = -1, lH = -1;
-    private final double MOTOR_EPSILON = 0.01;
-    private final double SERVO_EPSILON = 0.005;
-
     // Pre-allocated array for expandTriangle (avoids per-loop allocation)
     private final double[] expandedT = new double[6];
     public boolean intakeTime;
@@ -379,66 +373,30 @@ public class Turret extends SubSystem {
                 setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation));
             }
             if (manuel) {
-                if (Math.abs(0.65 - lS2) > MOTOR_EPSILON) {
-                    shooterMotorTwo.update(0.65);
-                    lS2 = 0.65;
-                }
-                if (Math.abs(0.65 - lS1) > MOTOR_EPSILON) {
-                    shooterMotorOne.update(0.65);
-                    lS1 = 0.65;
-                }
+                shooterMotorTwo.update(0.65);
+                shooterMotorOne.update(0.65);
             }
-            if (Math.abs(shootPower - lS1) > MOTOR_EPSILON || (shootPower == 0 && lS1 != 0)) {
-                shooterMotorOne.update(shootPower);
-                lS1 = shootPower;
-            }
-            if (Math.abs(shootPower - lS2) > MOTOR_EPSILON || (shootPower == 0 && lS2 != 0)) {
-                shooterMotorTwo.update(shootPower);
-                lS2 = shootPower;
-            }
+            shooterMotorOne.update(shootPower);
+            shooterMotorTwo.update(shootPower);
 
             if (!stopTurret && !manuel) {
                 double tPos = (turretAngle + turrofset) / gearRatio;
-                if (Math.abs(tPos - lT1) > SERVO_EPSILON) {
-                    turretTurnOne.setPosition(tPos);
-                    lT1 = tPos;
-                }
-                if (Math.abs(tPos - lT2) > SERVO_EPSILON) {
-                    turretTurnTwo.setPosition(tPos);
-                    lT2 = tPos;
-                }
+                turretTurnOne.setPosition(tPos);
+                turretTurnTwo.setPosition(tPos);
             }
         } else if (Auto) {
             targetRPM = interpolatedPower + mapOfset;
             setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation));
-            if (Math.abs(shootPower - lS1) > MOTOR_EPSILON || (shootPower == 0 && lS1 != 0)) {
-                shooterMotorOne.update(shootPower);
-                lS1 = shootPower;
-            }
-            if (Math.abs(shootPower - lS2) > MOTOR_EPSILON || (shootPower == 0 && lS2 != 0)) {
-                shooterMotorTwo.update(shootPower);
-                lS2 = shootPower;
-            }
+            shooterMotorOne.update(shootPower);
+            shooterMotorTwo.update(shootPower);
             if (!stopTurret) {
                 double tPos = (turretAngle + turrofset) / gearRatio;
-                if (Math.abs(tPos - lT1) > SERVO_EPSILON) {
-                    turretTurnOne.setPosition(tPos);
-                    lT1 = tPos;
-                }
-                if (Math.abs(tPos - lT2) > SERVO_EPSILON) {
-                    turretTurnTwo.setPosition(tPos);
-                    lT2 = tPos;
-                }
+                turretTurnOne.setPosition(tPos);
+                turretTurnTwo.setPosition(tPos);
             }
         } else {
-            if (lS2 != 0) {
-                shooterMotorTwo.update(0);
-                lS2 = 0;
-            }
-            if (lS1 != 0) {
-                shooterMotorOne.update(0);
-                lS1 = 0;
-            }
+            shooterMotorTwo.update(0);
+            shooterMotorOne.update(0);
         }
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.TURRET, System.nanoTime() - start);
     }

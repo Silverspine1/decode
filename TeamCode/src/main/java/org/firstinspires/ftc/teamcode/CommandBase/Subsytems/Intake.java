@@ -35,12 +35,6 @@ public class Intake extends SubSystem {
     public int ballCount = 0;
     public double intakeRPM = 0;
 
-    // --- Hardware Caching Fields ---
-    private double lIM = 0, lSIM = 0;
-    private double lIB = -1, lIP = -1;
-    private final double MOTOR_EPSILON = 0.01;
-    private final double SERVO_EPSILON = 0.001;
-
     public Intake(OpModeEX opModeEX) {
         registerSubsystem(opModeEX, defaultCommand);
     }
@@ -102,52 +96,25 @@ public class Intake extends SubSystem {
         }
 
         if (block && intakeTime.milliseconds() > 50) {
-            if (Math.abs(0.60 - lIB) > SERVO_EPSILON) {
-                intakeBlocker.setPosition(0.60);
-                lIB = 0.60;
-            }
-            if (Math.abs(0.37 - lIP) > SERVO_EPSILON) {
-                intakePTO.setPosition(0.37);
-                lIP = 0.37;
-            }
+            intakeBlocker.setPosition(0.60);
+            intakePTO.setPosition(0.37);
         } else if (!block) {
-            if (Math.abs(0.29 - lIB) > SERVO_EPSILON) {
-                intakeBlocker.setPosition(0.29);
-                lIB = 0.29;
-            }
-            if (Math.abs(0.52 - lIP) > SERVO_EPSILON) {
-                intakePTO.setPosition(0.52);
-                lIP = 0.52;
-            }
+            intakeBlocker.setPosition(0.29);
+            intakePTO.setPosition(0.52);
             intakeTime.reset();
         }
 
         if (InTake) {
-            if (Math.abs(-1 - lIM) > MOTOR_EPSILON) {
-                intakeMotor.update(-1);
-                lIM = -1;
-            }
-            if (Math.abs(-1 - lSIM) > MOTOR_EPSILON) {
-                secondIntakeMotor.update(-1);
-                lSIM = -1;
-            }
+            intakeMotor.update(-1);
+            secondIntakeMotor.update(-1);
             reverse = false;
         } else {
-            if (lIM != 0) {
-                intakeMotor.update(0);
-                lIM = 0;
-            }
-            if (lSIM != 0) {
-                secondIntakeMotor.update(0);
-                lSIM = 0;
-            }
+            intakeMotor.update(0);
+            secondIntakeMotor.update(0);
         }
 
         if (InTake && !block) {
-            if (Math.abs(-1 - lSIM) > MOTOR_EPSILON) {
-                secondIntakeMotor.update(-1);
-                lSIM = -1;
-            }
+            secondIntakeMotor.update(-1);
         }
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.INTAKE, System.nanoTime() - start);
     }
