@@ -10,19 +10,17 @@ import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
-
+@Autonomous
 public class test_path extends OpModeEX {
-    pathsManager paths =new pathsManager(new RobotConfig(0.018, 0.004, 0.020, 0.005, 0.04, 0.004, 0.065, 0.004
-            , 0.008, 0.0005, 0.012, 0.002,  200, 273, 270, 320));
+    pathsManager paths = new pathsManager(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01,
+            0.0005, 0.012, 0.002, 170, 193, 270, 920));
 
-
-
-    follower follow = new follower(new RobotConfig(0.000, 0.0, 0.028, 0.007, 0.06, 0.005, 0.075, 0.005
-            , 0.008, 0.0005, 0.012, 0.002, 152, 210, 200, 280));
+    follower follow = new follower(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01, 0.0005,
+            0.012, 0.002, 150, 193, 700, 920));
     double targetHeading = 0;
     boolean pathing = false;
     private final sectionBuilder[] shoot = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(0, 0),  new Vector2D(100, 0)),
+            () -> paths.addPoints(new Vector2D(0, 0),  new Vector2D(120, 0)),
     };
 
     @Override

@@ -493,7 +493,6 @@ public class red_Tele extends OpModeEX {
 
         ElapsedTime loopTimer = new ElapsedTime();
 
-        telemetry.addData("Loop Time", "%.1f ms", loopTimer.milliseconds());
 
         telemetry.addData("ball", intake.ballCount);
         telemetry.addData("distance velo", turret.distanceVelocity);
