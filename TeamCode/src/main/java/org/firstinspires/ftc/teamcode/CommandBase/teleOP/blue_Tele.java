@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.CommandBase.teleOP;
 
 import android.util.Size;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.sun.source.tree.IfTree;
@@ -32,6 +34,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 public class blue_Tele extends OpModeEX {
     private VisionPortal visionPortal;
     private LocalVision processor;
+    private FtcDashboard dashboard;
     pathsManager paths = new pathsManager(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01,
             0.0005, 0.012, 0.002, 200, 273, 270, 320));
 
@@ -125,6 +128,7 @@ public class blue_Tele extends OpModeEX {
     @Override
     public void initEX() {
 
+
         turret.toggle = false;
         Apriltag.limelight.pipelineSwitch(0);
 
@@ -154,20 +158,16 @@ public class blue_Tele extends OpModeEX {
 
         builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
 
-        // Optional: disable RC live view to save CPU
-        builder.enableLiveView(false);
 
         // Add BOTH processors
         builder.addProcessor(processor);
 
         // Now actually create the portal
         visionPortal = builder.build();
+        dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        dashboard.startCameraStream(visionPortal, 4);
 
-        // --- Vision Optimization (Phase 2) ---
-        // Stop streaming by default to save CPU. Resume only when needed.
-        if (visionPortal != null) {
-            visionPortal.stopStreaming();
-        }
 
         // Initialize velocity timer
         veloTimer.reset();

@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.IncludedFirmwareFileInfo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -25,11 +26,11 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 
 public class back_In_A_Case extends OpModeEX {
-    pathsManager paths = new pathsManager(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01,
+    pathsManager paths = new pathsManager(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01,
             0.0005, 0.012, 0.002, 170, 193, 270, 920));
 
-    follower follow = new follower(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01, 0.0005,
-            0.012, 0.002, 150, 193, 270, 920));
+    follower follow = new follower(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01, 0.0005,
+            0.012, 0.002, 180, 193, 900, 1020));
     PIDController headingPID = new PIDController(0.012, 0, 0.0030);
     PIDController x = new PIDController(0.06, 0, 0.0030);
 
@@ -93,29 +94,29 @@ public class back_In_A_Case extends OpModeEX {
 
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(170, 320)),
+            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(170, 300)),
     };
 
     private final sectionBuilder[] collect1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(155, 330), new Vector2D(126, 254), new Vector2D(77, 278)),
+            () -> paths.addPoints(new Vector2D(170, 310), new Vector2D(126, 275), new Vector2D(73, 273)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(43, 282),  new Vector2D(130, 306)),
+            () -> paths.addPoints(new Vector2D(43, 282),  new Vector2D(163, 285)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(145, 310), new Vector2D(132, 218), new Vector2D(75, 210)),
+            () -> paths.addPoints(new Vector2D(163, 300), new Vector2D(111, 200), new Vector2D(53, 202)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(110, 150), new Vector2D(70, 255), new Vector2D(48, 208.5)),
+            () -> paths.addPoints(new Vector2D(110, 150), new Vector2D(48, 203)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(110, 150)),
+            () -> paths.addPoints(new Vector2D(57, 210), new Vector2D(144, 150)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(110, 150), new Vector2D(78, 146)),
+            () -> paths.addPoints(new Vector2D(110, 150), new Vector2D(70, 146)),
     };
     private final sectionBuilder[] driveToShoot3 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(78, 150), new Vector2D(110, 148)),
+            () -> paths.addPoints(new Vector2D(78, 150), new Vector2D(125, 148)),
     };
     private final sectionBuilder[] firstBackCollect = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(117, 148), new Vector2D(164, 293), new Vector2D(82, 315)),
@@ -226,7 +227,7 @@ public class back_In_A_Case extends OpModeEX {
             }
 
 
-            if (maxWait.milliseconds() > 400 && follow.isFinished(10, 100)
+            if (maxWait.milliseconds() > 400 && follow.isFinished(10, 150)
                     || maxWait.milliseconds() > 1500
                     || ballsInIntake && ballCollectWait.milliseconds() > 200) {
                 collectDone = true;
@@ -266,6 +267,7 @@ public class back_In_A_Case extends OpModeEX {
                 if (!built && shootTime.milliseconds() > 420) {
                     follow.setPath(paths.returnPath("collect1"));
                     turret.mapOfset = 38;
+                    follow.usePathHeadings(true);
                     pathing = true;
                     built = true;
                     intake.block = true;
@@ -289,6 +291,10 @@ public class back_In_A_Case extends OpModeEX {
                 break;
 
             case driveToShoot1:
+                if (follow.isFinished(35,35)){
+                    follow.usePathHeadings(false);
+                    targetHeading = 310;
+                }
                 if (built && follow.isFinished(15, 15) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < velo * 1.6) {
                     intake.InTake = true;
@@ -332,6 +338,10 @@ public class back_In_A_Case extends OpModeEX {
 
             case driveToShoot2:
                 shootWait = 1600;
+                if (follow.isFinished(35,35)){
+                    follow.usePathHeadings(false);
+                    targetHeading = 270;
+                }
                 if (built && follow.isFinished(15, 15) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < velo*1.6) {
                     intake.InTake = true;
@@ -390,7 +400,7 @@ public class back_In_A_Case extends OpModeEX {
                 break;
 
             case gate:
-                if (odometry.X() < 95) {
+                if (odometry.X() < 85) {
                     follow.usePathHeadings(false);
                     targetHeading = 297;
                 }
@@ -491,7 +501,7 @@ public class back_In_A_Case extends OpModeEX {
                             () -> paths.addPoints(
                                     new Vector2D(odometry.X(), odometry.Y()),
                                     new Vector2D(140, 340),
-                                    new Vector2D(60, 340))
+                                    new Vector2D(20, 340))
                     };
                     paths.addNewPath("p1Dynamic");
                     paths.buildPath(p1Dynamic);
@@ -508,7 +518,7 @@ public class back_In_A_Case extends OpModeEX {
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     final sectionBuilder[] S1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(115, 320)),
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(115, 335)),
                     };
                     paths.addNewPath("S1");
                     paths.buildPath(S1);

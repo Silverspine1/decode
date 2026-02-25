@@ -80,12 +80,7 @@ public class Odometry extends SubSystem {
     public void execute() {
         long start = System.nanoTime();
         executeEX();
-        if (!resetAtStart) {
-            odo.setPosX(0, DistanceUnit.CM);
-            odo.setPosY(0, DistanceUnit.CM);
-            odo.setHeading(0, AngleUnit.DEGREES);
-            resetAtStart = true;
-        }
+
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.ODOMETRY, System.nanoTime() - start);
     }
 
@@ -124,7 +119,7 @@ public class Odometry extends SubSystem {
 
                 odo.update();
 
-                XVelocity = odo.getVelX(DistanceUnit.CM);
+                XVelocity = -odo.getVelX(DistanceUnit.CM);
                 YVelocity = odo.getVelY(DistanceUnit.CM);
                 HVelocity = odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
 

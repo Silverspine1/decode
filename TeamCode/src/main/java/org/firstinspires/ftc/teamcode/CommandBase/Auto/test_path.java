@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.CommandBase.Auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
 import dev.weaponboy.nexus_pathing.Follower.follower;
@@ -12,20 +13,23 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 public class test_path extends OpModeEX {
-    pathsManager paths = new pathsManager(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01,
+    pathsManager paths = new pathsManager(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01,
             0.0005, 0.012, 0.002, 170, 193, 270, 920));
 
-    follower follow = new follower(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01, 0.0005,
-            0.012, 0.002, 150, 193, 270, 920));
+    follower follow = new follower(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01, 0.0005,
+            0.012, 0.002, 180, 193, 900, 1020));
     double targetHeading = 0;
     boolean pathing = false;
+    boolean setHeading = false;
     private final sectionBuilder[] shoot = new sectionBuilder[]{
-            () -> paths.addPoints(new Vector2D(0, 0),  new Vector2D(120, 0)),
+            () -> paths.addPoints(new Vector2D(0, 0),  new Vector2D(0, -120)),
     };
 
     @Override
     public void initEX() {
         odometry.startPosition(0, 0, 0);
+        targetHeading = 0;
+
 
         paths.addNewPath("shoot");
         paths.buildPath(shoot);
@@ -35,6 +39,11 @@ public class test_path extends OpModeEX {
 
     @Override
     public void loopEX() {
+        if (!setHeading){
+            odometry.odo.setHeading(0, AngleUnit.DEGREES);
+            setHeading = true;
+
+        }
         follow.setPath(paths.returnPath("shoot"));
         pathing =true;
 
@@ -42,6 +51,8 @@ public class test_path extends OpModeEX {
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));
+            telemetry.addData("vert",currentPower.getHorizontal());
+
         }else {
             driveBase.queueCommand(driveBase.drivePowers(0,0,0));
         }
