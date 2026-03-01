@@ -72,29 +72,29 @@ public class Turret extends SubSystem {
     double distance4 = 420;
 
     double lowHoodAngle1 = 27.99;
-    double lowHoodAngle2 = 36.2;
-    double lowHoodAngle3 = 40.1;
-    double lowHoodAngle4 = 42.7;
+    double lowHoodAngle2 = 38.2;
+    double lowHoodAngle3 = 42.1;
+    double lowHoodAngle4 = 45.7;
 
     double lowPower1 = 1403;
     double lowPower2 = 1701;
     double lowPower3 = 2000;
-    double lowPower4 = 2418;
+    double lowPower4 = 2408;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
     double lowTOF2 = 0.965;
     double lowTOF1 = 0.924;
 
-    double mediumHoodAngle1 = 21;
-    double mediumHoodAngle2 = 45;
-    double mediumHoodAngle3 = 22;
-    double mediumHoodAngle4 = 22;
+    double mediumHoodAngle1 = 27;
+    double mediumHoodAngle2 = 27;
+    double mediumHoodAngle3 = 33;
+    double mediumHoodAngle4 = 36;
 
-    double mediumPower1 = 2306;
-    double mediumPower2 = 2683;
-    double mediumPower3 = 3401;
-    double mediumPower4 = 3401;
+    double mediumPower1 = 1303;
+    double mediumPower2 = 1701;
+    double mediumPower3 = 2000;
+    double mediumPower4 = 2408;
 
     double mediumTOF4 = 1.12;
     double mediumTOF3 = 1.063;
@@ -146,7 +146,7 @@ public class Turret extends SubSystem {
 
     public boolean stopTurret = false;
 
-    public PIDController shootPID = new PIDController(0.004, 0.000, 0.00);
+    public PIDController shootPID = new PIDController(0.015, 0.000, 0.01);
 
     public Turret(OpModeEX opModeEX) {
         registerSubsystem(opModeEX, defaultCommand);

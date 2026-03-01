@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Auto.back_In_A_Case;
 import org.firstinspires.ftc.teamcode.CommandBase.Auto.back_In_A_Case_Hype_auto;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.ArrayList;
@@ -207,13 +208,13 @@ public class blue_Tele extends OpModeEX {
         // driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x,
         // -gamepad1.right_stick_x);
 
-        // if (turret.shootingLevel == Turret.LowMediumHigh.low
-        // &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-        // turret.shootingLevel = Turret.LowMediumHigh.medium;
-        // } else if (turret.shootingLevel == Turret.LowMediumHigh.medium
-        // &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-        // turret.shootingLevel = Turret.LowMediumHigh.low;
-        // }
+         if (turret.shootingLevel == Turret.LowMediumHigh.low
+         &&currentGamepad1.a && !lastGamepad1.a){
+         turret.shootingLevel = Turret.LowMediumHigh.medium;
+         } else if (turret.shootingLevel == Turret.LowMediumHigh.medium
+         &&currentGamepad1.a && !lastGamepad1.a){
+         turret.shootingLevel = Turret.LowMediumHigh.low;
+         }
         // targetHood = targetHood + gamepad1.right_stick_y/8;
         // if (intake.ballCount > 1) {
         // turret.setHoodDegrees(targetHood - 2);
@@ -334,48 +335,48 @@ public class blue_Tele extends OpModeEX {
             intake.InTake = true;
 
         }
-        if (gamepad1.y) {
-            double currentHeading = odometry.Heading();
-
-            // World-frame positional error to target (279, 267)
-            double xDist = 276 - odometry.X();
-            double yDist = 273 - odometry.Y();
-
-            // Rotate world-frame error into robot-relative frame
-            double robotRelativeXError = yDist * Math.sin(Math.toRadians(currentHeading))
-                    + xDist * Math.cos(Math.toRadians(currentHeading));
-            double robotRelativeYError = yDist * Math.cos(Math.toRadians(currentHeading))
-                    - xDist * Math.sin(Math.toRadians(currentHeading));
-
-            // Each axis gets its own independently-tunable PID
-            double xPower = correctiveXFinalAdjustment.calculate(robotRelativeXError);
-            double yPower = correctiveYFinalAdjustment.calculate(robotRelativeYError);
-
-            PathingPower correctivePower = new PathingPower();
-            correctivePower.set(xPower, yPower);
-
-            driveBase.drivePowers(-correctivePower.getHorizontal(), headingPID.calculate(currentHeading - 90), -correctivePower.getVertical());
-        }
-        if (!lastGamepad1.b && currentGamepad1.b && !turret.manuel) {
-            turret.manuel = true;
-            intake.block = false;
-            turret.setHoodDegrees(36);
-
-        } else if (!lastGamepad1.b && currentGamepad1.b && turret.manuel) {
-            turret.manuel = false;
-
-        }
-        if (gamepad1.x) {
-            ejectTimer.reset();
-            turret.eject = true;
-            intake.block = false;
-            turret.targetRPM = 500;
-            intake.InTake = true;
-            turret.toggle = true;
-        } else if (ejectTimer.milliseconds() < 600 && ejectTimer.milliseconds() > 150) {
-            intake.block = true;
-            turret.eject = false;
-        }
+//        if (gamepad1.y) {
+//            double currentHeading = odometry.Heading();
+//
+//            // World-frame positional error to target (279, 267)
+//            double xDist = 276 - odometry.X();
+//            double yDist = 273 - odometry.Y();
+//
+//            // Rotate world-frame error into robot-relative frame
+//            double robotRelativeXError = yDist * Math.sin(Math.toRadians(currentHeading))
+//                    + xDist * Math.cos(Math.toRadians(currentHeading));
+//            double robotRelativeYError = yDist * Math.cos(Math.toRadians(currentHeading))
+//                    - xDist * Math.sin(Math.toRadians(currentHeading));
+//
+//            // Each axis gets its own independently-tunable PID
+//            double xPower = correctiveXFinalAdjustment.calculate(robotRelativeXError);
+//            double yPower = correctiveYFinalAdjustment.calculate(robotRelativeYError);
+//
+//            PathingPower correctivePower = new PathingPower();
+//            correctivePower.set(xPower, yPower);
+//
+//            driveBase.drivePowers(-correctivePower.getHorizontal(), headingPID.calculate(currentHeading - 90), -correctivePower.getVertical());
+//        }
+//        if (!lastGamepad1.b && currentGamepad1.b && !turret.manuel) {
+//            turret.manuel = true;
+//            intake.block = false;
+//            turret.setHoodDegrees(36);
+//
+//        } else if (!lastGamepad1.b && currentGamepad1.b && turret.manuel) {
+//            turret.manuel = false;
+//
+//        }
+//        if (gamepad1.x) {
+//            ejectTimer.reset();
+//            turret.eject = true;
+//            intake.block = false;
+//            turret.targetRPM = 500;
+//            intake.InTake = true;
+//            turret.toggle = true;
+//        } else if (ejectTimer.milliseconds() < 600 && ejectTimer.milliseconds() > 150) {
+//            intake.block = true;
+//            turret.eject = false;
+//        }
 
         if (autoCycles) {
             // ... (rest of autoCycles logic)

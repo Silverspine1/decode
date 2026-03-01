@@ -150,15 +150,16 @@ public class testOP extends OpModeEX {
             }
         }
 
-        if (!lastGamepad1.start && currentGamepad1.start && Apriltag.getH() != 0 && Apriltag.getH() != 180
-                || intake.ballCount > 2 && Apriltag.getH() != 0 && Apriltag.getH() != 180) {
-            togle = true;
-            gamepad1.rumble(800);
+        if (gamepad1.left_stick_y < -0.3) {
+            Apriltag.enabled = true; // High-latency read only when button held
+            if (Apriltag.getH() != 0 && Apriltag.getH() != 180) {
+                turret.toggle = true;
+                gamepad1.rumble(200);
 
-            odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
-            odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
-            odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
-
+                odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
+                odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
+                odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
+            }
         }
         if (!lastGamepad1.back && currentGamepad1.back && blue) {
             blue = false;
