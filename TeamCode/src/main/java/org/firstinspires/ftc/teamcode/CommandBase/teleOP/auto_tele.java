@@ -38,7 +38,7 @@ public class auto_tele extends OpModeEX {
     // yPID        – forward/back X-position hold during vision collect
     PIDController headingPID = new PIDController(0.03,  0, 0.003);
     PIDController xPID       = new PIDController(0.06,  0, 0.003);
-    PIDController yPID       = new PIDController(0.015, 0, 0.003);
+    PIDController yPID       = new PIDController(0.012, 0, 0.003);
 
     // ── Vision ───────────────────────────────────────────────────────────────
     private VisionPortal visionPortal;
@@ -85,20 +85,23 @@ public class auto_tele extends OpModeEX {
     // ═════════════════════════════════════════════════════════════════════════
 
     // Back-side shoot zone (used by back cycles and far/frontToBack gate cycles)
-    static final double SHOOT_BACK_X  = 140, SHOOT_BACK_Y  = 335;
+    static final double SHOOT_BACK_X  = 120, SHOOT_BACK_Y  = 335;
     // Front-side shoot zone (used after closeGateCycle)
-    static final double SHOOT_FRONT_X = 140, SHOOT_FRONT_Y = 148;
+    static final double SHOOT_FRONT_X = 130, SHOOT_FRONT_Y = 170;
     // Back-sweep collect path: mid → end
     static final double COLLECT_MID_X = 140, COLLECT_MID_Y = 340;
     static final double COLLECT_END_X = 45,  COLLECT_END_Y = 340;
+
     // X held by yPID during vision collect
     static final double COLLECT_HOLD_X = 40;
     // Gate stop position
-    static final double GATE_X = 37, GATE_Y = 219;
+    static final double GATE_X = 30, GATE_Y = 218;
+    static final double BACK_GATE_X = 31, BACK_GATE_Y = 212;
+
     // Far-gate approach waypoint (back area)
-    static final double FAR_WP_X = 138, FAR_WP_Y = 325;
+    static final double FAR_WP_X = 134, FAR_WP_Y = 325;
     // Heading the robot locks to while sitting at the gate
-    static final double GATE_HEADING_BLUE = 301;
+    static final double GATE_HEADING_BLUE = 296;
 
     // ═════════════════════════════════════════════════════════════════════════
     // State variables
@@ -266,7 +269,7 @@ public class auto_tele extends OpModeEX {
             case farGateCycle:
                 // Swing via back-area waypoint first (mirrors gateFromBack in auto)
                 targetHeading = h(308);
-                setAdaptivePath("gateApproach", FAR_WP_X, FAR_WP_Y, GATE_X, GATE_Y);
+                setAdaptivePath("gateApproach", FAR_WP_X, FAR_WP_Y, BACK_GATE_X, BACK_GATE_Y);
                 break;
             case frontToBackGateCycle:
                 // Direct to gate from front; after gate it returns to back zone
@@ -296,24 +299,23 @@ public class auto_tele extends OpModeEX {
 
     private void tickBackCollecting() {
         // Ball detection
-        if (intake.ballCount > 1 && !ballsInIntake) {
+        if (intake.ballCount > 2 && !ballsInIntake) {
             ballCollectWait.reset();
             ballsInIntake = true;
-        } else if (ballsInIntake && intake.ballCount < 1) {
+        } else if (ballsInIntake && intake.ballCount < 2) {
             ballsInIntake = false;
         }
 
         // Exit conditions (same guarded logic as the fixed auto)
         if (!collectDone) {
-            boolean endOfSweep = maxWait.milliseconds() > 400 && odometry.X() < COLLECT_END_X + 5;
-            boolean timeout    = maxWait.milliseconds() > 1100;
-            boolean gotBalls   = ballsInIntake && ballCollectWait.milliseconds() > 200;
+            boolean endOfSweep = maxWait.milliseconds() > 400 && odometry.X() < COLLECT_END_X ;
+            boolean timeout    = maxWait.milliseconds() > 1500;
+            boolean gotBalls   = ballsInIntake && ballCollectWait.milliseconds() > 250;
             boolean leftZone   = odometry.Y() < 245;
 
             if (endOfSweep || timeout || gotBalls || leftZone) {
                 collectDone   = true;
                 visionCollect = false;
-                intake.InTake = false;
             }
         }
 
@@ -383,7 +385,6 @@ public class auto_tele extends OpModeEX {
             cycleState        = CycleState.drivingToShootFromGate;
             intakeoff.reset();
             intakeOff       = true;
-            turret.mapOfset = 65;
 
             switch (nextStep) {
                 case closeGateCycle:
@@ -475,9 +476,14 @@ public class auto_tele extends OpModeEX {
         if (!intake.InTake && intake.ballCount > 2) intake.reverse = true;
 
         // ── Delayed intake shutoff ──t
-        if (intakeOff && intake.ballCount > 2 && intakeoff.milliseconds() > IntakeOffWait) {
+        if (intakeOff&& intakeoff.milliseconds() > IntakeOffWait) {
             intake.InTake = false;
             intakeOff     = false;
+        }
+        if (odometry.Y() >240){
+            turret.mapOfset          = 80;
+        }else {
+            turret.mapOfset          = 40;
         }
 
         // ── Ball-shot edge detection ──
