@@ -39,38 +39,26 @@ public class testOP extends OpModeEX {
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
-        // Camera + settings BEFORE build()
         builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
 
-        // Set lower resolution here
         builder.setCameraResolution(new Size(640, 480));
 
         builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
 
-        // Optional: disable RC live view to save CPU
         builder.enableLiveView(false);
 
-        // Add BOTH processors
         builder.addProcessor(processor);
 
-        // Now actually create the portal
         visionPortal = builder.build();
 
-        // --- Vision Optimization (Phase 2) ---
-        // Stop streaming by default to save CPU.
-        if (visionPortal != null) {
-            visionPortal.stopStreaming();
-        }
+
+
 
         turret.testOP = true;
 
     }
 
-    @Override
-    public void stop() {
-        if (visionPortal != null)
-            visionPortal.close();
-    }
+
 
     @Override
     public void start() {
@@ -156,8 +144,8 @@ public class testOP extends OpModeEX {
                 turret.toggle = true;
                 gamepad1.rumble(200);
 
-                odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
-                odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
+                odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
+                odometry.odo.setPosY(-Apriltag.getY(), DistanceUnit.CM);
                 odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
             }
         }

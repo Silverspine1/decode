@@ -109,7 +109,6 @@ public abstract class OpModeEX extends OpMode {
         // ── Phase: telemetry ──
         profiler.startPhase();
         loopTime = timer.milliseconds() - lastTime;
-        profiler.update(telemetry);
         profiler.endPhase(LoopProfiler.TELEMETRY);
 
         // ── Record totalLoop ──

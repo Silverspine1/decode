@@ -429,7 +429,6 @@ public class auto_tele extends OpModeEX {
         turret.toggle            = false;
         turret.mapOfset          = 40;
         turret.turrofset         = -2.5;
-        turret.TURRET_COMP_FACTOR = 0;
 
         Apriltag.limelight.pipelineSwitch(0);
 

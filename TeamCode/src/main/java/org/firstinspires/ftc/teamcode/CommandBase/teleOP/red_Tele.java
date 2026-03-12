@@ -170,7 +170,6 @@ public class red_Tele extends OpModeEX {
         veloTimer.reset();
         turret.mapOfset = 40;
         turret.turrofset = -2.5;
-        turret.TURRET_COMP_FACTOR = 0;
         turret.targetX = 360;
     }
 

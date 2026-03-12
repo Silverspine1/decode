@@ -65,10 +65,10 @@ public class Odometry extends SubSystem {
                 Register.Y_VELOCITY,
                 Register.H_VELOCITY);
 
-        odo.setOffsets(-13, 132, DistanceUnit.MM);
+        odo.setOffsets(29, 134, DistanceUnit.MM);
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
         odo.resetPosAndIMU();
     }
 
@@ -119,8 +119,8 @@ public class Odometry extends SubSystem {
 
                 odo.update();
 
-                XVelocity = -odo.getVelX(DistanceUnit.CM);
-                YVelocity = odo.getVelY(DistanceUnit.CM);
+                XVelocity = odo.getVelX(DistanceUnit.CM);
+                YVelocity = -odo.getVelY(DistanceUnit.CM);
                 HVelocity = odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
 
                 // Cache heading reads (avoids redundant unit conversions)
@@ -136,8 +136,8 @@ public class Odometry extends SubSystem {
                     Heading = startHeading + rawDeg;
                 }
 
-                X = startX - odo.getPosX(DistanceUnit.CM);
-                Y = startY + odo.getPosY(DistanceUnit.CM);
+                X = startX + odo.getPosX(DistanceUnit.CM);
+                Y = startY - odo.getPosY(DistanceUnit.CM);
             },
             () -> false);
 

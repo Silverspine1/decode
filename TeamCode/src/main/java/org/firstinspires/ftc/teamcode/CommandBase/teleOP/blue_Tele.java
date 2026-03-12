@@ -172,9 +172,9 @@ public class blue_Tele extends OpModeEX {
 
         // Initialize velocity timer
         veloTimer.reset();
-        turret.mapOfset = 40;
         turret.turrofset = -2.5;
-        turret.TURRET_COMP_FACTOR = 0;
+        turret.mapOfset = 0;
+
     }
 
     @Override
@@ -237,11 +237,7 @@ public class blue_Tele extends OpModeEX {
             shooterOffWait.reset();
 
         }
-        if (odometry.X() > 220) {
-            turret.mapOfset = 120;
-        } else {
-            turret.mapOfset = 40;
-        }
+
 
         if (intake.ballCount > 2) {
             if (togle) {
@@ -288,8 +284,8 @@ public class blue_Tele extends OpModeEX {
                 gamepad1.rumble(200);
                 rest = true;
 
-                odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
-                odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
+                odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
+                odometry.odo.setPosY(-Apriltag.getY(), DistanceUnit.CM);
                 odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
             }
         } else {

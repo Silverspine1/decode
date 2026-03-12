@@ -54,6 +54,7 @@ public class Intake extends SubSystem {
         sensorPos1.setMode(DigitalChannel.Mode.INPUT);
         sensorPos2.setMode(DigitalChannel.Mode.INPUT);
         sensorPos3.setMode(DigitalChannel.Mode.INPUT);
+        intakePTO.setDirection(Servo.Direction.REVERSE);
 
         secondIntakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
@@ -88,7 +89,6 @@ public class Intake extends SubSystem {
 
         updateBallCount();
 
-        // --- Velocity Gating ---
         if (InTake) {
             intakeRPM = secondIntakeMotor.getVelocity();
         } else {
@@ -96,11 +96,11 @@ public class Intake extends SubSystem {
         }
 
         if (block && intakeTime.milliseconds() > 50) {
-            intakeBlocker.setPosition(0.60);
+            intakeBlocker.setPosition(0.45);
             intakePTO.setPosition(0.37);
         } else if (!block) {
             intakeBlocker.setPosition(0.29);
-            intakePTO.setPosition(0.52);
+            intakePTO.setPosition(0.46);
             intakeTime.reset();
         }
 

@@ -27,7 +27,7 @@ public class Turret extends SubSystem {
     public ServoDegrees turretTurnTwo = new ServoDegrees();
     public ServoDegrees hoodAdjust = new ServoDegrees();
 
-    public double TURRET_COMP_FACTOR = 0.4;
+    double TURRET_COMP_FACTOR = 0.7;
 
     public enum LowMediumHigh {
         low,
@@ -56,7 +56,7 @@ public class Turret extends SubSystem {
     public double turrofset = -1;
     public double turretAngle;
     public final double gearRatio = 0.72;
-    final double turretLimitAngle = 123;
+    final double turretLimitAngle = 95;
 
     public double distance;
     public double ofsetDistance;
@@ -66,20 +66,20 @@ public class Turret extends SubSystem {
 
     public double hoodCompensation = 0;
 
-    double distance1 = 152;
-    double distance2 = 237;
-    double distance3 = 327;
-    double distance4 = 420;
+    double distance1 = 126;
+    double distance2 = 275;
+    double distance3 = 335;
+    double distance4 = 413;
 
-    double lowHoodAngle1 = 27.99;
-    double lowHoodAngle2 = 38.2;
-    double lowHoodAngle3 = 42.1;
-    double lowHoodAngle4 = 45.7;
+    double lowHoodAngle1 = 35.6;
+    double lowHoodAngle2 = 49.96;
+    double lowHoodAngle3 = 51.93;
+    double lowHoodAngle4 = 57.45;
 
-    double lowPower1 = 1403;
-    double lowPower2 = 1701;
-    double lowPower3 = 2000;
-    double lowPower4 = 2408;
+    double lowPower1 = 1733/1.14;
+    double lowPower2 = 2166/1.14;
+    double lowPower3 = 2378/1.14;
+    double lowPower4 = 2836/1.14;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -109,11 +109,12 @@ public class Turret extends SubSystem {
 
     ElapsedTime turretToCenter = new ElapsedTime();
     ElapsedTime distanceTimer = new ElapsedTime();
+    private double lastTurretAngle = 0;
+    private final ElapsedTime turretAngleTimer = new ElapsedTime();
+    public static double TURRET_MECH_LOOKAHEAD_S = 0.10;
+    public double turretAngleVelo = 0;
 
-    final double R1 = 183;
-    final double R2 = 63;
-    final double R3 = 63;
-    final double R4 = 153;
+
 
     public boolean inZone = false;
     private double[] t1; // Optimization: move fixed triangle out of loop
@@ -129,22 +130,13 @@ public class Turret extends SubSystem {
     public boolean manuel = false;
     public boolean eject = false;
 
-    double K1 = R1 / R2;
-    double K2 = R1 / R4;
-    public double K = (R1 * R1 + R2 * R2 + R4 * R4 - R3 * R3) / (2 * R2 * R4);
 
-    public double U;
-    public double U2;
-
-    double A;
-    double B;
-    double C;
-    double R;
-    double psi;
-    public double T2;
     public double diff = 0;
 
     public boolean stopTurret = false;
+
+
+
 
     public PIDController shootPID = new PIDController(0.015, 0.000, 0.01);
 
@@ -175,10 +167,9 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(181.3);
-        turretTurnTwo.setOffset(195);
+        turretTurnOne.setOffset(180);
+        turretTurnTwo.setOffset(180.5);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
-
         hoodAdjust.setOffset(60);
 
         // Pre-calculate fixed triangle for zone detection
@@ -188,18 +179,11 @@ public class Turret extends SubSystem {
     }
 
     public void setHoodDegrees(double theta) {
-        double U2 = Math.toRadians(theta - 5);
-        A = Math.sin(U2);
-        B = K2 - Math.cos(U2);
-        C = K1 * Math.cos(U2) - K;
-        R = Math.sqrt(A * A + B * B);
-        psi = Math.atan2(A, B);
-
-        double ratio = -C / R;
-        ratio = Math.max(-1, Math.min(1, ratio));
-        T2 = Math.toDegrees(psi - Math.acos(ratio));
-
-        hoodAdjust.setPosition(T2);
+        // Linear map: hood 36° → servo 0°, hood 60° → servo 210°
+        // Servo turns anticlockwise, so higher theta = more anticlockwise travel
+        double servoPos = (theta - 36.0) / (60.0 - 36.0) * 210.0;
+        servoPos = Math.max(0, Math.min(210, servoPos)); // clamp to safe range
+        hoodAdjust.setPosition(servoPos);
     }
 
     private double interpolateValue(double currentDistance, double d1, double v1, double d2, double v2, double d3,
@@ -286,9 +270,6 @@ public class Turret extends SubSystem {
             lastDistance = distance;
             distanceTimer.reset();
         }
-
-        // --- Velocity Gating (0.01) ---
-        // Only read velocity (slow hub request) if shooter is active
         if (toggle || Auto) {
             rpm = ((shooterMotorOne.getVelocity() / 28) * 60);
         } else {
@@ -308,7 +289,7 @@ public class Turret extends SubSystem {
             case low:
                 interpolatedTOF = interpolateValue(distance, distance1, lowTOF1, distance2, lowTOF2, distance3, lowTOF3,
                         distance4, lowTOF4);
-                ofsetDistance = distanceVelocity * interpolatedTOF;
+                ofsetDistance = distanceVelocity * interpolatedTOF *TURRET_COMP_FACTOR;
                 interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, lowPower1, distance2,
                         lowPower2, distance3, lowPower3, distance4, lowPower4);
                 interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, lowHoodAngle1, distance2,
@@ -317,7 +298,7 @@ public class Turret extends SubSystem {
             case medium:
                 interpolatedTOF = interpolateValue(distance, distance1, mediumTOF1, distance2, mediumTOF2, distance3,
                         mediumTOF3, distance4, mediumTOF4);
-                ofsetDistance = distanceVelocity * interpolatedTOF;
+                ofsetDistance = distanceVelocity * interpolatedTOF * TURRET_COMP_FACTOR;
                 interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, mediumPower1, distance2,
                         mediumPower2, distance3, mediumPower3, distance4, mediumPower4);
                 interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, mediumHoodAngle1,
@@ -345,30 +326,40 @@ public class Turret extends SubSystem {
             vRadial = robotXVelo * (-dirY) + robotYVelo * dirX;
 
             // Calculate drift and compensation using tangential velocity
-            double drift = vTangential * interpolatedTOF * TURRET_COMP_FACTOR;
+            double drift = vRadial * interpolatedTOF * TURRET_COMP_FACTOR;
             compensationAngle = Math.toDegrees(Math.atan2(drift, distance));
         }
 
         turretAngle = baseTurretAngle + compensationAngle;
+        double taDt = turretAngleTimer.seconds();
+        if (taDt > 0.001) {
+            turretAngleVelo = (turretAngle - lastTurretAngle) / taDt;
+            lastTurretAngle = turretAngle;
+            turretAngleTimer.reset();
+        }
+        if (Math.abs(turretAngleVelo) > 2) {
+            turretAngle += turretAngleVelo * TURRET_MECH_LOOKAHEAD_S;
+        }
 
         if ((turretAngle) > turretLimitAngle) {
             turretInRange = false;
-            turretAngle = 0;
+            turretAngle = 70;
             turretToCenter.reset();
         } else if ((turretAngle) < -turretLimitAngle) {
             turretInRange = false;
-            turretAngle = 0;
+            turretAngle = -70;
             turretToCenter.reset();
-        } else if (turretToCenter.milliseconds() > 500) {
+        } else if (turretToCenter.milliseconds() > 1000) {
             turretInRange = true;
+        }else {
+            turretAngle = 0;
         }
 
-        // ... existing switch and calculation logic ...
 
         if (toggle) {
             if (!testOP && !manuel && !eject) {
                 targetRPM = interpolatedPower + mapOfset;
-                setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation));
+                setHoodDegrees(Math.max(34, interpolatedHoodAngle + hoodCompensation));
             }
             if (manuel) {
                 shooterMotorTwo.update(0.65);
@@ -384,7 +375,7 @@ public class Turret extends SubSystem {
             }
         } else if (Auto) {
             targetRPM = interpolatedPower + mapOfset;
-            setHoodDegrees(Math.max(17, interpolatedHoodAngle + hoodCompensation));
+            setHoodDegrees(Math.max(34, interpolatedHoodAngle + hoodCompensation));
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             if (!stopTurret) {
