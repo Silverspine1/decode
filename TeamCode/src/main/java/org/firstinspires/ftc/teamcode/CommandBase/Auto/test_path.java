@@ -13,11 +13,11 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous
 public class test_path extends OpModeEX {
-    pathsManager paths = new pathsManager(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01,
-            0.0005, 0.012, 0.002, 170, 193, 270, 920));
+    pathsManager paths = new pathsManager(new RobotConfig(0.02, 0.004, 0.02, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01, 0.0005,
+            0.012, 0.002, 130, 240, 650, 1400));
 
-    follower follow = new follower(new RobotConfig(0.02, 0.004, 0.016, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01, 0.0005,
-            0.012, 0.002, 180, 193, 900, 1020));
+    follower follow = new follower(new RobotConfig(0.02, 0.004, 0.02, 0.005, 0.08, 0.004, 0.09, 0.004, 0.01, 0.0005,
+            0.012, 0.002, 130, 240, 650, 1400));
     double targetHeading = 0;
     boolean pathing = false;
     boolean setHeading = false;

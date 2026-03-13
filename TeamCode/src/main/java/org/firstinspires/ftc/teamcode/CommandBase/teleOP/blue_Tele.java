@@ -228,11 +228,7 @@ public class blue_Tele extends OpModeEX {
         // intake.reverse = true;
         // }
         //
-        if (intake.ballCount > 1) {
-            turret.hoodCompensation = -2;
-        } else {
-            turret.hoodCompensation = 0;
-        }
+
         if (intake.ballCount > 0) {
             shooterOffWait.reset();
 

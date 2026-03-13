@@ -96,7 +96,7 @@ public class Intake extends SubSystem {
         }
 
         if (block && intakeTime.milliseconds() > 50) {
-            intakeBlocker.setPosition(0.45);
+            intakeBlocker.setPosition(0.5);
             intakePTO.setPosition(0.37);
         } else if (!block) {
             intakeBlocker.setPosition(0.29);
@@ -104,18 +104,16 @@ public class Intake extends SubSystem {
             intakeTime.reset();
         }
 
-        if (InTake) {
+        if (InTake ) {
             intakeMotor.update(-1);
             secondIntakeMotor.update(-1);
             reverse = false;
-        } else {
+        }else {
             intakeMotor.update(0);
             secondIntakeMotor.update(0);
         }
 
-        if (InTake && !block) {
-            secondIntakeMotor.update(-1);
-        }
+
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.INTAKE, System.nanoTime() - start);
     }
 }

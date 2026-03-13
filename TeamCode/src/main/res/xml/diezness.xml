@@ -29,8 +29,10 @@
 
 
             <goBILDAPinpoint name="odo" port="0" bus="2" />
-            <DigitalDevice name="sensor2" port="3"  />
-            <DigitalDevice name="sensor3" port="6"  />
+            <DigitalDevice name="sensor2" port="2"  />
+            <DigitalDevice name="sensor3" port="4"  />
+            <DigitalDevice name="sensor1" port="6"  />
+
             <Servo name="base" port="0" />
 
 

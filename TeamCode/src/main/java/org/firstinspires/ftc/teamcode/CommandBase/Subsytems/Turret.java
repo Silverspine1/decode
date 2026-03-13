@@ -27,7 +27,7 @@ public class Turret extends SubSystem {
     public ServoDegrees turretTurnTwo = new ServoDegrees();
     public ServoDegrees hoodAdjust = new ServoDegrees();
 
-    double TURRET_COMP_FACTOR = 0.7;
+    double TURRET_COMP_FACTOR = 0.8;
 
     public enum LowMediumHigh {
         low,
@@ -76,10 +76,10 @@ public class Turret extends SubSystem {
     double lowHoodAngle3 = 51.93;
     double lowHoodAngle4 = 57.45;
 
-    double lowPower1 = 1733/1.14;
-    double lowPower2 = 2166/1.14;
-    double lowPower3 = 2378/1.14;
-    double lowPower4 = 2836/1.14;
+    double lowPower1 = 1730/1.14;
+    double lowPower2 = 2160/1.14;
+    double lowPower3 = 2400/1.14;
+    double lowPower4 = 2876/1.14;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
