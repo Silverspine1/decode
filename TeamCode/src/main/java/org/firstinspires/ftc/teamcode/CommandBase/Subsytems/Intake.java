@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.LoopProfiler;
 import dev.weaponboy.nexus_command_base.Commands.Command;
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
 import dev.weaponboy.nexus_command_base.Hardware.MotorEx;
+import dev.weaponboy.nexus_command_base.Hardware.ServoDegrees;
 import dev.weaponboy.nexus_command_base.Subsystem.SubSystem;
 
 public class Intake extends SubSystem {
@@ -19,6 +20,19 @@ public class Intake extends SubSystem {
 
     Servo intakeBlocker;
     Servo intakePTO;
+    Servo intakeUP;
+    public enum intakePoz{
+        gatePoz,
+        normalPoz,
+        up
+    }
+    public intakePoz poz = intakePoz.normalPoz;
+    ElapsedTime intakeoff = new ElapsedTime();
+    boolean intakeOff = false;
+
+
+
+
 
     // --- Three Digital Sensors for Ball Positions ---
     private DigitalChannel sensorPos1;
@@ -45,6 +59,8 @@ public class Intake extends SubSystem {
         intakePTO = getOpMode().hardwareMap.get(Servo.class, "intakePTO");
         intakeBlocker = getOpMode().hardwareMap.get(Servo.class, "intakeBlocker");
         secondIntakeMotor.initMotor("intakeMotor2", getOpMode().hardwareMap);
+        intakeUP = getOpMode().hardwareMap.get(Servo.class, "intakeUP");
+
 
         // Initialize the three sensors
         sensorPos1 = getOpMode().hardwareMap.get(DigitalChannel.class, "sensor1");
@@ -111,6 +127,23 @@ public class Intake extends SubSystem {
         }else {
             intakeMotor.update(0);
             secondIntakeMotor.update(0);
+        }
+        if (poz == intakePoz.normalPoz){
+            intakeUP.setPosition(0.45);
+        }else if(poz == intakePoz.gatePoz) {
+            intakeUP.setPosition(0.5);
+        }else {
+            intakeUP.setPosition(0.35);
+        }
+        if (ballCount > 2 && intakeoff.milliseconds() > 250 && block || intakeOff && intakeoff.milliseconds() > 500) {
+            InTake = false;
+            intakeOff = false;
+            poz = Intake.intakePoz.up;
+
+        }else if (ballCount <3 && !intakeOff && poz == Intake.intakePoz.normalPoz || ballCount <3 && !intakeOff && poz == Intake.intakePoz.gatePoz){
+            intakeoff.reset();
+        }else if (poz == Intake.intakePoz.up){
+            poz = Intake.intakePoz.normalPoz;
         }
 
 

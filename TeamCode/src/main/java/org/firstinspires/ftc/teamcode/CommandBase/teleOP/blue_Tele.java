@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Auto.back_In_A_Case;
 import org.firstinspires.ftc.teamcode.CommandBase.Auto.back_In_A_Case_Hype_auto;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -70,7 +71,6 @@ public class blue_Tele extends OpModeEX {
     boolean pathing = false;
     boolean built = false;
     boolean collectDone = false;
-    boolean intakeOff = false;
 
     boolean intakePathSelected = false;
     double lastBallCount = 0;
@@ -82,7 +82,6 @@ public class blue_Tele extends OpModeEX {
     ElapsedTime rumble = new ElapsedTime();
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime maxWait = new ElapsedTime();
-    ElapsedTime intakeoff = new ElapsedTime();
     ElapsedTime ejectTimer = new ElapsedTime();
 
     private final sectionBuilder[] p1 = new sectionBuilder[] {
@@ -235,17 +234,10 @@ public class blue_Tele extends OpModeEX {
         }
 
 
-        if (intake.ballCount > 2) {
-            if (togle) {
-                turret.toggle = true;
-            }
-            shooterOffWait.reset();
 
-        } else if (intake.ballCount < 1 && shooterOffWait.milliseconds() > 500 && !turret.manuel) {
-            turret.toggle = false;
-        }
         if (intake.ballCount > 2 && rumble.milliseconds() > 1500) {
             gamepad1.rumble(300);
+            rumble.reset();
         }
 
         if (gamepad1.right_bumper) {
@@ -254,10 +246,7 @@ public class blue_Tele extends OpModeEX {
             }
             intake.InTake = true;
 
-        } else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170
-                || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange
-                        && odometry.getHVelocity() < 1 && (Math.abs(odometry.getXVelocity())
-                                + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 17) {
+        } else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170) {
             intake.InTake = true;
             intake.block = false;
 
@@ -375,7 +364,7 @@ public class blue_Tele extends OpModeEX {
         }
 
         if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {
-            togle = false;
+            turret.toggle = false;
             gamepad1.rumble(800);
         } else if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && !turret.toggle) {
             turret.toggle = true;
@@ -395,6 +384,11 @@ public class blue_Tele extends OpModeEX {
         } else if (!visionCollect && !gamepad1.y) {
             driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7,
                     -gamepad1.right_stick_x);
+        }
+        if (!lastGamepad1.x && currentGamepad1.x && intake.poz == Intake.intakePoz.normalPoz){
+            intake.poz = Intake.intakePoz.gatePoz;
+        }else if (!lastGamepad1.x && currentGamepad1.x && intake.poz == Intake.intakePoz.gatePoz){
+            intake.poz = Intake.intakePoz.normalPoz;
         }
 
         if (Timer.milliseconds() > 100) {

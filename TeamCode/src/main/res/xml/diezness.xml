@@ -8,6 +8,8 @@
             <goBILDA5201SeriesMotor name="intakeMotor" port="2" />
             <goBILDA5201SeriesMotor name="shooterMotorTwo" port="3" />
             <RevTouchSensor name="intakeSensor" port="0" />
+            <Servo name="intakeUP" port="0" />
+
 
             <DigitalDevice name="sensor1" port="6"  />
 
