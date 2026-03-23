@@ -41,6 +41,7 @@ public class Intake extends SubSystem {
 
     public boolean block = true;
     public boolean InTake = false;
+    public boolean auto = false;
     boolean intakeBeforeBlock = false;
 
     public boolean reverse = false;
@@ -111,9 +112,9 @@ public class Intake extends SubSystem {
             intakeRPM = 0;
         }
 
-        if (block && intakeTime.milliseconds() > 50) {
+        if (block && !auto || block && intakeTime.milliseconds() > 200) {
             intakeBlocker.setPosition(0.5);
-            intakePTO.setPosition(0.37);
+            intakePTO.setPosition(0.35);
         } else if (!block) {
             intakeBlocker.setPosition(0.29);
             intakePTO.setPosition(0.46);
@@ -129,7 +130,7 @@ public class Intake extends SubSystem {
             secondIntakeMotor.update(0);
         }
         if (poz == intakePoz.normalPoz){
-            intakeUP.setPosition(0.45);
+            intakeUP.setPosition(0.465);
         }else if(poz == intakePoz.gatePoz) {
             intakeUP.setPosition(0.5);
         }else {

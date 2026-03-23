@@ -27,7 +27,7 @@ public class Turret extends SubSystem {
     public ServoDegrees turretTurnTwo = new ServoDegrees();
     public ServoDegrees hoodAdjust = new ServoDegrees();
 
-    double TURRET_COMP_FACTOR = 0.85;
+    public double TURRET_COMP_FACTOR = 0.85;
 
     public enum LowMediumHigh {
         low,
@@ -77,9 +77,9 @@ public class Turret extends SubSystem {
     double lowHoodAngle4 = 57.45;
 
     double lowPower1 = 1700/1.14;
-    double lowPower2 = 2110/1.14;
-    double lowPower3 = 2380/1.14;
-    double lowPower4 = 2850/1.14;
+    double lowPower2 = 2115/1.14;
+    double lowPower3 = 2400/1.14;
+    double lowPower4 = 2865/1.14;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -170,8 +170,8 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(176);
-        turretTurnTwo.setOffset(176.5);
+        turretTurnOne.setOffset(177.5);
+        turretTurnTwo.setOffset(178);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         hoodAdjust.setOffset(60);
 
