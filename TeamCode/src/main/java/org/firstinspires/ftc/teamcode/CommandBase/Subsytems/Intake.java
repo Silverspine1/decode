@@ -114,10 +114,10 @@ public class Intake extends SubSystem {
 
         if (block && !auto || block && intakeTime.milliseconds() > 200) {
             intakeBlocker.setPosition(0.5);
-            intakePTO.setPosition(0.35);
+            intakePTO.setPosition(0.4);
         } else if (!block) {
             intakeBlocker.setPosition(0.29);
-            intakePTO.setPosition(0.46);
+            intakePTO.setPosition(0.47);
             intakeTime.reset();
         }
 

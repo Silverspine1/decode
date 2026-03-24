@@ -56,7 +56,7 @@ public class Turret extends SubSystem {
     public double turrofset = -1;
     public double turretAngle;
     public final double gearRatio = 0.72;
-    final double turretLimitAngle = 100;
+    final double turretLimitAngle = 110;
 
     public double distance;
     public double ofsetDistance;
@@ -76,8 +76,8 @@ public class Turret extends SubSystem {
     double lowHoodAngle3 = 51.93;
     double lowHoodAngle4 = 57.45;
 
-    double lowPower1 = 1700/1.14;
-    double lowPower2 = 2115/1.14;
+    double lowPower1 = 1690/1.14;
+    double lowPower2 = 2100/1.14;
     double lowPower3 = 2400/1.14;
     double lowPower4 = 2865/1.14;
 
@@ -346,23 +346,23 @@ public class Turret extends SubSystem {
 
         if ((turretAngle) > turretLimitAngle && !turretOutLeft) {
             turretInRange = false;
-            turretAngle = 70;
+            turretAngle = 55;
             turretToCenter.reset();
             turretOutRight = true;
         } else if ((turretAngle) < -turretLimitAngle&& !turretOutRight) {
             turretInRange = false;
-            turretAngle = -70;
+            turretAngle = -55;
             turretToCenter.reset();
             turretOutLeft = true;
-        } else if (turretToCenter.milliseconds() > 1000) {
+        } else if (turretToCenter.milliseconds() > 600) {
             turretInRange = true;
             turretOutLeft = false;
             turretOutRight = false;
         }else {
             if (turretOutRight){
-                turretAngle = 70;
+                turretAngle = 55;
             }else {
-                turretAngle = -70;
+                turretAngle = -55;
 
             }
         }
