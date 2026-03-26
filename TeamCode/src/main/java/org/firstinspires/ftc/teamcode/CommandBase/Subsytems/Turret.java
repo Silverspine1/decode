@@ -76,8 +76,8 @@ public class Turret extends SubSystem {
     double lowHoodAngle3 = 51.93;
     double lowHoodAngle4 = 57.45;
 
-    double lowPower1 = 1690/1.14;
-    double lowPower2 = 2100/1.14;
+    double lowPower1 = 1670/1.14;
+    double lowPower2 = 2080/1.14;
     double lowPower3 = 2400/1.14;
     double lowPower4 = 2865/1.14;
 

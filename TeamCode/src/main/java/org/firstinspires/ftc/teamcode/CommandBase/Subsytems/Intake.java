@@ -45,6 +45,7 @@ public class Intake extends SubSystem {
     boolean intakeBeforeBlock = false;
 
     public boolean reverse = false;
+    public boolean holdUp = false;
     ElapsedTime intakeTime = new ElapsedTime();
 
     public int ballCount = 0;
@@ -132,7 +133,7 @@ public class Intake extends SubSystem {
         if (poz == intakePoz.normalPoz){
             intakeUP.setPosition(0.465);
         }else if(poz == intakePoz.gatePoz) {
-            intakeUP.setPosition(0.5);
+            intakeUP.setPosition(0.485);
         }else {
             intakeUP.setPosition(0.35);
         }
@@ -143,7 +144,7 @@ public class Intake extends SubSystem {
 
         }else if (ballCount <3 && !intakeOff && poz == Intake.intakePoz.normalPoz || ballCount <3 && !intakeOff && poz == Intake.intakePoz.gatePoz){
             intakeoff.reset();
-        }else if (poz == Intake.intakePoz.up){
+        }else if (poz == Intake.intakePoz.up && !holdUp){
             poz = Intake.intakePoz.normalPoz;
         }
 
