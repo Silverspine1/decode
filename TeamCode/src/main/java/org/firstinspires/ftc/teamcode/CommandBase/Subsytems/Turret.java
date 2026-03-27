@@ -78,8 +78,8 @@ public class Turret extends SubSystem {
 
     double lowPower1 = 1670/1.14;
     double lowPower2 = 2080/1.14;
-    double lowPower3 = 2400/1.14;
-    double lowPower4 = 2865/1.14;
+    double lowPower3 = 2410/1.14;
+    double lowPower4 = 2875/1.14;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -89,7 +89,7 @@ public class Turret extends SubSystem {
     double mediumHoodAngle1 = 27;
     double mediumHoodAngle2 = 27;
     double mediumHoodAngle3 = 33;
-    double mediumHoodAngle4 = 36;
+    double mediumHoodAngle4 = 38;
 
     double mediumPower1 = 1303;
     double mediumPower2 = 1701;
@@ -292,7 +292,7 @@ public class Turret extends SubSystem {
             case low:
                 interpolatedTOF = interpolateValue(distance, distance1, lowTOF1, distance2, lowTOF2, distance3, lowTOF3,
                         distance4, lowTOF4);
-                ofsetDistance = distanceVelocity * interpolatedTOF *TURRET_COMP_FACTOR;
+                ofsetDistance = distanceVelocity * interpolatedTOF ;
                 interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, lowPower1, distance2,
                         lowPower2, distance3, lowPower3, distance4, lowPower4);
                 interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, lowHoodAngle1, distance2,
@@ -301,7 +301,7 @@ public class Turret extends SubSystem {
             case medium:
                 interpolatedTOF = interpolateValue(distance, distance1, mediumTOF1, distance2, mediumTOF2, distance3,
                         mediumTOF3, distance4, mediumTOF4);
-                ofsetDistance = distanceVelocity * interpolatedTOF * TURRET_COMP_FACTOR;
+                ofsetDistance = distanceVelocity * interpolatedTOF ;
                 interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, mediumPower1, distance2,
                         mediumPower2, distance3, mediumPower3, distance4, mediumPower4);
                 interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, mediumHoodAngle1,

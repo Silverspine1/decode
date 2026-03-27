@@ -113,7 +113,7 @@ public class Intake extends SubSystem {
             intakeRPM = 0;
         }
 
-        if (block && !auto || block && intakeTime.milliseconds() > 200) {
+        if (block && !auto || block && intakeTime.milliseconds() > 120) {
             intakeBlocker.setPosition(0.5);
             intakePTO.setPosition(0.4);
         } else if (!block) {
@@ -133,7 +133,7 @@ public class Intake extends SubSystem {
         if (poz == intakePoz.normalPoz){
             intakeUP.setPosition(0.465);
         }else if(poz == intakePoz.gatePoz) {
-            intakeUP.setPosition(0.485);
+            intakeUP.setPosition(0.475);
         }else {
             intakeUP.setPosition(0.35);
         }
