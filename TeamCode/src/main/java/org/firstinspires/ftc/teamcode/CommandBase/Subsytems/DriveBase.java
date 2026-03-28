@@ -148,7 +148,7 @@ public class DriveBase extends SubSystem {
         // Now rotate the translation vector opposite to the robot's heading
         double rotX = strafe * Math.cos(-headingRadians) - drive * Math.sin(-headingRadians);
         double rotY = strafe * Math.sin(-headingRadians) + drive * Math.cos(-headingRadians);
-        if (rotX < 0.2){
+        if (Math.abs( rotX) < 0.2){
             rotX = 0;
         }
         drivePowers(rotY, turn, rotX);
