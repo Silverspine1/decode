@@ -206,8 +206,13 @@ public class red_Tele extends OpModeEX {
         // Calculate velocity and acceleration
         calculateVelocityAndAcceleration();
 
-        // driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x,
-        // -gamepad1.right_stick_x);
+       if (!rest){
+           driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, -gamepad1.right_stick_x);
+       }else {
+           driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, gamepad1.left_trigger - gamepad1.right_trigger, odometry.Heading() - 90);
+
+       }
+
 
         if (turret.shootingLevel == Turret.LowMediumHigh.low
                 &&currentGamepad1.a && !lastGamepad1.a){
@@ -394,14 +399,7 @@ public class red_Tele extends OpModeEX {
             driveBase.headingLock(45 + odometry.normiliased(), false);
         }
 
-        if (pathing) {
-            RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(),
-                    odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
-            driveBase.queueCommand(driveBase.drivePowers(currentPower));
-        } else if (!visionCollect && !gamepad1.y) {
-            driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7,
-                    -gamepad1.right_stick_x);
-        }
+
 
         if (Timer.milliseconds() > 100) {
             Timer.reset();
