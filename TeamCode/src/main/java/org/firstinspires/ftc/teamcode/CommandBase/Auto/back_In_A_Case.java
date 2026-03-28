@@ -78,7 +78,7 @@ public class back_In_A_Case extends OpModeEX {
     double backCycles = 0;
     double shootWait = 700;
     double velo = 16;
-    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 85;double gateAngle = 298;
+    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 84;double gateAngle = 295;
     double targetPos = 44;
 
     ElapsedTime shootTime = new ElapsedTime();
@@ -106,10 +106,10 @@ public class back_In_A_Case extends OpModeEX {
             () -> paths.addPoints(new Vector2D(163, 300), new Vector2D(126, 210), new Vector2D(68, 204)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(61, 199.5)),
+            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(60, 194.5)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(55, 210)),
+            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(57.5, 214.5)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(157, 150)),
@@ -226,7 +226,7 @@ public class back_In_A_Case extends OpModeEX {
             odometry.odo.setHeading(90, AngleUnit.DEGREES);
         }
 
-        if (intake.ballCount > 2 && intakeoff.milliseconds() > 500 && intake.block || intakeOff && intakeoff.milliseconds() > 600) {
+        if (intakeOff && intakeoff.milliseconds() > 600) {
             intake.InTake = false;
             intakeOff = false;
         }else if (intake.ballCount <3 && !intakeOff){
@@ -275,7 +275,7 @@ public class back_In_A_Case extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.TURRET_COMP_FACTOR = 0;
-                    turret.mapOfset = 15;
+                    turret.mapOfset = 34;
                     turret.turrofset = -1;
 
 
@@ -365,6 +365,8 @@ public class back_In_A_Case extends OpModeEX {
                     state = AutoState.driveToShoot2;
                     follow.setPath(paths.returnPath("driveToShoot2"));
                     follow.setHeadingOffset(-90);
+                    intakeoff.reset();
+                    intakeOff = true;
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(130);
                     built = true;
@@ -397,6 +399,7 @@ public class back_In_A_Case extends OpModeEX {
                     intake.InTake = true;
                     state = AutoState.collect3;
                     turret.turrofset = -1;
+                    turret.mapOfset = -30;
                     driveBase.speed = 1;
                 }
                 break;
@@ -469,8 +472,8 @@ public class back_In_A_Case extends OpModeEX {
                     intake.poz = Intake.intakePoz.normalPoz;
 
                     built = false;
-                    turret.mapOfset = 0;
-                    turret.turrofset = -0.5;
+                    turret.mapOfset = -20;
+                    turret.turrofset = -1.2;
                 }
                 break;
 
@@ -481,7 +484,7 @@ public class back_In_A_Case extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 280) {
                     targetHeading = 278;
                 }
-                if (odometry.X() > 64 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){
+                if (odometry.X() > 68 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;
