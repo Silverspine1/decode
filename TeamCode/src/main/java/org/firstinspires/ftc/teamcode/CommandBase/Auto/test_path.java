@@ -36,14 +36,14 @@ public class test_path extends OpModeEX {
     // -------------------------------------------------------------------------
 
     pathsManager paths = new pathsManager(new RobotConfig(
-            0.02, 0.004, 0.06, 0.009, 0.08, 0.004,
+            0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
             0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 181, 650, 600));
+            130, 181, 650, 700));
 
     follower follow = new follower(new RobotConfig(
-            0.02, 0.004, 0.06, 0.009, 0.08, 0.004,
+            0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
             0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 181, 650, 600));
+            130, 181, 650, 700));
 
     double  targetHeading = 0;
     boolean pathing       = false;
@@ -87,7 +87,7 @@ public class test_path extends OpModeEX {
         }
 
         // Detect path finish
-        if (pathing && follow.isFinished(5, 5) && Math.abs(odometry.getYVelocity()) < 3) {
+        if (pathing && follow.isFinished(5, 5) && Math.abs(odometry.getYVelocity()) < 4) {
             pathing = false;
 
             // Final zero-velocity row so the decel tail is captured

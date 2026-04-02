@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 import org.firstinspires.ftc.teamcode.CommandBase.LoopProfiler;
 import org.firstinspires.ftc.teamcode.CommandBase.GoBildaPinpointDriver.Register;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import dev.weaponboy.nexus_command_base.Commands.LambdaCommand;
@@ -39,6 +40,26 @@ public class Odometry extends SubSystem {
     double XVelocity = 0;
     double YVelocity = 0;
     double HVelocity = 0;
+
+    // ── Raw acceleration (Δvel / Δtime) ──────────────────────────────────────
+    private double prevXVel = 0;
+    private double prevYVel = 0;
+    private double prevHVel = 0;
+    private long   prevNanos = 0;         // nanosecond timestamp of last update
+
+    // ── Rolling-window smoothed acceleration ─────────────────────────────────
+    // Tune this constant: larger window → smoother but laggier response.
+    // At ~10 ms loop time, ACCEL_WINDOW = 15 averages ~150 ms of history.
+    private static final int ACCEL_WINDOW = 5;
+
+    private final ArrayDeque<Double> xAccelSamples = new ArrayDeque<>(ACCEL_WINDOW + 1);
+    private final ArrayDeque<Double> yAccelSamples = new ArrayDeque<>(ACCEL_WINDOW + 1);
+    private final ArrayDeque<Double> hAccelSamples = new ArrayDeque<>(ACCEL_WINDOW + 1);
+
+    public double XAccel = 0;   // smoothed X acceleration  (cm/s²)
+    public double YAccel = 0;   // smoothed Y acceleration  (cm/s²)
+    public double HAccel = 0;   // smoothed H acceleration  (rad/s²)
+
     boolean resetAtStart = false;
 
     public Odometry(OpModeEX opModeEX) {
@@ -84,45 +105,63 @@ public class Odometry extends SubSystem {
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.ODOMETRY, System.nanoTime() - start);
     }
 
-    public double X() {
-        return X;
-    }
+    public double X() { return X; }
+    public double Y() { return Y; }
+    public double Heading() { return 360 - Heading; }
+    public double normiliased() { return normilised; }
+    public double getYVelocity() { return YVelocity; }
+    public double getXVelocity() { return XVelocity; }
+    public double getHVelocity() { return HVelocity; }
 
-    public double Y() {
-        return Y;
-    }
+    // ── Smoothed acceleration getters ─────────────────────────────────────────
+    public double getXAccel() { return XAccel; }
+    public double getYAccel() { return YAccel; }
+    public double getHAccel() { return HAccel; }
 
-    public double Heading() {
-        return 360 - Heading;
-    }
-
-    public double normiliased() {
-        return normilised;
-    }
-
-    public double getYVelocity() {
-        return YVelocity;
-    }
-
-    public double getXVelocity() {
-        return XVelocity;
-    }
-
-    public double getHVelocity() {
-        return HVelocity;
+    // ── Helper: push a sample into a window deque and return the new average ──
+    private double pushAndAverage(ArrayDeque<Double> window, double sample) {
+        window.addLast(sample);
+        if (window.size() > ACCEL_WINDOW) {
+            window.pollFirst();          // evict the oldest sample
+        }
+        double sum = 0;
+        for (double v : window) sum += v;
+        return sum / window.size();
     }
 
     public LambdaCommand update = new LambdaCommand(
             () -> {
             },
             () -> {
-
                 odo.update();
 
+                // ── Velocity ──────────────────────────────────────────────────
                 XVelocity = odo.getVelX(DistanceUnit.CM);
                 YVelocity = -odo.getVelY(DistanceUnit.CM);
                 HVelocity = odo.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
 
+                // ── Averaged Acceleration ─────────────────────────────────────
+                // Compute Δtime in seconds; guard against the very first tick
+                // (prevNanos == 0) and near-zero dt to avoid divide-by-zero.
+                long nowNanos = System.nanoTime();
+                double dt = (prevNanos == 0) ? 0.0 : (nowNanos - prevNanos) * 1e-9;
+                prevNanos = nowNanos;
+
+                if (dt > 1e-6) {   // only update when we have a real time delta
+                    double rawXAccel =  (XVelocity - prevXVel) / dt;
+                    double rawYAccel =  (YVelocity - prevYVel) / dt;
+                    double rawHAccel =  (HVelocity - prevHVel) / dt;
+
+                    XAccel = pushAndAverage(xAccelSamples, rawXAccel);
+                    YAccel = pushAndAverage(yAccelSamples, rawYAccel);
+                    HAccel = pushAndAverage(hAccelSamples, rawHAccel);
+                }
+
+                prevXVel = XVelocity;
+                prevYVel = YVelocity;
+                prevHVel = HVelocity;
+
+                // ── Heading ───────────────────────────────────────────────────
                 // Cache heading reads (avoids redundant unit conversions)
                 double rawDeg = odo.getHeading(AngleUnit.DEGREES);
                 double rawRad = odo.getHeading(AngleUnit.RADIANS);
@@ -136,6 +175,7 @@ public class Odometry extends SubSystem {
                     Heading = startHeading + rawDeg;
                 }
 
+                // ── Position ──────────────────────────────────────────────────
                 X = startX + odo.getPosX(DistanceUnit.CM);
                 Y = startY - odo.getPosY(DistanceUnit.CM);
             },

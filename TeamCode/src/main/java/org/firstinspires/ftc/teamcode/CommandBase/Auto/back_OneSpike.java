@@ -278,7 +278,7 @@ public class back_OneSpike extends OpModeEX {
                 if (built && turret.diff < 150 && turret.rpm > 1000){
                     intake.InTake = true;
                 }
-                if (built && preload.milliseconds() > 1480 || built && turret.diff < 80 && turret.rpm > 1200) {
+                if (built && preload.milliseconds() > 1200 || built && turret.diff < 80 && turret.rpm > 1200 && odometry.getYVelocity() < 8) {
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -426,16 +426,7 @@ public class back_OneSpike extends OpModeEX {
                     ballsInIntake = false;
                     intake.holdUp = false;
                     maxWait.reset();
-                    if (backCycles == 2) {
-                        gateTolX = 8;
-                        gateTolY = 8;
-                        gateTurnX = 74;
-                        enterGateFromBack();
-                        gateAngle  = 305;
-
-                    } else {
-                        state = AutoState.backCollect;
-                    }
+                    state = AutoState.backCollect;
                     if (backCycles == 1 ){
                         targetPos = 55;
                     }else if(backCycles == 3){

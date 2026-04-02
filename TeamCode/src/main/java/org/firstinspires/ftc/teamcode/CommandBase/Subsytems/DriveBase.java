@@ -28,9 +28,8 @@ public class DriveBase extends SubSystem {
     public MotorEx RB = new MotorEx();
     public MotorEx LB = new MotorEx();
     public TouchSensor intakeSensor;
-    Servo pto1;
-    Servo pto2;
-    ServoDegrees baseServo = new ServoDegrees();
+    public Servo base1;
+    public Servo base2;
 
     public double speed = 1;
     public boolean engage = false;
@@ -53,11 +52,8 @@ public class DriveBase extends SubSystem {
         RF.initMotor("RF", getOpMode().hardwareMap);
         LB.initMotor("LB", getOpMode().hardwareMap);
         RB.initMotor("RB", getOpMode().hardwareMap);
-        pto1 = getOpMode().hardwareMap.get(Servo.class, "pto1");
-        pto2 = getOpMode().hardwareMap.get(Servo.class, "pto2");
-        baseServo.initServo("base", getOpMode().hardwareMap);
-        baseServo.setRange(180);
-        baseServo.setDirection(Servo.Direction.REVERSE);
+        base1 = getOpMode().hardwareMap.get(Servo.class, "base1");
+        base2 = getOpMode().hardwareMap.get(Servo.class, "base2");
 
         intakeSensor = getOpMode().hardwareMap.get(TouchSensor.class, "intakeSensor");
 
@@ -78,15 +74,8 @@ public class DriveBase extends SubSystem {
         long start = System.nanoTime();
         executeEX();
 
-        if (engage) {
-            pto1.setPosition(0.64);
-            pto2.setPosition(0.32);
-            baseServo.setPosition(35);
-        } else {
-            pto1.setPosition(0.5);
-            pto2.setPosition(0.5);
-            baseServo.setPosition(0);
-        }
+
+
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.DRIVE_BASE, System.nanoTime() - start);
     }
 

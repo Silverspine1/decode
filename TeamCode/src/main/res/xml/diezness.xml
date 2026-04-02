@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
-    <Webcam name="Webcam 1" serialNumber="SN0002" />
+    <Webcam name="Webcam 1" serialNumber="44434000_P030C01_SN0002" />
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 2" port="2">
             <goBILDA5201SeriesMotor name="shooterMotorOne" port="0" />
@@ -18,6 +18,8 @@
             <Servo name="turretTurnOne" port="3" />
             <Servo name="turretTurnTwo" port="4" />
             <Servo name="intakeBlocker" port="1" />
+            <Servo name="base1" port="2" />
+            <Servo name="base2" port="5" />
             <Servo name="hoodAdjust" port="0" />
         </ServoHub>
         <LynxModule name="Control Hub" port="173">
@@ -25,9 +27,7 @@
             <goBILDA5201SeriesMotor name="RB" port="1" />
             <goBILDA5201SeriesMotor name="LF" port="2" />
             <goBILDA5201SeriesMotor name="RF" port="3" />
-            <Servo name="pto2" port="1" />
             <Servo name="intakePTO" port="4" />
-            <Servo name="pto1" port="2" />
 
 
             <goBILDAPinpoint name="odo" port="0" bus="0" />
@@ -35,7 +35,6 @@
             <DigitalDevice name="sensor3" port="4"  />
             <DigitalDevice name="sensor1" port="6"  />
 
-            <Servo name="base" port="0" />
 
 
 
