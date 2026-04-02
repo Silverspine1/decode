@@ -90,7 +90,6 @@ public class Odometry extends SubSystem {
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        odo.resetPosAndIMU();
     }
 
     public double headingError(double targetHeading) {

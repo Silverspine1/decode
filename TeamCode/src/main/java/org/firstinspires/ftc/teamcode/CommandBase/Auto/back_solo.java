@@ -292,7 +292,7 @@ public class back_solo extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.TURRET_COMP_FACTOR = 0;
-                    turret.mapOfset = 70;
+                    turret.mapOfset = 90;
                     turret.turrofset = 2;
 
 
@@ -368,7 +368,7 @@ public class back_solo extends OpModeEX {
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
-                    turret.turrofset = -3.5;
+                    turret.turrofset = -2;
                     turret.mapOfset = -50;
 
 
@@ -424,7 +424,6 @@ public class back_solo extends OpModeEX {
                     intake.block = true;
                     intake.InTake = true;
                     state = AutoState.collect3;
-                    turret.turrofset = -4.5;
                     driveBase.speed = 1;
                 }
                 break;
@@ -591,7 +590,7 @@ public class back_solo extends OpModeEX {
                         state = AutoState.backCollect;
                     }
                     if (backCycles == 1 ){
-                        targetPos = 56;
+                        targetPos = 60;
                     }else if(backCycles == 4){
                         targetPos = 58;
                     }else{
