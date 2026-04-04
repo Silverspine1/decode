@@ -265,9 +265,9 @@ public class back_solo extends OpModeEX {
         }
 
         if (visionCollect){
-            if (processor.hAngleDeg >16 && !intakePathSelected){
+            if (processor.hAngleDeg >22 && !intakePathSelected){
                 final sectionBuilder[] p3 = new sectionBuilder[]{
-                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(69, 284)),
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(57, 293)),
                 };
                 paths.addNewPath("p3");
                 paths.buildPath(p3);
@@ -279,9 +279,9 @@ public class back_solo extends OpModeEX {
                 intake.InTake = true;
                 maxWait.reset();
 
-            } else if (processor.hAngleDeg < -0.1 && !intakePathSelected) {
+            } else if (processor.hAngleDeg < -2  && !intakePathSelected) {
                 final sectionBuilder[] p1 = new sectionBuilder[]{
-                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 340), new Vector2D(69, 340)),
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 340), new Vector2D(57, 340)),
                 };
                 paths.addNewPath("p1");
                 paths.buildPath(p1);
@@ -294,9 +294,9 @@ public class back_solo extends OpModeEX {
                 maxWait.reset();
 
 
-            }else if(!intakePathSelected && processor.hAngleDeg >-0.1) {
+            }else if(!intakePathSelected && processor.hAngleDeg >-2 && processor.hAngleDeg <22 ) {
                 final sectionBuilder[] p2 = new sectionBuilder[]{
-                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(69, 311)),
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(57, 311)),
                 };
                 paths.addNewPath("p2");
                 paths.buildPath(p2);
