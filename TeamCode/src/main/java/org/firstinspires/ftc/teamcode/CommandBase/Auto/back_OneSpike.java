@@ -47,25 +47,13 @@ public class back_OneSpike extends OpModeEX {
         preLoad,
         collect1,
         driveToShoot1,
-        collect2,
-        driveToShoot2,
-        collect3,
         gate,
-        driveToShoot3,
-        firstBackCollect,
+
         driveToShootBack,
         backCollect,
         finished
     }
 
-    double frontOffset     = 8.0;   // distance from robot center to intake face (along -X at heading 0/360)
-    double sideOffsetDeg   = 0.0;   // sideways camera bias in degrees (+ = right of camera center)
-    double robotHalfWidth  = 17.5;  // half the robot's width parallel to the wall
-    double wallSafetyMargin = 10.0;  // extra clearance beyond robotHalfWidth
-    double wallBuffer       = 20.0; // field units from safe limit where avoidance activates
-    double maxWallAvoidPower = 0.40; // max Y power applied for wall avoidance
-    double wallVelGain      = 0.018; // velocity feedforward gain (predictive braking)
-    double wallLookAheadSecs = 0.12; // seconds ahead to predict wall approach
 
     final double WALL_Y = 270; // field Y of the wall
 
@@ -419,6 +407,7 @@ public class back_OneSpike extends OpModeEX {
                     intake.holdUp = false;
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
+                    built = true;
                     state = AutoState.backCollect;
                 }
                 break;
@@ -473,23 +462,18 @@ public class back_OneSpike extends OpModeEX {
                 // alreadyFailed recovery — redirect to gate on cycle 2, else backCollect
                 if (alreadyFailed && maxToGetToShoot.milliseconds() > 2200) {
                     backCycles += 1;
-                    driveBase.speed = 1;
-                    if (backCycles >= 2) {
-                        enterGateFromBack();
-                        gateAngle  = 307;
-                    } else {
-                        follow.usePathHeadings(false);
-                        dontWaitForPoz = false;
-                        built = true;
-                        pathing = false;
-                        intake.InTake = true;
-                        ballsInIntake = false;
-                        collectDone = false;
-                        maxWait.reset();
-                        intake.holdUp = false;
-                        alreadyFailed = false;
-                        state = AutoState.backCollect;
-                    }
+                    follow.usePathHeadings(false);
+                    dontWaitForPoz = false;
+                    built = true;
+                    pathing = false;
+                    intake.InTake = true;
+                    ballsInIntake = false;
+                    collectDone = false;
+                    maxWait.reset();
+                    intake.holdUp = false;
+                    alreadyFailed = false;
+                    state = AutoState.backCollect;
+
                 }
                 if (built && shootTime.milliseconds() > shootWait) {
                     driveBase.speed = 1;
