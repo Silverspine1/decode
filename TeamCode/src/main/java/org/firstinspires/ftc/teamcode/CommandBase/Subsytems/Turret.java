@@ -80,17 +80,17 @@ public class Turret extends SubSystem {
 
     double distance1 = 137;
     double distance2 = 275;
-    double distance3 = 350;
-    double distance4 = 428;
+    double distance3 = 348;
+    double distance4 = 400;
 
     double lowHoodAngle1 = 37.1;
     double lowHoodAngle2 = 51.5;
-    double lowHoodAngle3 = 54;
-    double lowHoodAngle4 = 55;
+    double lowHoodAngle3 = 59;
+    double lowHoodAngle4 = 59.2;
     double lowPower1 = 1500;
     double lowPower2 = 1980;
-    double lowPower3 = 2300;
-    double lowPower4 = 2640;
+    double lowPower3 = 2388;
+    double lowPower4 = 2652;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;

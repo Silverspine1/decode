@@ -69,7 +69,7 @@ public class Odometry extends SubSystem {
     public void startPosition(double X, double Y, int Heading) {
         this.startX = X;
         this.startY = Y;
-        this.Heading = Heading;
+        this.startHeading = Heading;
     }
 
     @Override
@@ -100,6 +100,11 @@ public class Odometry extends SubSystem {
     public void execute() {
         long start = System.nanoTime();
         executeEX();
+        if (!resetAtStart){
+            odo.setPosX(0,DistanceUnit.CM);
+            odo.setPosY(0,DistanceUnit.CM);
+            resetAtStart = true;
+        }
 
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.ODOMETRY, System.nanoTime() - start);
     }

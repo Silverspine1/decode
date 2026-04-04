@@ -33,7 +33,9 @@ public class DriveBase extends SubSystem {
 
     public double speed = 1;
     public boolean engage = false;
-    public boolean lift = false;
+    boolean liftBasePlate = false;
+    boolean liftBasePlateDone = false;
+
 
     PIDController headingPID = new PIDController(0.025, 0, 0.0003);
 
@@ -73,7 +75,15 @@ public class DriveBase extends SubSystem {
     public void execute() {
         long start = System.nanoTime();
         executeEX();
-
+        if (!liftBasePlate && !liftBasePlateDone) {
+            base2.setPosition(1);
+            base1.setPosition(0);
+            liftBasePlate = true;
+        } else if (liftBasePlate && !liftBasePlateDone) {
+            base2.setPosition(0.5);
+            base1.setPosition(0.5);
+            liftBasePlateDone = true;
+        }
 
 
         ((OpModeEX) getOpMode()).profiler.recordDuration(LoopProfiler.DRIVE_BASE, System.nanoTime() - start);
