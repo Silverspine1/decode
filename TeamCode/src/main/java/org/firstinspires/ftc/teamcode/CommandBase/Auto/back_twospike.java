@@ -24,7 +24,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
 @Autonomous
 
-public class back_OneSpike extends OpModeEX {
+public class back_twospike extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(
             0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
             0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
@@ -123,7 +123,7 @@ public class back_OneSpike extends OpModeEX {
             () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(116, 230), new Vector2D(59, 208)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(55, 205.5)),
+            () -> paths.addPoints(new Vector2D(153, 150), new Vector2D(55, 205.5)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(57, 221)),
@@ -412,18 +412,104 @@ public class back_OneSpike extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 460
                         || !built && ballShot) {
+                    follow.setPath(paths.returnPath("collect2"));
+                    follow.usePathHeadings(true);
+                    follow.setHeadingLookAheadDistance(160);
+                    follow.setHeadingOffset(90);
+                    turret.turrofset = -2.5;
+                    turret.mapOfset = -55;
 
-                    driveBase.speed = 1;
-                    collectDone = false;
-                    ballsInIntake = false;
-                    intake.holdUp = false;
-                    maxWait.reset();
-                    HoldHeadingWhileShooting = false;
-                    state = AutoState.backCollect;
+
+
+
+                    pathing = true;
+                    intake.InTake = true;
+                    built = true;
+                    intake.block = true;
+                    state = AutoState.collect2;
                 }
                 break;
 
+            case collect2:
+                if (pathing && follow.isFinished(12,12)) {
+                    targetHeading = 252;
+                    follow.usePathHeadings(false);
+                }
+                if (follow.isFinished(8, 8)) {
+                    state = AutoState.driveToShoot2;
+                    follow.setPath(paths.returnPath("driveToShoot2"));
+                    follow.setHeadingOffset(-90);
+                    intakeoff.reset();
+                    intakeOff = true;
+                    follow.usePathHeadings(true);
+                    follow.setHeadingLookAheadDistance(130);
+                    built = true;
+                }
+                break;
 
+            case driveToShoot2:
+                if (follow.isFinished(43, 43)) {
+                    follow.usePathHeadings(false);
+                    targetHeading = 250;
+                }
+                if (built && follow.isFinished(20, 20) && (Math.abs(odometry.getXVelocity())
+                        + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 100) {
+                    intake.InTake = true;
+                    built = false;
+                    intake.block = false;
+                    shootTime.reset();
+                    intake.InTake = true;
+                    pathing = false;
+                    ballShot = false;
+                }
+                if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 350) {
+                    follow.setPath(paths.returnPath("gate"));
+                    follow.usePathHeadings(true);
+                    follow.setHeadingLookAheadDistance(100);
+                    follow.setHeadingOffset(90);
+                    pathing = true;
+                    intake.block = true;
+                    built = false;
+                    state = AutoState.gate;
+                    turret.turrofset = 2;
+                    turret.mapOfset = 35;
+
+                }
+                break;
+
+            case gate:
+                if (odometry.X() < gateTurnX) {
+                    follow.usePathHeadings(false);
+                    targetHeading = gateAngle;
+                    intake.poz = Intake.intakePoz.gatePoz;
+                    intake.InTake = true;
+                }
+                if (follow.isFinished(gateTolX, gateTolY) && !built) {
+                    pathing = false;
+                    gateInTakeTime.reset();
+                    built = true;
+                }
+                if (!pathing) {
+                    driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - gateAngle), 0);
+                    PIDAtGate = true;
+                }
+
+                if (built && gateInTakeTime.milliseconds() > gateTime || built && ballsInIntake && ballCollectWait.milliseconds() > 180 && gateInTakeTime.milliseconds() > 300) {
+                    pathing = true;
+                    PIDAtGate = false;
+                    follow.setPath(paths.returnPath("firstDriveToShootBack"));
+                    follow.usePathHeadings(false);
+                    state = AutoState.driveToShootBack;
+                    afterGateCollect = true;
+                    driveBase.speed = 1;
+                    targetHeading = 308;
+                    maxToGetToShoot.reset();
+                    intake.poz = Intake.intakePoz.normalPoz;
+
+                    built = false;
+
+                }
+                break;
 
             case driveToShootBack:
                 if (afterGateCollect && odometry.Y() > 330) {
@@ -498,7 +584,17 @@ public class back_OneSpike extends OpModeEX {
                     intake.holdUp = false;
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
-                    state = AutoState.backCollect;
+
+                    if (backCycles == 2) {
+                        gateTolX = 8;
+                        gateTolY = 8;
+                        gateTurnX = 74;
+                        enterGateFromBack();
+                        gateAngle  = 305;
+
+                    } else {
+                        state = AutoState.backCollect;
+                    }
                 }
                 break;
 
