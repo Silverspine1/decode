@@ -57,7 +57,7 @@ public class back_solo extends OpModeEX {
         backCollect,
         finished
     }
-    // Robot geometry & wall config
+
     double frontOffset     = 8.0;   // distance from robot center to intake face (along -X at heading 0/360)
     double sideOffsetDeg   = 0.0;   // sideways camera bias in degrees (+ = right of camera center)
     double robotHalfWidth  = 17.5;  // half the robot's width parallel to the wall
@@ -91,6 +91,7 @@ public class back_solo extends OpModeEX {
     boolean ballsInIntake = false;
     boolean driveBackToShoot = false;
     boolean HoldHeadingWhileShooting = false;
+    boolean waitAtEnd = false;
 
     double backCycles = 0;
     double shootWait = 700;
@@ -109,7 +110,7 @@ public class back_solo extends OpModeEX {
     ElapsedTime gateInTakeTime = new ElapsedTime();
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime ballCollectWait = new ElapsedTime();
-    ElapsedTime waitAfterCollected = new ElapsedTime();
+    ElapsedTime endPath = new ElapsedTime();
 
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
@@ -263,26 +264,67 @@ public class back_solo extends OpModeEX {
             ballsInIntake = false;
         }
 
-        if (visionCollect) {
+        if (visionCollect){
+            if (processor.hAngleDeg >16 && !intakePathSelected){
+                final sectionBuilder[] p3 = new sectionBuilder[]{
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(69, 284)),
+                };
+                paths.addNewPath("p3");
+                paths.buildPath(p3);
+                follow.setPath(paths.returnPath("p3"));
+                pathing = true;
+                intakePathSelected = true;
+                targetHeading = 270;
+                intake.block = false;
+                intake.InTake = true;
+                maxWait.reset();
+
+            } else if (processor.hAngleDeg < -0.1 && !intakePathSelected) {
+                final sectionBuilder[] p1 = new sectionBuilder[]{
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 340), new Vector2D(69, 340)),
+                };
+                paths.addNewPath("p1");
+                paths.buildPath(p1);
+                follow.setPath(paths.returnPath("p1"));
+                pathing = true;
+                intakePathSelected = true;
+                targetHeading = 270;
+                intake.block = true;
+                intake.InTake = true;
+                maxWait.reset();
 
 
-            if (maxWait.milliseconds() > 400 && odometry.X() < targetPos - 5
-                    || maxWait.milliseconds() > 1100
-                    || ballsInIntake
-                    || odometry.Y() < 245) {
-                if (!driveBackToShoot){
-                    driveBackToShoot = true;
-                    waitAfterCollected.reset();
-                }
-                if(driveBackToShoot && waitAfterCollected.milliseconds() > 180){
-                    collectDone = true;
-                    driveBackToShoot = false;
-                }
+            }else if(!intakePathSelected && processor.hAngleDeg >-0.1) {
+                final sectionBuilder[] p2 = new sectionBuilder[]{
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(69, 311)),
+                };
+                paths.addNewPath("p2");
+                paths.buildPath(p2);
+                follow.setPath(paths.returnPath("p2"));
+                pathing = true;
+                intakePathSelected = true;
+                targetHeading = 270;
+                intake.block = true;
+                intake.InTake = true;
+                maxWait.reset();
+
 
             }
+            if (follow.isFinished(5,10) && !waitAtEnd || maxWait.milliseconds() > 1700 && !waitAtEnd){
+                waitAtEnd = true;
+                endPath.reset();
+            }
+            if (waitAtEnd && endPath.milliseconds() > 180){
+                waitAtEnd = false;
+                collectDone = true;
+            }
+
 
             intake.block = true;
             intake.InTake = true;
+
+
+
         }
 
         switch (state) {
@@ -597,28 +639,37 @@ public class back_solo extends OpModeEX {
                     } else {
                         state = AutoState.backCollect;
                     }
-                    if (backCycles == 1 ){
-                        targetPos = 55;
-                    }else if(backCycles == 3){
-                        collectAngle = 250;
-                        targetPos = 56;
-                    }else{
-                        targetPos = 50;
-                    }
                 }
                 break;
 
             case backCollect:
-                if (built && !collectDone && !visionCollect) {
-                    visionCollect = true;
-                    driveBackToShoot = false;
-                    intake.block = true;
-                    intake.poz = Intake.intakePoz.normalPoz;
-                    intake.InTake = true;
-                    ballCollectWait.reset();
-                    maxWait.reset();
+                if (built && !collectDone ){
+                    if (!p3Qued){
+                        visionCollect = true;
+                    }else {
+                        final sectionBuilder[] p2 = new sectionBuilder[]{
+                                () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(69, 311)),
+                        };
+                        paths.addNewPath("p2");
+                        paths.buildPath(p2);
+                        follow.setPath(paths.returnPath("p2"));
+                        targetHeading = 270;
+                        if (!pathing){
+                            maxWait.reset();
+                        }
+                        pathing = true;
+                        intakePathSelected = true;
+                        visionCollect = true;
+                        p3Qued = false;
+
+
+                    }
                 }
-                if (built && collectDone) {
+
+
+
+
+                if (built && collectDone ){
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     final sectionBuilder[] S1 = new sectionBuilder[] {
@@ -627,12 +678,18 @@ public class back_solo extends OpModeEX {
                     paths.addNewPath("S1");
                     paths.buildPath(S1);
                     follow.setPath(paths.returnPath("S1"));
-                    follow.setHeadingOffset(-90);
+                    turret.turrofset= 0;
 
                     intakePathSelected = false;
-                    follow.usePathHeadings(true);
                     maxToGetToShoot.reset();
+
                     ballShot = false;
+                    targetHeading = 270;
+
+                    intakeoff.reset();
+                    intakeOff = true;
+
+
                     pathing = true;
                     built = false;
                 }
@@ -647,50 +704,7 @@ public class back_solo extends OpModeEX {
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));
-        } else if (visionCollect) {
-            odometry.queueCommand(odometry.update);
-
-            // ── Front offset: shift the X target so the *intake face* reaches targetPos,
-            //    not the robot center. At heading 0/360 the intake is along -X,
-            //    so cos(heading) projects frontOffset into field X correctly.
-            double headingRad     = Math.toRadians(odometry.normilised);
-            double adjustedTarget = targetPos + frontOffset * Math.sin(headingRad);
-
-            // ── Vision steer: sideOffsetDeg biases which pixel column is "center",
-            //    shifting the aim without touching the wall axis at all.
-            double visionSteer = headingPID.calculate(-processor.hAngleDeg - sideOffsetDeg);
-
-            // ── Wall avoidance (field Y axis only) ─────────────────────────────────
-            // Safe Y limit the robot centre must never exceed.
-            double safeY      = WALL_Y - robotHalfWidth - wallSafetyMargin;
-            double curY       = odometry.Y();
-            double yVel       = odometry.getYVelocity(); // + = toward wall
-
-            // Look ahead: react to where we *will be*, not where we are now.
-            double predictedY  = curY + yVel * wallLookAheadSecs;
-            double distToSafe  = safeY - predictedY; // positive = still clear
-
-            double wallAvoidPower = 0.0;
-            if (distToSafe < wallBuffer) {
-                // Position term: grows quadratically as we enter the buffer zone.
-                double penetration = Math.max(0.0, wallBuffer - distToSafe);
-                double posTerm     = Math.pow(penetration / wallBuffer, 2) * maxWallAvoidPower;
-
-                // Velocity term: only fires when actively moving *toward* the wall,
-                // so it never flips sign and push us back into the wall.
-                double velTerm = Math.max(0.0, yVel) * wallVelGain;
-
-                wallAvoidPower = -(posTerm + velTerm);                      // away from wall
-                wallAvoidPower = Math.max(wallAvoidPower, -maxWallAvoidPower); // clamp
-            }
-
-            // Param 1 = field X  (X PID)      — ball approach / retreat
-            // Param 2 = rotation (vision PID) — steer toward ball centre
-            // Param 3 = field Y  (wall avoid) — was 0, now actively managed
-            // All three axes are orthogonal → zero coupling → zero oscillation.
-            driveBase.queueCommand(driveBase.drivePowers(
-                    -y.calculate(targetPos, odometry.X()), headingPID.calculate(headingPID.calculate(odometry.Heading() - collectAngle)), 0));
-        } else if (!PIDAtGate && !HoldHeadingWhileShooting) {
+        }else if (!PIDAtGate && !HoldHeadingWhileShooting) {
             driveBase.queueCommand(driveBase.drivePowers(0, 0, 0));
         }
     }
