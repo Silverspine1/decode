@@ -346,6 +346,8 @@ public class blue_Tele extends OpModeEX {
                 togle = true;
                 gamepad1.rumble(200);
                 rest = true;
+                turret.reset = true;
+                intake.reset = true;
 
                 odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
                 odometry.odo.setPosY(-Apriltag.getY(), DistanceUnit.CM);

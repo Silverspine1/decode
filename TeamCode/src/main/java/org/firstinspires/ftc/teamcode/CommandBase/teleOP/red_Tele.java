@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.CommandBase.teleOP;
 
 import android.util.Size;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -9,7 +11,9 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
+import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Turret;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.ArrayList;
@@ -19,7 +23,6 @@ import dev.weaponboy.nexus_pathing.Follower.follower;
 import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
 import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
-import dev.weaponboy.nexus_pathing.PathingUtility.PathingPower;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
@@ -29,6 +32,7 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 public class red_Tele extends OpModeEX {
     private VisionPortal visionPortal;
     private LocalVision processor;
+    private FtcDashboard dashboard;
     pathsManager paths = new pathsManager(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01,
             0.0005, 0.012, 0.002, 200, 273, 270, 320));
 
@@ -41,14 +45,6 @@ public class red_Tele extends OpModeEX {
         backCollect,
         backShoot
     }
-
-    enum shootPath {
-        S1,
-        S2,
-        S3,
-    }
-
-    shootPath shootState = shootPath.S2;
 
     backState backstate = backState.backCollect;
     boolean captureLastHeading = false;
@@ -63,30 +59,43 @@ public class red_Tele extends OpModeEX {
     boolean pathing = false;
     boolean built = false;
     boolean collectDone = false;
-    boolean intakeOff = false;
 
-    boolean intakePathSelected = false;
+    // ── Back-cycle tracking ─────────────────────────────────────────────────
+    boolean isBackCycling       = false;
+    boolean backCycleShootReady = false;
+    int     backCycles          = 0;
+    // ────────────────────────────────────────────────────────────────────────
+
+    // ── Vision-collect geometry & wall config (ported from auto) ────────────
+    double frontOffset        =  8.0;   // intake face offset from robot centre along heading
+    double sideOffsetDeg      =  0.0;   // sideways camera bias (+ = right)
+    double robotHalfWidth     = 17.5;   // half robot width parallel to the wall
+    double wallSafetyMargin   = 10.0;   // clearance beyond robotHalfWidth
+    double wallBuffer         = 20.0;   // field units from safe limit where avoidance activates
+    double maxWallAvoidPower  =  0.40;  // max Y power for wall avoidance
+    double wallVelGain        =  0.018; // velocity feedforward gain
+    double wallLookAheadSecs  =  0.12;  // seconds ahead to predict wall approach
+    final  double WALL_Y      = 270.0;  // field Y of the wall
+    double targetPos          = 44.0;   // field X the intake face should reach
+    boolean ballsInIntake     = false;
+    boolean driveBackToShoot  = false;
+    ElapsedTime ballCollectWait = new ElapsedTime();
+    ElapsedTime waitAfterCollected = new ElapsedTime();
+    // ────────────────────────────────────────────────────────────────────────
+
     double lastBallCount = 0;
     double currentBallCount = 0;
     PIDController headingPID = new PIDController(0.013, 0, 0.0032);
-    PIDController XPID = new PIDController(0.03, 0.0, 0.004);
-    PIDController YPID = new PIDController(0.03, 0.0, 0.004);
+    PIDController xVisionPID = new PIDController(0.03,  0, 0.003);
+    PIDController correctiveXFinalAdjustment = new PIDController(0.03, 0.0, 0.004);
+    PIDController correctiveYFinalAdjustment = new PIDController(0.03, 0.0, 0.004);
     ElapsedTime shooterOffWait = new ElapsedTime();
     ElapsedTime rumble = new ElapsedTime();
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime maxWait = new ElapsedTime();
-    ElapsedTime intakeoff = new ElapsedTime();
     ElapsedTime ejectTimer = new ElapsedTime();
 
-    private final sectionBuilder[] p1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(140, 340), new Vector2D(60, 340)),
-    };
-    private final sectionBuilder[] p2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 317)),
-    };
-    private final sectionBuilder[] p3 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(60, 284)),
-    };
+    // Shoot-return paths (used after vision collect)
     private final sectionBuilder[] S1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(56, 340), new Vector2D(115, 320)),
     };
@@ -96,10 +105,6 @@ public class red_Tele extends OpModeEX {
     private final sectionBuilder[] S3 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(56, 284), new Vector2D(115, 320)),
     };
-    private final sectionBuilder[] pEsh = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(65, 284)),
-    };
-    Vector2D park = new Vector2D(294, 267);
 
     // Variables for velocity and acceleration tracking
     private double lastXVelo = 0;
@@ -119,21 +124,29 @@ public class red_Tele extends OpModeEX {
     private double currentMaxVelo = 0;
     private double currentMaxAccel = 0;
 
+    // ── Clean cancel: zeroes every back-cycle flag in one place ────────────
+    private void cancelBackCycle() {
+        isBackCycling       = false;
+        backCycleShootReady = false;
+        visionCollect       = false;
+        collectDone         = false;
+        pathing             = false;
+        driveBackToShoot    = false;
+        ballsInIntake       = false;
+        backstate           = backState.backCollect;
+        intake.block        = false;
+        driveBase.drivePowers(0, 0, 0);
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     @Override
     public void initEX() {
+
 
         turret.toggle = false;
         Apriltag.limelight.pipelineSwitch(0);
 
         processor = new LocalVision(LocalVision.TargetColor.BOTH);
-        paths.addNewPath("p1");
-        paths.buildPath(p1);
-        paths.addNewPath("p2");
-        paths.buildPath(p2);
-        paths.addNewPath("p3");
-        paths.buildPath(p3);
-        paths.addNewPath("pEsh");
-        paths.buildPath(pEsh);
         paths.addNewPath("S1");
         paths.buildPath(S1);
         paths.addNewPath("S2");
@@ -143,34 +156,20 @@ public class red_Tele extends OpModeEX {
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
-        // Camera + settings BEFORE build()
         builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-
-        // Set lower resolution here
         builder.setCameraResolution(new Size(640, 480));
-
         builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
-
-        // Optional: disable RC live view to save CPU
-        builder.enableLiveView(false);
-
-        // Add BOTH processors
         builder.addProcessor(processor);
 
-        // Now actually create the portal
         visionPortal = builder.build();
+        dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        dashboard.startCameraStream(visionPortal, 4);
 
-        // --- Vision Optimization (Phase 2) ---
-        // Stop streaming by default to save CPU.
-        if (visionPortal != null) {
-            visionPortal.stopStreaming();
-        }
-
-        // Initialize velocity timer
         veloTimer.reset();
-        turret.mapOfset = 40;
-        turret.turrofset = -2.5;
+        turret.mapOfset = 0;
         turret.targetX = 360;
+
     }
 
     @Override
@@ -189,68 +188,135 @@ public class red_Tele extends OpModeEX {
     public void loopEX() {
         lastBallCount = currentBallCount;
         currentBallCount = intake.ballCount;
-        turret.robotX = odometry.X(); // CM
-        turret.robotY = odometry.Y(); // CM
-        turret.robotHeading = odometry.normiliased(); // radians (wrapping)
+        turret.robotX = odometry.X();
+        turret.robotY = odometry.Y();
+        turret.robotHeading = odometry.normiliased();
 
-        // If using TurretWithOdometryVelocity (recommended):
-        turret.robotXVelo = odometry.getXVelocity(); // cm/s
-        turret.robotYVelo = odometry.getYVelocity(); // cm/s
-        turret.robotHeadingVelo = odometry.getHVelocity(); // rad/s
+        turret.robotXVelo = odometry.getXVelocity();
+        turret.robotYVelo = odometry.getYVelocity();
+        turret.robotHeadingVelo = odometry.getHVelocity();
 
-        // Calculate velocity and acceleration
+        // ── Track when 3 balls are loaded (mirrors auto) ─────────────────────
+        if (intake.ballCount > 2 && !ballsInIntake) {
+            ballCollectWait.reset();
+            ballsInIntake = true;
+        } else if (ballsInIntake && intake.ballCount < 2) {
+            ballsInIntake = false;
+        }
+        // ────────────────────────────────────────────────────────────────────
+
+        // Manual drive only when no automated back-cycle is running
+        if (!isBackCycling) {
+            if (!rest) {
+                driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, -gamepad1.right_stick_x);
+            } else {
+                driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, odometry.Heading() - 90);
+            }
+        }
+
         calculateVelocityAndAcceleration();
 
-        // driveBase.drivePowers(-gamepad1.right_stick_y, -gamepad1.left_stick_x,
-        // -gamepad1.right_stick_x);
-
-        // if (turret.shootingLevel == Turret.LowMediumHigh.low
-        // &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-        // turret.shootingLevel = Turret.LowMediumHigh.medium;
-        // } else if (turret.shootingLevel == Turret.LowMediumHigh.medium
-        // &&currentGamepad1.dpad_up && !lastGamepad1.dpad_up){
-        // turret.shootingLevel = Turret.LowMediumHigh.low;
-        // }
-        // targetHood = targetHood + gamepad1.right_stick_y/8;
-        // if (intake.ballCount > 1) {
-        // turret.setHoodDegrees(targetHood - 2);
-        // }else {
-        // turret.setHoodDegrees(targetHood);
-        // }
-        ////////
-        ////////
-        // turret.targetRPM = turret.targetRPM + gamepad1.left_stick_y*7;
-        // if (!intake.InTake && intake.ballCount >2){
-        // intake.reverse = true;
-        // }
-        //
-        if (intake.ballCount > 1) {
-            turret.hoodCompensation = -2;
-        } else {
-            turret.hoodCompensation = 0;
-        }
         if (intake.ballCount > 0) {
             shooterOffWait.reset();
-
-        }
-        if (odometry.X() > 220) {
-            turret.mapOfset = 120;
-        } else {
-            turret.mapOfset = 40;
         }
 
-        if (intake.ballCount > 2) {
-            if (togle) {
-                turret.toggle = true;
-            }
-            shooterOffWait.reset();
-
-        } else if (intake.ballCount < 1 && shooterOffWait.milliseconds() > 500 && !turret.manuel) {
-            turret.toggle = false;
-        }
         if (intake.ballCount > 2 && rumble.milliseconds() > 1500) {
             gamepad1.rumble(300);
+            rumble.reset();
         }
+
+        // ── dpad_down: start or CANCEL a back cycle ─────────────────────────
+        if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down) {
+            if (isBackCycling) {
+                // ── CANCEL ──────────────────────────────────────────────────
+                cancelBackCycle();
+            } else {
+                // ── START ────────────────────────────────────────────────────
+                isBackCycling       = false; // set true below after setup
+                backCycleShootReady = false;
+                collectDone         = false;
+
+                if (intake.ballCount >= 2) {
+                    // Enough balls — go straight to shoot position
+                    backstate    = backState.backShoot;
+                    follow.setPath(paths.returnPath("S2"));
+                    follow.usePathHeadings(false);
+                    targetHeading = 270;
+                    pathing = true;
+                    maxToGetToShoot.reset();
+                } else {
+                    // Not enough balls — drive toward balls with vision + wall avoidance
+                    backstate        = backState.backCollect;
+                    visionCollect    = true;
+                    driveBackToShoot = false;
+                    ballsInIntake    = false;
+                    targetHeading    = 270;
+                    intake.block     = true;
+                    intake.InTake    = true;
+                    ballCollectWait.reset();
+                    maxWait.reset();
+                }
+                isBackCycling = true;
+            }
+        }
+        // ────────────────────────────────────────────────────────────────────
+
+        // ── Back-cycle state machine (only runs while isBackCycling) ────────
+        if (isBackCycling) {
+            switch (backstate) {
+
+                case backCollect:
+                    // The auto-style vision drive block (below) moves the robot and sets
+                    // driveBackToShoot when it decides collect is done. We just wait for it.
+                    if (driveBackToShoot) {
+                        visionCollect    = false;
+                        driveBackToShoot = false;
+                        ballsInIntake    = false;
+                        backstate        = backState.backShoot;
+
+                        // Build a dynamic shoot-return path from current position
+                        final double snapX = odometry.X();
+                        final double snapY = odometry.Y();
+                        paths.addNewPath("S_dyn");
+                        paths.buildPath(new sectionBuilder[]{
+                                () -> paths.addPoints(new Vector2D(snapX, snapY), new Vector2D(115, 320)),
+                        });
+                        follow.setPath(paths.returnPath("S_dyn"));
+                        follow.usePathHeadings(false);
+                        targetHeading = 270;
+                        pathing = true;
+                        maxToGetToShoot.reset();
+                    }
+                    break;
+
+                case backShoot:
+                    // Timeout safety — if we haven't arrived in 3 s, cancel cleanly
+                    if (maxToGetToShoot.milliseconds() > 3000) {
+                        cancelBackCycle();
+                        break;
+                    }
+
+                    // Arrived at shoot position
+                    if (!backCycleShootReady
+                            && follow.isFinished(10, 10)
+                            && (Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())
+                            + Math.abs(odometry.getHVelocity())) < 40) {
+                        pathing             = false;
+                        backCycleShootReady = true;
+                        intake.block        = false;
+                        intake.InTake       = true;
+                        shootTime.reset();
+                    }
+
+                    // Fire and finish cycle
+                    if (backCycleShootReady && shootTime.milliseconds() > shootWait) {
+                        backCycles++;
+                        cancelBackCycle();   // resets all flags cleanly
+                    }
+                    break;
+            }
+        }
+        // ────────────────────────────────────────────────────────────────────
 
         if (gamepad1.right_bumper) {
             if (!turret.manuel) {
@@ -258,18 +324,16 @@ public class red_Tele extends OpModeEX {
             }
             intake.InTake = true;
 
-        } else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170
-                || turret.inZone && turret.diff < 170 && turret.toggle && turret.turretInRange
-                        && odometry.getHVelocity() < 1 && (Math.abs(odometry.getXVelocity())
-                                + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 17) {
+        } else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 && turret.turretInRange) {
             intake.InTake = true;
             intake.block = false;
 
         } else if (turret.intakeTime) {
             intake.InTake = true;
-        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper) {
+        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling) {
             intake.InTake = false;
         }
+
         if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left) {
             turret.turrofset -= 1;
         }
@@ -277,316 +341,188 @@ public class red_Tele extends OpModeEX {
             turret.turrofset += 1;
         }
 
-        if (gamepad1.left_stick_y < -0.3 && Apriltag.getH() != 0 && Apriltag.getH() != 180) {
-            togle = true;
-            gamepad1.rumble(200);
-            rest = true;
+        if (gamepad1.left_stick_y < -0.3) {
+            Apriltag.enabled = true;
+            if (Apriltag.getH() != 0 && Apriltag.getH() != 180) {
+                togle = true;
+                gamepad1.rumble(200);
+                rest = true;
+                turret.reset = true;
+                intake.reset = true;
 
-            odometry.odo.setPosX(-Apriltag.getX(), DistanceUnit.CM);
-            odometry.odo.setPosY(Apriltag.getY(), DistanceUnit.CM);
-            odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
-
+                odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
+                odometry.odo.setPosY(-Apriltag.getY(), DistanceUnit.CM);
+                odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
+            }
+        } else {
+            Apriltag.enabled = false;
         }
 
+        // ── Auto-style vision collect (direct drive, no pre-built paths) ────────
         if (visionCollect) {
-            if (processor.hAngleDeg > 8 && !intakePathSelected) {
-                follow.setPath(paths.returnPath("p3"));
-                pathing = true;
-                intakePathSelected = true;
-                shootState = shootPath.S3;
-                targetHeading = 270;
-                intake.block = false;
-                intake.InTake = true;
-                maxWait.reset();
+            odometry.queueCommand(odometry.update);
 
-            } else if (processor.hAngleDeg < -8 && !intakePathSelected) {
-                follow.setPath(paths.returnPath("p1"));
-                pathing = true;
-                intakePathSelected = true;
-                shootState = shootPath.S1;
-                targetHeading = 270;
-                intake.block = true;
-                intake.InTake = true;
-                maxWait.reset();
-
-            } else if (!intakePathSelected) {
-                follow.setPath(paths.returnPath("p2"));
-                pathing = true;
-                intakePathSelected = true;
-                shootState = shootPath.S2;
-                targetHeading = 270;
-                intake.block = true;
-                intake.InTake = true;
-                maxWait.reset();
-
-            }
-            if (follow.isFinished(5, 10) || maxWait.milliseconds() > 1700) {
-                collectDone = true;
+            // Exit conditions — mirrors the auto exactly
+            if (    (maxWait.milliseconds() > 400  && odometry.X() < targetPos - 5)
+                    ||  maxWait.milliseconds() > 1100
+                    ||  ballsInIntake
+                    ||  odometry.Y() < 245) {
+                if (!driveBackToShoot) {
+                    driveBackToShoot = true;
+                    collectDone      = true;
+                    waitAfterCollected.reset();
+                }
             }
 
-            intake.block = true;
+            intake.block  = true;
             intake.InTake = true;
 
+            // Front offset: shift X target so the intake face (not robot centre) reaches targetPos
+            double headingRad     = Math.toRadians(odometry.normilised);
+            double adjustedTarget = targetPos + frontOffset * Math.sin(headingRad);
+
+            // Vision steer: heading PID drives the robot to centre the ball horizontally
+            double visionSteer = headingPID.calculate(-processor.hAngleDeg - sideOffsetDeg);
+
+            // Wall avoidance (field Y) — identical to auto
+            double safeY       = WALL_Y - robotHalfWidth - wallSafetyMargin;
+            double curY        = odometry.Y();
+            double yVel        = odometry.getYVelocity();
+            double predictedY  = curY + yVel * wallLookAheadSecs;
+            double distToSafe  = safeY - predictedY;
+
+            double wallAvoidPower = 0.0;
+            if (distToSafe < wallBuffer) {
+                double penetration = Math.max(0.0, wallBuffer - distToSafe);
+                double posTerm     = Math.pow(penetration / wallBuffer, 2) * maxWallAvoidPower;
+                double velTerm     = Math.max(0.0, yVel) * wallVelGain;
+                wallAvoidPower     = -(posTerm + velTerm);
+                wallAvoidPower     = Math.max(wallAvoidPower, -maxWallAvoidPower);
+            }
+
+            // X = approach/retreat to ball   Y-rot = vision steer   Z = wall avoid
+            driveBase.queueCommand(driveBase.drivePowers(
+                    -xVisionPID.calculate(targetPos, odometry.X()),
+                    visionSteer,
+                    wallAvoidPower));
         }
+        // ────────────────────────────────────────────────────────────────────
+
         if (gamepad1.y) {
-            double currentHeading = odometry.Heading();
-
-            double xDist = 84 - odometry.X();
-            double yDist = 273 - odometry.Y();
-
-            double robotRelativeXError = yDist * Math.sin(Math.toRadians(currentHeading))
-                    + xDist * Math.cos(Math.toRadians(currentHeading));
-            double robotRelativeYError = yDist * Math.cos(Math.toRadians(currentHeading))
-                    - xDist * Math.sin(Math.toRadians(currentHeading));
-
-            double xPower = XPID.calculate(robotRelativeXError);
-            double yPower = YPID.calculate(robotRelativeYError);
-
-            PathingPower correctivePower = new PathingPower();
-            correctivePower.set(xPower, yPower);
-
-            driveBase.drivePowers(
-                    -correctivePower.getHorizontal(),
-                    headingPID.calculate(currentHeading - 90),
-                    -correctivePower.getVertical());
-        }
-        if (!lastGamepad1.b && currentGamepad1.b && !turret.manuel) {
-            turret.manuel = true;
-            intake.block = false;
-            turret.setHoodDegrees(36);
-
-        } else if (!lastGamepad1.b && currentGamepad1.b && turret.manuel) {
-            turret.manuel = false;
-
-        }
-        if (gamepad1.x) {
-            ejectTimer.reset();
-            turret.eject = true;
-            intake.block = false;
-            turret.targetRPM = 500;
-            intake.InTake = true;
-            turret.toggle = true;
-        } else if (ejectTimer.milliseconds() < 600 && ejectTimer.milliseconds() > 150) {
-            intake.block = true;
-            turret.eject = false;
-        }
-
-        if (autoCycles) {
-            switch (backstate) {
-                case backShoot:
-
-                    if (follow.isFinished(10, 10) && Math.abs(odometry.getXVelocity() + odometry.getYVelocity())
-                            + Math.abs(odometry.getHVelocity() * 2) < 21) {
-                        pathing = false;
-                    }
-                    if (!pathing && odometry.X() > 110 && !built
-                            && Math.abs(odometry.getXVelocity() + odometry.getYVelocity())
-                                    + Math.abs(odometry.getHVelocity() * 2) < 10) {
-                        shootWait = 500;
-                        shootTime.reset();
-                        follow.usePathHeadings(false);
-                        built = true;
-                        pathing = false;
-                        intake.block = false;
-                        intake.InTake = true;
-
-                    }
-
-                    if (maxToGetToShoot.milliseconds() > 2400) {
-                        follow.usePathHeadings(false);
-                        built = true;
-                        pathing = false;
-                        intake.block = true;
-                        intake.InTake = true;
-                        backstate = backState.backCollect;
-                        driveBase.speed = 1;
-                        collectDone = false;
-                        maxWait.reset();
-                    }
-
-                    if (built && shootTime.milliseconds() > shootWait) {
-                        backstate = backState.backCollect;
-                        driveBase.speed = 1;
-                        collectDone = false;
-                        maxWait.reset();
-
-                    }
-                    break;
-                case backCollect:
-                    if (built && !collectDone) {
-                        visionCollect = true;
-                    }
-                    if (built && collectDone) {
-                        visionCollect = false;
-                    }
-
-                    if (!built && follow.isFinished(5, 5)) {
-                        pathing = false;
-                        visionCollect = false;
-                    }
-
-                    if (built && collectDone) {
-                        visionCollect = false;
-                        backstate = backState.backCollect;
-                        follow.setPath(paths.returnPath(shootState.name()));
-                        turret.turrofset = 0;
-
-                        intakePathSelected = false;
-                        maxToGetToShoot.reset();
-
-                        targetHeading = 270;
-
-                        intakeoff.reset();
-                        intakeOff = true;
-
-                        pathing = true;
-                        built = false;
-                    }
-                    break;
-            }
+            driveBase.base2.setPosition(1);
+            driveBase.base1.setPosition(0);
+        } else if (gamepad1.a) {
+            driveBase.base2.setPosition(0);
+            driveBase.base1.setPosition(1);
+        } else {
+            driveBase.base2.setPosition(0.5);
+            driveBase.base1.setPosition(0.5);
         }
 
         if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {
-            togle = false;
+            turret.toggle = false;
             gamepad1.rumble(800);
         } else if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && !turret.toggle) {
             turret.toggle = true;
             gamepad1.rumble(800);
-
         }
 
-        if (gamepad1.dpad_down) {
-            driveBase.headingLock(45 + odometry.normiliased(), true);
-        } else {
-            driveBase.headingLock(45 + odometry.normiliased(), false);
-
+        if (!lastGamepad1.x && currentGamepad1.x && intake.poz == Intake.intakePoz.normalPoz) {
+            intake.poz = Intake.intakePoz.gatePoz;
+        } else if (!lastGamepad1.x && currentGamepad1.x && intake.poz == Intake.intakePoz.gatePoz) {
+            intake.poz = Intake.intakePoz.normalPoz;
         }
+
+        // ── Path following drive output ──────────────────────────────────────
         if (pathing) {
             odometry.queueCommand(odometry.update);
-            RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(),
-                    odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
+            RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(),
+                    odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));
-        } else if (!visionCollect && !gamepad1.y) {
-            driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7,
-                    -gamepad1.right_stick_x);
         }
+        // ────────────────────────────────────────────────────────────────────
 
-        telemetry.addData("Intake Rpm", intake.secondIntakeMotor.getVelocity());
-        telemetry.addData("in zone", turret.inZone);
-        telemetry.addData("odometry x", odometry.X());
-        telemetry.addData("odometry y", odometry.Y());
-        telemetry.addData("Heading", odometry.Heading());
-        telemetry.addData("distance", turret.distance);
-        telemetry.addData("diff", turret.diff);
-        telemetry.addData("hood", targetHood);
-        telemetry.addData("rpm", turret.targetRPM);
-        telemetry.addData("limeX", Apriltag.getX());
-        telemetry.addData("limeY", Apriltag.getY());
-        telemetry.addData("limeH", Apriltag.getH());
-        telemetry.addData("ball x ", processor.xPosCm);
-
-        telemetry.addData("block ", intake.block);
-
-        telemetry.addData("ball", intake.ballCount);
-        telemetry.addData("turretservang ", turret.turretAngle / turret.gearRatio + 180);
-
-        ElapsedTime loopTimer = new ElapsedTime();
-
-
-        telemetry.addData("ball", intake.ballCount);
-        telemetry.addData("distance velo", turret.distanceVelocity);
-        telemetry.addData("distance offset", turret.ofsetDistance);
-        telemetry.addData("vision angle", processor.hAngleDeg);
-
-        telemetry.addData("turretservang ", turret.turretAngle / turret.gearRatio + 180);
-
-        // Display velocity and acceleration data
-        telemetry.addData("--- PERFORMANCE METRICS ---", "");
-        telemetry.addData("Max Velocity (avg)", "%.1f cm/s", getAverageMaxVelo());
-        telemetry.addData("Current Velocity", "%.1f cm/s", currentMaxVelo);
-        telemetry.addData("Max Accel (avg)", "%.1f cm/s²", getAverageMaxAccel());
-        telemetry.addData("Current Accel", "%.1f cm/s²", currentMaxAccel);
+        if (Timer.milliseconds() > 100) {
+            Timer.reset();
+            telemetry.addData("Intake Rpm", intake.intakeRPM);
+            telemetry.addData("in zone", turret.inZone);
+            telemetry.addData("odometry x", odometry.X());
+            telemetry.addData("odometry y", odometry.Y());
+            telemetry.addData("Heading", odometry.Heading());
+            telemetry.addData("distance", turret.distance);
+            telemetry.addData("diff", turret.diff);
+            telemetry.addData("hood", targetHood);
+            telemetry.addData("rpm", turret.rpm);
+            telemetry.addData("limeX", Apriltag.getX());
+            telemetry.addData("limeY", Apriltag.getY());
+            telemetry.addData("limeH", Apriltag.getH());
+            telemetry.addData("ball x ", processor.xPosCm);
+            telemetry.addData("block ", intake.block);
+            telemetry.addData("ball", intake.ballCount);
+            telemetry.addData("distance velo", turret.distanceVelocity);
+            telemetry.addData("vision angle", processor.hAngleDeg);
+            telemetry.addData("turretservang ", turret.turretAngle / turret.gearRatio + 180);
+            telemetry.addData("Max Velocity", "%.1f", getAverageMaxVelo());
+            telemetry.addData("Max Accel", "%.1f", getAverageMaxAccel());
+            // ── Back-cycle telemetry ─────────────────────────────────────────
+            telemetry.addData("Back Cycles", backCycles);
+            telemetry.addData("Back Cycling", isBackCycling ? (backstate == backState.backCollect ? "COLLECTING" : "SHOOTING") : "OFF");
+            // ────────────────────────────────────────────────────────────────
+            telemetry.update();
+        }
 
     }
 
-    /**
-     * Calculate current velocity magnitude and acceleration
-     */
     private void calculateVelocityAndAcceleration() {
-        // Get current velocities from odometry
-        double xVelo = odometry.getXVelocity(); // cm/s
-        double yVelo = odometry.getYVelocity(); // cm/s
+        double xVelo = odometry.getXVelocity();
+        double yVelo = odometry.getYVelocity();
 
-        // Calculate velocity magnitude (Pythagorean theorem)
         double currentVelo = Math.sqrt(xVelo * xVelo + yVelo * yVelo);
 
-        // Update max velocity if current is higher
         if (currentVelo > currentMaxVelo) {
             currentMaxVelo = currentVelo;
 
-            // Add to recent max velocities list
             recentMaxVelos.add(currentMaxVelo);
             if (recentMaxVelos.size() > AVERAGING_WINDOW) {
-                recentMaxVelos.remove(0); // Remove oldest value
+                recentMaxVelos.remove(0);
             }
         }
 
-        // Calculate time delta
         double dt = veloTimer.seconds();
         veloTimer.reset();
 
-        // Avoid division by zero
         if (dt > 0.001) {
-            // Calculate acceleration components
             double xAccel = (xVelo - lastXVelo) / dt;
             double yAccel = (yVelo - lastYVelo) / dt;
 
-            // Calculate acceleration magnitude
             double currentAccel = Math.sqrt(xAccel * xAccel + yAccel * yAccel);
 
-            // Update max acceleration if current is higher
             if (currentAccel > currentMaxAccel) {
                 currentMaxAccel = currentAccel;
 
-                // Add to recent max accelerations list
                 recentMaxAccels.add(currentMaxAccel);
                 if (recentMaxAccels.size() > AVERAGING_WINDOW) {
-                    recentMaxAccels.remove(0); // Remove oldest value
+                    recentMaxAccels.remove(0);
                 }
             }
         }
 
-        // Store current velocities for next loop
         lastXVelo = xVelo;
         lastYVelo = yVelo;
         lastHVelo = odometry.getHVelocity();
     }
 
-    /**
-     * Get average of recent max velocities
-     */
     private double getAverageMaxVelo() {
-        if (recentMaxVelos.isEmpty())
-            return 0;
-
+        if (recentMaxVelos.isEmpty()) return 0;
         double sum = 0;
-        for (double velo : recentMaxVelos) {
-            sum += velo;
-        }
+        for (double velo : recentMaxVelos) sum += velo;
         return sum / recentMaxVelos.size();
     }
 
-    /**
-     * Get average of recent max accelerations
-     */
     private double getAverageMaxAccel() {
-        if (recentMaxAccels.isEmpty())
-            return 0;
-
+        if (recentMaxAccels.isEmpty()) return 0;
         double sum = 0;
-        for (double accel : recentMaxAccels) {
-            sum += accel;
-        }
+        for (double accel : recentMaxAccels) sum += accel;
         return sum / recentMaxAccels.size();
     }
 }

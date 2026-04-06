@@ -50,6 +50,7 @@ public class Intake extends SubSystem {
 
     public int ballCount = 0;
     public double intakeRPM = 0;
+    public boolean reset = false;
 
     public Intake(OpModeEX opModeEX) {
         registerSubsystem(opModeEX, defaultCommand);
@@ -137,14 +138,14 @@ public class Intake extends SubSystem {
         }else {
             intakeUP.setPosition(0.35);
         }
-        if (ballCount > 2 && intakeoff.milliseconds() > 250 && block || intakeOff && intakeoff.milliseconds() > 500) {
+        if (ballCount > 2 && intakeoff.milliseconds() > 250 && block && reset || intakeOff && intakeoff.milliseconds() > 500 && reset) {
             InTake = false;
             intakeOff = false;
             poz = Intake.intakePoz.up;
 
         }else if (ballCount <3 && !intakeOff && poz == Intake.intakePoz.normalPoz || ballCount <3 && !intakeOff && poz == Intake.intakePoz.gatePoz){
             intakeoff.reset();
-        }else if (poz == Intake.intakePoz.up && !holdUp){
+        }else if (poz == Intake.intakePoz.up && !holdUp || !reset ){
             poz = Intake.intakePoz.normalPoz;
         }
 

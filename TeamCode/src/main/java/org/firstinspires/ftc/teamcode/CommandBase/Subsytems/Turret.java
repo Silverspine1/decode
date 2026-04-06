@@ -128,6 +128,8 @@ public class Turret extends SubSystem {
 
 
     public boolean inZone = false;
+
+    public boolean reset = false;
     private double[] t1; // Optimization: move fixed triangle out of loop
 
     // Pre-allocated array for expandTriangle (avoids per-loop allocation)
@@ -178,7 +180,7 @@ public class Turret extends SubSystem {
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
         turretTurnOne.setOffset(178);
-        turretTurnTwo.setOffset(178.5);
+        turretTurnTwo.setOffset(180);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         hoodAdjust.setOffset(60);
 
@@ -372,7 +374,7 @@ public class Turret extends SubSystem {
             turretAngle = -55;
             turretToCenter.reset();
             turretOutLeft = true;
-        } else if (turretToCenter.milliseconds() > 600) {
+        } else if (turretToCenter.milliseconds() > 500) {
             turretInRange = true;
             turretOutLeft = false;
             turretOutRight = false;
@@ -396,8 +398,12 @@ public class Turret extends SubSystem {
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
 
-            if (!stopTurret && !manuel) {
+            if (!stopTurret && !manuel && reset) {
                 double tPos = (turretAngle + turrofset) / gearRatio;
+                turretTurnOne.setPosition(tPos);
+                turretTurnTwo.setPosition(tPos);
+            } else if (!reset) {
+                double tPos = (0 + turrofset) / gearRatio;
                 turretTurnOne.setPosition(tPos);
                 turretTurnTwo.setPosition(tPos);
             }
