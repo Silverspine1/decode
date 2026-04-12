@@ -123,6 +123,8 @@ public class blue_Tele extends OpModeEX {
 
     private double currentMaxVelo = 0;
     private double currentMaxAccel = 0;
+    double baseOffset = 2;
+    double baseMapOffset = 0;
 
     // ── Clean cancel: zeroes every back-cycle flag in one place ────────────
     private void cancelBackCycle() {
@@ -167,7 +169,6 @@ public class blue_Tele extends OpModeEX {
         dashboard.startCameraStream(visionPortal, 4);
 
         veloTimer.reset();
-        turret.mapOfset = 0;
 
     }
 
@@ -223,6 +224,7 @@ public class blue_Tele extends OpModeEX {
             gamepad1.rumble(300);
             rumble.reset();
         }
+
 
         // ── dpad_down: start or CANCEL a back cycle ─────────────────────────
         if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down) {
@@ -316,6 +318,13 @@ public class blue_Tele extends OpModeEX {
             }
         }
         // ────────────────────────────────────────────────────────────────────
+        if (odometry.Y() > 260) {
+            turret.mapOfset = 60 + baseMapOffset;
+            turret.turrofset = 4 + baseOffset;
+        }else {
+            turret.mapOfset = 0 + baseMapOffset;
+            turret.turrofset = 2 + baseOffset;
+        }
 
         if (gamepad1.right_bumper) {
             if (!turret.manuel) {
@@ -333,11 +342,17 @@ public class blue_Tele extends OpModeEX {
             intake.InTake = false;
         }
 
-        if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left) {
-            turret.turrofset -= 1;
+        if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left) {
+            baseOffset -= 1;
         }
-        if (!lastGamepad1.dpad_right && currentGamepad1.dpad_right) {
-            turret.turrofset += 1;
+        if (!lastGamepad2.dpad_right && currentGamepad2.dpad_right) {
+            baseOffset += 1;
+        }
+        if (!lastGamepad2.dpad_up && currentGamepad2.dpad_up ){
+            baseMapOffset += 10;
+        }
+        if (!lastGamepad2.dpad_down && currentGamepad2.dpad_down ){
+            baseMapOffset -= 10;
         }
 
         if (gamepad1.left_stick_y < -0.3) {

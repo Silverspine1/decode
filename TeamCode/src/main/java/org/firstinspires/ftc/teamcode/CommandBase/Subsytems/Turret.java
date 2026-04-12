@@ -89,8 +89,8 @@ public class Turret extends SubSystem {
     double lowHoodAngle4 = 59.2;
     double lowPower1 = 1500;
     double lowPower2 = 1980;
-    double lowPower3 = 2388;
-    double lowPower4 = 2652;
+    double lowPower3 = 2408;
+    double lowPower4 = 2662;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -179,8 +179,8 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(178);
-        turretTurnTwo.setOffset(180);
+        turretTurnOne.setOffset(177);
+        turretTurnTwo.setOffset(179);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         hoodAdjust.setOffset(60);
 
@@ -386,7 +386,7 @@ public class Turret extends SubSystem {
             }
         }
 
-        if (toggle) {
+        if (toggle &&!Auto) {
             if (!testOP && !manuel && !eject) {
                 targetRPM = interpolatedPower + mapOfset;
                 setHoodDegrees(Math.max(34, interpolatedHoodAngle + hoodCompensation));

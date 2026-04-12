@@ -123,10 +123,10 @@ public class back_twospike_RED extends OpModeEX {
             () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(238, 230), new Vector2D(301, 210)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(207, 150), new Vector2D(305, 205.5)),
+            () -> paths.addPoints(new Vector2D(207, 150), new Vector2D(303, 198)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(303, 221)),
+            () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(306, 230)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(313, 206), new Vector2D(207, 150)),
@@ -171,7 +171,7 @@ public class back_twospike_RED extends OpModeEX {
         follow.setPath(paths.returnPath("gateFromBack"));
         follow.usePathHeadings(true);
         follow.setHeadingLookAheadDistance(100);
-        follow.setHeadingOffset(-90);
+        follow.setHeadingOffset(90);
         intake.block   = true;
         state          = AutoState.gate;
     }
@@ -182,7 +182,7 @@ public class back_twospike_RED extends OpModeEX {
         odometry.odo.setHeading(270, AngleUnit.DEGREES);
 
         turret.Auto = true;
-        turret.targetX = 0;
+        turret.targetX = 360;
         driveBase.tele = false;
         follow.setHeadingOffset(90);
 

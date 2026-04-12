@@ -170,7 +170,6 @@ public class back_OneSpike_RED extends OpModeEX {
         odometry.odo.setHeading(270, AngleUnit.DEGREES);
 
         turret.Auto = true;
-        turret.targetX = 0;
         driveBase.tele = false;
         follow.setHeadingOffset(90);
 
