@@ -32,7 +32,7 @@ public class test_path extends OpModeEX {
     //   Short  ->  -300
     //   Medium ->  -700  (default, use your average match distance)
     //   Long   ->  -1200
-    private static final double PATH_END_Y = 95;
+    private static final double PATH_END_Y = 50;
     // -------------------------------------------------------------------------
 
     pathsManager paths = new pathsManager(new RobotConfig(
@@ -110,7 +110,7 @@ public class test_path extends OpModeEX {
                     odometry.getXVelocity(),
                     odometry.getYVelocity());
 
-            driveBase.queueCommand(driveBase.drivePowers(currentPower));
+            driveBase.queueCommand(driveBase.drivePowers(-currentPower.getHorizontal(),currentPower.getPivot(),-currentPower.getVertical()));
             telemetry.addData("vert", currentPower.getHorizontal());
 
             // Log this sample

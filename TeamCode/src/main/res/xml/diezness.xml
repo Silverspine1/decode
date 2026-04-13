@@ -14,7 +14,7 @@
             <DigitalDevice name="sensor1" port="6"  />
 
         </LynxModule>
-        <ServoHub name="Servo Hub 3" port="3">
+        <ServoHub name="Servo Hub 4" port="4">
             <Servo name="turretTurnOne" port="3" />
             <Servo name="turretTurnTwo" port="4" />
             <Servo name="intakeBlocker" port="1" />

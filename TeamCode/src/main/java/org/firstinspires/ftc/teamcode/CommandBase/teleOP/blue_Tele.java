@@ -112,8 +112,11 @@ public class blue_Tele extends OpModeEX {
     private double lastHVelo = 0;
     double shootWait = 700;
 
+
     private ElapsedTime veloTimer = new ElapsedTime();
     ElapsedTime Timer = new ElapsedTime();
+    ElapsedTime liftTimer = new ElapsedTime();
+
     ElapsedTime shootTime = new ElapsedTime();
 
     // Lists to store recent max values (averaging window)
@@ -319,11 +322,11 @@ public class blue_Tele extends OpModeEX {
         }
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
-            turret.mapOfset = 60 + baseMapOffset;
-            turret.turrofset = 4 + baseOffset;
+            turret.mapOfset = 100 + baseMapOffset;
+            turret.turrofset = -4+ baseOffset;
         }else {
-            turret.mapOfset = 0 + baseMapOffset;
-            turret.turrofset = 2 + baseOffset;
+            turret.mapOfset = 20 + baseMapOffset;
+            turret.turrofset = -6 + baseOffset;
         }
 
         if (gamepad1.right_bumper) {
@@ -431,6 +434,10 @@ public class blue_Tele extends OpModeEX {
         } else {
             driveBase.base2.setPosition(0.5);
             driveBase.base1.setPosition(0.5);
+            liftTimer.reset();
+        }
+        if (liftTimer.milliseconds() > 600){
+            turret.lift = true;
         }
 
         if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {

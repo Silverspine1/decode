@@ -87,19 +87,17 @@ public class back_solo extends OpModeEX {
     boolean PIDAtGate = false;
     boolean alreadyFailed = false;
     double IntakeOffWait = 200;
-    double Xdist = 110;
     boolean ballsInIntake = false;
     boolean driveBackToShoot = false;
-    boolean HoldHeadingWhileShooting = false;
     boolean waitAtEnd = false;
+
+    boolean HoldHeadingWhileShooting = false;
+    boolean p1Pathing = false;
 
     double backCycles = 0;
     double shootWait = 700;
-    double velo = 16;
-    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112;double gateAngle = 299; double gateTime = 1200;
-    double targetPos = 44;
+    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112;double gateAngle = 295; double gateTime = 1250;
     boolean stage1Done = false;
-    double collectAngle = 270;
 
     ElapsedTime shootTime = new ElapsedTime();
     ElapsedTime intakeoff = new ElapsedTime();
@@ -111,6 +109,8 @@ public class back_solo extends OpModeEX {
     ElapsedTime maxToGetToShoot = new ElapsedTime();
     ElapsedTime ballCollectWait = new ElapsedTime();
     ElapsedTime endPath = new ElapsedTime();
+    ElapsedTime stage1Timer = new ElapsedTime();
+
 
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
@@ -120,10 +120,10 @@ public class back_solo extends OpModeEX {
             () -> paths.addPoints(new Vector2D(73, 273), new Vector2D(140, 296)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(116, 230), new Vector2D(59, 208)),
+            () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(116, 230), new Vector2D(60.5, 208)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(51, 207)),
+            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(50, 207)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(55, 218.5)),
@@ -265,7 +265,7 @@ public class back_solo extends OpModeEX {
         }
 
         if (visionCollect){
-            if (processor.hAngleDeg >16 && !intakePathSelected){
+            if (processor.hAngleDeg >20 && !intakePathSelected){
                 final sectionBuilder[] p3 = new sectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50, 293)),
                 };
@@ -282,7 +282,7 @@ public class back_solo extends OpModeEX {
 
             } else if (processor.hAngleDeg < 1  && !intakePathSelected) {
                 final sectionBuilder[] p1 = new sectionBuilder[]{
-                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 340), new Vector2D(50, 340)),
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 337), new Vector2D(50, 337)),
                 };
                 paths.addNewPath("p1");
                 paths.buildPath(p1);
@@ -293,12 +293,13 @@ public class back_solo extends OpModeEX {
                 follow.usePathHeadings(true);
                 intake.block = true;
                 intake.InTake = true;
+                p1Pathing = true;
                 maxWait.reset();
 
 
-            }else if(!intakePathSelected && processor.hAngleDeg >1 && processor.hAngleDeg <16 ) {
+            }else if(!intakePathSelected && processor.hAngleDeg >1 && processor.hAngleDeg <20 ) {
                 final sectionBuilder[] p2 = new sectionBuilder[]{
-                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50, 311)),
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50, 307)),
                 };
                 paths.addNewPath("p2");
                 paths.buildPath(p2);
@@ -313,9 +314,13 @@ public class back_solo extends OpModeEX {
 
 
             }
-            if (follow.isFinished(5,10)  || maxWait.milliseconds() > 1400 ){
+            if (follow.isFinished(5,10) &&!waitAtEnd  || maxWait.milliseconds() > 1400 &&!waitAtEnd ){
+                endPath.reset();
+                waitAtEnd = true;
+            }
+            if (endPath.milliseconds() > 80 && waitAtEnd){
+                waitAtEnd = false;
                 collectDone = true;
-
             }
 
 
@@ -338,8 +343,8 @@ public class back_solo extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.TURRET_COMP_FACTOR = 0;
-                    turret.mapOfset = 95;
-                    turret.turrofset = 3;
+                    turret.mapOfset = 75;
+                    turret.turrofset = 0;
 
 
                     targetHeading = 270;
@@ -356,7 +361,7 @@ public class back_solo extends OpModeEX {
                 if (pathing && follow.isFinished(10, 10)) {
                     pathing = false;
                 }
-                if (!built && shootTime.milliseconds() > 400) {
+                if (!built && shootTime.milliseconds() > 440) {
                     final sectionBuilder[] collect1 = new sectionBuilder[] {
                             () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(74, 266)),
                     };
@@ -364,9 +369,9 @@ public class back_solo extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.TURRET_COMP_FACTOR = 0.95;
-                    turret.mapOfset = 70;
+                    turret.mapOfset = 95;
                     targetHeading = 278;
-                    turret.turrofset = 1;
+                    turret.turrofset = -1;
 
 
 
@@ -416,8 +421,8 @@ public class back_solo extends OpModeEX {
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
-                    turret.turrofset = 0;
-                    turret.mapOfset = -10;
+                    turret.turrofset = -4;
+                    turret.mapOfset = 10;
 
 
 
@@ -473,7 +478,8 @@ public class back_solo extends OpModeEX {
                     intake.InTake = true;
                     state = AutoState.collect3;
                     driveBase.speed = 1;
-                    turret.mapOfset = 80;
+                    turret.turrofset = -4;
+                    turret.mapOfset = 130;
 
                 }
                 break;
@@ -497,8 +503,9 @@ public class back_solo extends OpModeEX {
                 if (!stage1Done && follow.isFinished(8,20)){
                     stage1Done = true;
                     follow.setPath(paths.returnPath("driveToShoot3Stage2"));
+                    stage1Timer.reset();
                 }
-                if (stage1Done && built) {
+                if (stage1Done && built && stage1Timer.milliseconds() > 100) {
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -515,8 +522,8 @@ public class back_solo extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = 5;
-                    turret.mapOfset = 25;
+                    turret.turrofset = 3;
+                    turret.mapOfset = 60;
 
                 }
                 break;
@@ -556,13 +563,13 @@ public class back_solo extends OpModeEX {
                 break;
 
             case driveToShootBack:
-                if (afterGateCollect && odometry.Y() > 300) {
+                if (afterGateCollect && odometry.Y() > 230) {
                     intake.InTake = false;
                 }
                 if (afterGateCollect && odometry.Y() > 280) {
                     targetHeading = 278;
                 }
-                if (odometry.X() > 82 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){
+                if (odometry.X() > 76 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;
@@ -575,7 +582,7 @@ public class back_solo extends OpModeEX {
 
                 }
                 if (follow.isFinished(15, 30) && odometry.X() > 110 && !built
-                        && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) + Math.abs(odometry.getHVelocity() * 2) < 40
+                        && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) + Math.abs(odometry.getHVelocity() * 2) < 20
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();
@@ -650,11 +657,16 @@ public class back_solo extends OpModeEX {
 
             case backCollect:
                 if (built && !collectDone ){
+                    p1Pathing = false;
+                    turret.turrofset = 3;
+                    turret.mapOfset = 70;
+
+
                     if (!p3Qued){
                         visionCollect = true;
                     }else {
                         final sectionBuilder[] p2 = new sectionBuilder[]{
-                                () -> paths.addPoints(new Vector2D(115, 317), new Vector2D(55, 320)),
+                                () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(65, 320)),
                         };
                         paths.addNewPath("p2");
                         paths.buildPath(p2);
@@ -709,9 +721,11 @@ public class back_solo extends OpModeEX {
             case finished:
                 requestOpModeStop();
         }
-
-
-        if (pathing) {
+        if (pathing && p1Pathing){
+            odometry.queueCommand(odometry.update);
+            RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
+            driveBase.queueCommand(driveBase.drivePowers(-currentPower.getHorizontal(),currentPower.getPivot(),-currentPower.getVertical() / 5));
+        }else if (pathing) {
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));

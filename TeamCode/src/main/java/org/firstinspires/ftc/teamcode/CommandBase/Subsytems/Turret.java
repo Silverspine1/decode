@@ -120,6 +120,9 @@ public class Turret extends SubSystem {
 
     ElapsedTime turretToCenter = new ElapsedTime();
     ElapsedTime distanceTimer = new ElapsedTime();
+    ElapsedTime gameTime = new ElapsedTime();
+    boolean gameTimeReset =false;
+
     private double lastTurretAngle = 0;
     private final ElapsedTime turretAngleTimer = new ElapsedTime();
     public static double TURRET_MECH_LOOKAHEAD_S = 0.10;
@@ -142,6 +145,7 @@ public class Turret extends SubSystem {
     public boolean testOP = false;
     public boolean manuel = false;
     public boolean eject = false;
+    public boolean lift = false;
 
 
     public double diff = 0;
@@ -264,6 +268,10 @@ public class Turret extends SubSystem {
     public void execute() {
         long start = System.nanoTime();
         executeEX();
+        if (!gameTimeReset){
+            gameTimeReset = true;
+            gameTime.reset();
+        }
 
         double deltaX = robotX - targetX;
         double deltaY = robotY - targetY;
@@ -385,8 +393,13 @@ public class Turret extends SubSystem {
                 turretAngle = -55;
             }
         }
+        if (!reset && !Auto && gameTime.milliseconds() > 3000 || !Auto && lift && gameTime.milliseconds() > 3000) {
+            double tPos = (0 + turrofset) / gearRatio;
+            turretTurnOne.setPosition(tPos);
+            turretTurnTwo.setPosition(tPos);
+        }
 
-        if (toggle &&!Auto) {
+        if (toggle &&!Auto && !lift) {
             if (!testOP && !manuel && !eject) {
                 targetRPM = interpolatedPower + mapOfset;
                 setHoodDegrees(Math.max(34, interpolatedHoodAngle + hoodCompensation));
