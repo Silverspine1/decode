@@ -183,12 +183,11 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(177);
-        turretTurnTwo.setOffset(179);
+        turretTurnOne.setOffset(176);
+        turretTurnTwo.setOffset(178);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         hoodAdjust.setOffset(60);
 
-        // Pre-calculate fixed triangle for zone detection
         t1 = expandTriangle(-10, 0, 180, 190, 370, 0, 0);
 
         distanceTimer.reset();
@@ -324,19 +323,7 @@ public class Turret extends SubSystem {
 
         double baseTurretAngle = Math.toDegrees(-Math.atan2(deltaX, deltaY) + robotHeading);
 
-        // ── Kinematic compensation ────────────────────────────────────────────
-        //
-        // The robot's position at ball-arrival time is approximated by:
-        //   displacement = v·t + ½·a·t²
-        //
-        // The v·t term (existing) handles steady motion.
-        // The ½·a·t² term (new) handles direction changes: when the robot
-        // decelerates through v=0, the velocity term vanishes but the robot
-        // continues to drift in the direction of acceleration. Without this term
-        // the turret snaps back to centre exactly when the shot would miss most.
-        //
-        // Both terms are projected onto the radial direction (perpendicular to
-        // the shooter→target line) because only lateral drift matters for aim.
+
         double compensationAngle = 0;
         if (distance > 0.01) {
             double dist = distance; // already computed above
