@@ -125,7 +125,7 @@ public class Turret extends SubSystem {
 
     private double lastTurretAngle = 0;
     private final ElapsedTime turretAngleTimer = new ElapsedTime();
-    public static double TURRET_MECH_LOOKAHEAD_S = 0.10;
+    public static double TURRET_MECH_LOOKAHEAD_S = 0.08;
     public double turretAngleVelo = 0;
 
 
