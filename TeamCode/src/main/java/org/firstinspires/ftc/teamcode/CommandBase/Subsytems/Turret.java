@@ -78,19 +78,19 @@ public class Turret extends SubSystem {
 
     public double hoodCompensation = 0;
 
-    double distance1 = 137;
+    double distance1 = 112;
     double distance2 = 275;
-    double distance3 = 348;
+    double distance3 = 340;
     double distance4 = 400;
 
-    double lowHoodAngle1 = 37.1;
-    double lowHoodAngle2 = 51.5;
-    double lowHoodAngle3 = 59;
-    double lowHoodAngle4 = 59.2;
-    double lowPower1 = 1500;
-    double lowPower2 = 1980;
-    double lowPower3 = 2408;
-    double lowPower4 = 2662;
+    double lowHoodAngle1 = 33.1;
+    double lowHoodAngle2 = 52.4;
+    double lowHoodAngle3 = 56.15;
+    double lowHoodAngle4 = 56.15;
+    double lowPower1 = 1565;
+    double lowPower2 = 2181;
+    double lowPower3 = 2528;
+    double lowPower4 = 2818;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;

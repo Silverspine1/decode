@@ -112,8 +112,11 @@ public class red_Tele extends OpModeEX {
     private double lastHVelo = 0;
     double shootWait = 700;
 
+
     private ElapsedTime veloTimer = new ElapsedTime();
     ElapsedTime Timer = new ElapsedTime();
+    ElapsedTime liftTimer = new ElapsedTime();
+
     ElapsedTime shootTime = new ElapsedTime();
 
     // Lists to store recent max values (averaging window)
@@ -123,6 +126,8 @@ public class red_Tele extends OpModeEX {
 
     private double currentMaxVelo = 0;
     private double currentMaxAccel = 0;
+    double baseOffset = 2;
+    double baseMapOffset = 0;
 
     // ── Clean cancel: zeroes every back-cycle flag in one place ────────────
     private void cancelBackCycle() {
@@ -167,7 +172,7 @@ public class red_Tele extends OpModeEX {
         dashboard.startCameraStream(visionPortal, 4);
 
         veloTimer.reset();
-        turret.mapOfset = 0;
+        driveBase.tele = true;
         turret.targetX = 360;
 
     }
@@ -196,6 +201,10 @@ public class red_Tele extends OpModeEX {
         turret.robotYVelo = odometry.getYVelocity();
         turret.robotHeadingVelo = odometry.getHVelocity();
 
+        driveBase.fieldVelY = odometry.getYVelocity();
+        driveBase.fieldVelX = odometry.getXVelocity();
+
+
         // ── Track when 3 balls are loaded (mirrors auto) ─────────────────────
         if (intake.ballCount > 2 && !ballsInIntake) {
             ballCollectWait.reset();
@@ -210,7 +219,7 @@ public class red_Tele extends OpModeEX {
             if (!rest) {
                 driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, -gamepad1.right_stick_x);
             } else {
-                driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, odometry.Heading() - 90);
+                driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, odometry.Heading() - 270);
             }
         }
 
@@ -224,6 +233,7 @@ public class red_Tele extends OpModeEX {
             gamepad1.rumble(300);
             rumble.reset();
         }
+
 
         // ── dpad_down: start or CANCEL a back cycle ─────────────────────────
         if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down) {
@@ -317,6 +327,15 @@ public class red_Tele extends OpModeEX {
             }
         }
         // ────────────────────────────────────────────────────────────────────
+        if (odometry.Y() > 260) {
+            turret.mapOfset = 100 + baseMapOffset;
+            turret.turrofset = -4+ baseOffset;
+            turret.TURRET_COMP_FACTOR = 1;
+        }else {
+            turret.mapOfset = 20 + baseMapOffset;
+            turret.turrofset = -6 + baseOffset;
+            turret.TURRET_COMP_FACTOR = 0.3;
+        }
 
         if (gamepad1.right_bumper) {
             if (!turret.manuel) {
@@ -334,11 +353,17 @@ public class red_Tele extends OpModeEX {
             intake.InTake = false;
         }
 
-        if (!lastGamepad1.dpad_left && currentGamepad1.dpad_left) {
-            turret.turrofset -= 1;
+        if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left) {
+            baseOffset -= 1;
         }
-        if (!lastGamepad1.dpad_right && currentGamepad1.dpad_right) {
-            turret.turrofset += 1;
+        if (!lastGamepad2.dpad_right && currentGamepad2.dpad_right) {
+            baseOffset += 1;
+        }
+        if (!lastGamepad2.dpad_up && currentGamepad2.dpad_up ){
+            baseMapOffset += 10;
+        }
+        if (!lastGamepad2.dpad_down && currentGamepad2.dpad_down ){
+            baseMapOffset -= 10;
         }
 
         if (gamepad1.left_stick_y < -0.3) {
@@ -417,6 +442,10 @@ public class red_Tele extends OpModeEX {
         } else {
             driveBase.base2.setPosition(0.5);
             driveBase.base1.setPosition(0.5);
+            liftTimer.reset();
+        }
+        if (liftTimer.milliseconds() > 600){
+            turret.lift = true;
         }
 
         if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {

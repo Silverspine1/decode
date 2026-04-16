@@ -172,6 +172,7 @@ public class blue_Tele extends OpModeEX {
         dashboard.startCameraStream(visionPortal, 4);
 
         veloTimer.reset();
+        driveBase.tele = true;
 
     }
 
@@ -198,6 +199,10 @@ public class blue_Tele extends OpModeEX {
         turret.robotXVelo = odometry.getXVelocity();
         turret.robotYVelo = odometry.getYVelocity();
         turret.robotHeadingVelo = odometry.getHVelocity();
+
+        driveBase.fieldVelY = odometry.getYVelocity();
+        driveBase.fieldVelX = odometry.getXVelocity();
+
 
         // ── Track when 3 balls are loaded (mirrors auto) ─────────────────────
         if (intake.ballCount > 2 && !ballsInIntake) {
@@ -324,9 +329,11 @@ public class blue_Tele extends OpModeEX {
         if (odometry.Y() > 260) {
             turret.mapOfset = 100 + baseMapOffset;
             turret.turrofset = -4+ baseOffset;
+            turret.TURRET_COMP_FACTOR = 1;
         }else {
             turret.mapOfset = 20 + baseMapOffset;
             turret.turrofset = -6 + baseOffset;
+            turret.TURRET_COMP_FACTOR = 0.3;
         }
 
         if (gamepad1.right_bumper) {

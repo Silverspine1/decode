@@ -91,7 +91,7 @@ public class close_gateCycle extends OpModeEX {
 
     double balls = 0;
     double shootWait = 700;
-    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112;double gateAngle = 295; double gateTime = 1500;
+    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112;double gateAngle = 295; double gateTime = 1100;
     boolean stage1Done = false;
 
     ElapsedTime shootTime = new ElapsedTime();
@@ -495,7 +495,7 @@ public class close_gateCycle extends OpModeEX {
                     PIDAtGate = true;
                 }
 
-                if (odometry.X() < 113 && balls == 21){
+                if (odometry.X() < 122 && balls == 24){
                     state = AutoState.finished;
                 }
 

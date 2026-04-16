@@ -126,7 +126,7 @@ public class back_solo extends OpModeEX {
             () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(50, 207)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(55, 222)),
+            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(55, 220)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(153, 150)),
@@ -344,7 +344,7 @@ public class back_solo extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.TURRET_COMP_FACTOR = 0;
-                    turret.mapOfset = 95;
+                    turret.mapOfset = -20;
                     turret.turrofset = -1;
 
 
@@ -370,7 +370,7 @@ public class back_solo extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.TURRET_COMP_FACTOR = 0.95;
-                    turret.mapOfset = 85;
+                    turret.mapOfset = -20;
                     targetHeading = 278;
                     turret.turrofset = -1;
 
@@ -423,7 +423,7 @@ public class back_solo extends OpModeEX {
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
                     turret.turrofset = -5;
-                    turret.mapOfset = 44;
+                    turret.mapOfset = -35;
 
 
 
@@ -479,8 +479,8 @@ public class back_solo extends OpModeEX {
                     intake.InTake = true;
                     state = AutoState.collect3;
                     driveBase.speed = 1;
-                    turret.turrofset = -4;
-                    turret.mapOfset = 195;
+                    turret.turrofset = -3;
+                    turret.mapOfset = 120;
 
                 }
                 break;
@@ -524,7 +524,7 @@ public class back_solo extends OpModeEX {
                     built = false;
                     state = AutoState.gate;
                     turret.turrofset = 1.5;
-                    turret.mapOfset = 60;
+                    turret.mapOfset = -15;
 
                 }
                 break;
