@@ -219,7 +219,7 @@ public class red_Tele extends OpModeEX {
             if (!rest) {
                 driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, -gamepad1.right_stick_x);
             } else {
-                driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, odometry.Heading() - 270);
+                driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, odometry.Heading() - 90);
             }
         }
 
@@ -328,13 +328,13 @@ public class red_Tele extends OpModeEX {
         }
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
-            turret.mapOfset = 100 + baseMapOffset;
-            turret.turrofset = -4+ baseOffset;
-            turret.TURRET_COMP_FACTOR = 1;
+            turret.mapOfset = 20 + baseMapOffset;
+            turret.turrofset = -6+ baseOffset;
+            turret.TURRET_COMP_FACTOR = 0.65;
         }else {
             turret.mapOfset = 20 + baseMapOffset;
             turret.turrofset = -6 + baseOffset;
-            turret.TURRET_COMP_FACTOR = 0.3;
+            turret.TURRET_COMP_FACTOR = 0.85;
         }
 
         if (gamepad1.right_bumper) {
@@ -343,7 +343,7 @@ public class red_Tele extends OpModeEX {
             }
             intake.InTake = true;
 
-        } else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 && turret.turretInRange) {
+        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange) {
             intake.InTake = true;
             intake.block = false;
 
