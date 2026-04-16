@@ -320,6 +320,11 @@ public class Turret extends SubSystem {
             case high:
                 break;
         }
+        if (robotY > 220){
+            TURRET_COMP_FACTOR = 0.65;
+        } else {
+            TURRET_COMP_FACTOR = 0.85;
+        }
 
         double baseTurretAngle = Math.toDegrees(-Math.atan2(deltaX, deltaY) + robotHeading);
 
