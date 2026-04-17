@@ -83,14 +83,14 @@ public class Turret extends SubSystem {
     double distance3 = 348;
     double distance4 = 400;
 
-    double lowHoodAngle1 = 37.1;
+    double lowHoodAngle1 = 30;
     double lowHoodAngle2 = 51.5;
     double lowHoodAngle3 = 59;
     double lowHoodAngle4 = 59.2;
     double lowPower1 = 1500;
     double lowPower2 = 1980;
     double lowPower3 = 2408;
-    double lowPower4 = 2662;
+    double lowPower4 = 2690;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -153,6 +153,7 @@ public class Turret extends SubSystem {
     public boolean stopTurret = false;
     boolean turretOutLeft = false;
     boolean turretOutRight = false;
+    public boolean StopSWM = false;
 
     public PIDController shootPID = new PIDController(0.015, 0.000, 0.01);
 
@@ -195,7 +196,7 @@ public class Turret extends SubSystem {
 
     public void setHoodDegrees(double theta) {
         // Linear map: hood 36° → servo 0°, hood 60° → servo 210°
-        double servoPos = (theta - 36.0) / (60.0 - 36.0) * 210.0;
+        double servoPos = (theta - 36) / (60 - 36) * 210.0;
         servoPos = Math.max(0, Math.min(210, servoPos));
         hoodAdjust.setPosition(servoPos);
     }
@@ -320,10 +321,12 @@ public class Turret extends SubSystem {
             case high:
                 break;
         }
-        if (robotY > 220){
+        if (robotY > 260 && !StopSWM){
             TURRET_COMP_FACTOR = 0.65;
-        } else {
+        } else if(StopSWM) {
             TURRET_COMP_FACTOR = 0.85;
+        }else {
+            TURRET_COMP_FACTOR = 0;
         }
 
         double baseTurretAngle = Math.toDegrees(-Math.atan2(deltaX, deltaY) + robotHeading);

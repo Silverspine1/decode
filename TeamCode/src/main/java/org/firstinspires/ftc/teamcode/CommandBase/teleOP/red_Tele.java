@@ -328,13 +328,11 @@ public class red_Tele extends OpModeEX {
         }
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
-            turret.mapOfset = 20 + baseMapOffset;
-            turret.turrofset = -6+ baseOffset;
-            turret.TURRET_COMP_FACTOR = 0.65;
+            turret.mapOfset = 50 + baseMapOffset;
+            turret.turrofset = -2+ baseOffset;
         }else {
-            turret.mapOfset = 20 + baseMapOffset;
-            turret.turrofset = -6 + baseOffset;
-            turret.TURRET_COMP_FACTOR = 0.85;
+            turret.mapOfset = 50 + baseMapOffset;
+            turret.turrofset = -2 + baseOffset;
         }
 
         if (gamepad1.right_bumper) {
@@ -366,7 +364,7 @@ public class red_Tele extends OpModeEX {
             baseMapOffset -= 10;
         }
 
-        if (gamepad1.left_stick_y < -0.3) {
+        if (gamepad1.left_stick_y < -0.3 || gamepad2.left_stick_y < -0.3 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) + Math.abs(odometry.getHVelocity() ) < 5) {
             Apriltag.enabled = true;
             if (Apriltag.getH() != 0 && Apriltag.getH() != 180) {
                 togle = true;
@@ -448,10 +446,10 @@ public class red_Tele extends OpModeEX {
             turret.lift = true;
         }
 
-        if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {
+        if (!lastGamepad2.a && currentGamepad2.a && turret.toggle) {
             turret.toggle = false;
             gamepad1.rumble(800);
-        } else if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && !turret.toggle) {
+        } else if (!lastGamepad2.a && currentGamepad2.a && !turret.toggle) {
             turret.toggle = true;
             gamepad1.rumble(800);
         }

@@ -95,7 +95,7 @@ public class back_solo_RED extends OpModeEX {
 
     double backCycles = 0;
     double shootWait = 700;
-    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 248; double gateAngle = 65; double gateTime = 1200;
+    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 248; double gateAngle = 58; double gateTime = 1200;
     boolean stage1Done = false;
 
     ElapsedTime shootTime = new ElapsedTime();
@@ -117,19 +117,19 @@ public class back_solo_RED extends OpModeEX {
             () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(220, 296)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(244, 230), new Vector2D(297.5, 208)),
+            () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(240, 240), new Vector2D(297, 211)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(222, 170), new Vector2D(310, 207)),
+            () -> paths.addPoints(new Vector2D(222, 170), new Vector2D(311, 212)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(305, 220)),
+            () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(306, 232)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(313, 206), new Vector2D(207, 150)),
+            () -> paths.addPoints(new Vector2D(313, 206), new Vector2D(217, 150)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(220, 150), new Vector2D(290, 151)),
+            () -> paths.addPoints(new Vector2D(220, 150), new Vector2D(294, 158)),
     };
     private final sectionBuilder[] driveToShoot3Stage1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(282, 150), new Vector2D(248, 150)),
@@ -167,7 +167,7 @@ public class back_solo_RED extends OpModeEX {
         follow.setPath(paths.returnPath("gateFromBack"));
         follow.usePathHeadings(true);
         follow.setHeadingLookAheadDistance(100);
-        follow.setHeadingOffset(-90);           // Flipped sign
+        follow.setHeadingOffset(90);
         intake.block   = true;
         state          = AutoState.gate;
     }
@@ -179,8 +179,7 @@ public class back_solo_RED extends OpModeEX {
 
         turret.Auto = true;
         driveBase.tele = false;
-        follow.setHeadingOffset(-90);                    // Flipped sign
-
+        follow.setHeadingOffset(90);
         paths.addNewPath("shoot");
         paths.buildPath(shoot);
         paths.addNewPath("driveToShoot1");
@@ -262,7 +261,7 @@ public class back_solo_RED extends OpModeEX {
         }
 
         if (visionCollect){
-            if (processor.hAngleDeg < -22 && !intakePathSelected){           // Flipped operator & sign
+            if (processor.hAngleDeg < -22 && !intakePathSelected){
                 final sectionBuilder[] p3 = new sectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(310, 293)),
                 };
@@ -271,13 +270,13 @@ public class back_solo_RED extends OpModeEX {
                 follow.setPath(paths.returnPath("p3"));
                 pathing = true;
                 intakePathSelected = true;
-                follow.setHeadingOffset(-90);
+                follow.setHeadingOffset(90);
                 follow.usePathHeadings(true);
                 intake.block = false;
                 intake.InTake = true;
                 maxWait.reset();
 
-            } else if (processor.hAngleDeg > -6 && !intakePathSelected) {    // Flipped
+            } else if (processor.hAngleDeg > -6 && !intakePathSelected) {
                 final sectionBuilder[] p1 = new sectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(220, 337), new Vector2D(310 - processor.radiusPixels /8, 337)),
                 };
@@ -286,9 +285,9 @@ public class back_solo_RED extends OpModeEX {
                 follow.setPath(paths.returnPath("p1"));
                 pathing = true;
                 intakePathSelected = true;
-                follow.setHeadingOffset(-90);
+                follow.setHeadingOffset(90);
                 follow.usePathHeadings(false);
-                targetHeading = 90;                                          // 360-270
+                targetHeading = 100;
                 intake.block = true;
                 intake.InTake = true;
                 p1Pathing = true;
@@ -303,7 +302,7 @@ public class back_solo_RED extends OpModeEX {
                 follow.setPath(paths.returnPath("p2"));
                 pathing = true;
                 intakePathSelected = true;
-                follow.setHeadingOffset(-90);
+                follow.setHeadingOffset(90);
                 follow.usePathHeadings(true);
                 intake.block = true;
                 intake.InTake = true;
@@ -332,11 +331,11 @@ public class back_solo_RED extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.TURRET_COMP_FACTOR = 0;
-                    turret.mapOfset = 20;           // Flipped sign
-                    turret.turrofset = 1;           // Flipped sign
+                    turret.mapOfset = 40;
+                    turret.turrofset = -1;
+                    turret.StopSWM = true;
 
-                    targetHeading = 90;             // 360-270
+                    targetHeading = 90;
                 }
                 if (built && turret.diff < 120 && turret.rpm > 1000){
                     intake.InTake = true;
@@ -352,15 +351,15 @@ public class back_solo_RED extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 400) {
                     final sectionBuilder[] collect1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(286, 266)),
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(286, 270)),
                     };
                     paths.addNewPath("collect1");
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.TURRET_COMP_FACTOR = 0.95;
-                    turret.mapOfset = 20;           // Flipped
-                    targetHeading = 82;             // 360-278
-                    turret.turrofset = 1;           // Flipped
+                    turret.StopSWM = false;
+                    turret.mapOfset = -55;
+                    targetHeading = 82;
+                    turret.turrofset = 0;
 
                     pathing = true;
                     built = true;
@@ -371,8 +370,8 @@ public class back_solo_RED extends OpModeEX {
                 break;
 
             case collect1:
-                if (pathing && odometry.X() > 275 ) {           // Flipped operator + 360-85
-                    targetHeading = 65;                         // 360-295
+                if (pathing && odometry.X() > 275 ) {
+                    targetHeading = 65;
                     follow.usePathHeadings(false);
                 }
                 if (pathing && follow.isFinished(10, 10)) {
@@ -381,7 +380,7 @@ public class back_solo_RED extends OpModeEX {
                     follow.usePathHeadings(true);
                     intakeoff.reset();
                     intakeOff = true;
-                    follow.setHeadingOffset(90);                // Flipped
+                    follow.setHeadingOffset(-90);
                     follow.setHeadingLookAheadDistance(100);
                 }
                 break;
@@ -389,7 +388,7 @@ public class back_solo_RED extends OpModeEX {
             case driveToShoot1:
                 if (follow.isFinished(17, 35)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 50;                         // 360-310
+                    targetHeading = 50;
                 }
                 if (built && follow.isFinished(22, 22) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 20) {
@@ -404,9 +403,9 @@ public class back_solo_RED extends OpModeEX {
                     follow.setPath(paths.returnPath("collect2"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(160);
-                    follow.setHeadingOffset(-90);               // Flipped
-                    turret.turrofset = 5;                       // Flipped
-                    turret.mapOfset = 35;                       // Flipped
+                    follow.setHeadingOffset(90);
+                    turret.turrofset = 1;
+                    turret.mapOfset = 15;
 
                     pathing = true;
                     intake.InTake = true;
@@ -418,13 +417,13 @@ public class back_solo_RED extends OpModeEX {
 
             case collect2:
                 if (pathing && follow.isFinished(12,12)) {
-                    targetHeading = 108;                        // 360-252
+                    targetHeading = 108;
                     follow.usePathHeadings(false);
                 }
                 if (follow.isFinished(8, 8)) {
                     state = AutoState.driveToShoot2;
                     follow.setPath(paths.returnPath("driveToShoot2"));
-                    follow.setHeadingOffset(90);                // Flipped
+                    follow.setHeadingOffset(-90);
                     intakeoff.reset();
                     intakeOff = true;
                     follow.usePathHeadings(true);
@@ -436,7 +435,7 @@ public class back_solo_RED extends OpModeEX {
             case driveToShoot2:
                 if (follow.isFinished(43, 43)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 110;                        // 360-250
+                    targetHeading = 110;
                 }
                 if (built && follow.isFinished(20, 20) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 100) {
@@ -448,8 +447,8 @@ public class back_solo_RED extends OpModeEX {
                     pathing = false;
                     ballShot = false;
                 }
-                if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 400) {
-                    targetHeading = 90;                         // 360-270
+                if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 340) {
+                    targetHeading = 90;
                     follow.setPath(paths.returnPath("collect3"));
                     follow.usePathHeadings(false);
                     intake.InTake = true;
@@ -459,15 +458,15 @@ public class back_solo_RED extends OpModeEX {
                     intake.InTake = true;
                     state = AutoState.collect3;
                     driveBase.speed = 1;
-                    turret.turrofset = 3;                       // Flipped
-                    turret.mapOfset = -120;                     // Flipped
+                    turret.turrofset = 4;
+                    turret.mapOfset = 105;
 
                 }
                 break;
 
             case collect3:
                 if (pathing && follow.isFinished(20, 10)) {
-                    targetHeading = 65;                         // 360-295
+                    targetHeading = 65;
                     follow.usePathHeadings(false);
                 }
                 if (pathing && follow.isFinished(10, 10)) {
@@ -476,7 +475,7 @@ public class back_solo_RED extends OpModeEX {
                     driveBase.speed = 1;
                     intakeoff.reset();
                     intakeOff = true;
-                    targetHeading = 90;                         // 360-270
+                    targetHeading = 90;
                 }
                 break;
 
@@ -495,16 +494,17 @@ public class back_solo_RED extends OpModeEX {
                     ballShot = false;
                 }
                 if (!built && shootTime.milliseconds() > 480) {
+
                     follow.setPath(paths.returnPath("gate"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
-                    follow.setHeadingOffset(-90);               // Flipped
+                    follow.setHeadingOffset(90);
                     pathing = true;
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = -1.5;                    // Flipped
-                    turret.mapOfset = 15;                       // Flipped
+                    turret.turrofset = -1.5;
+                    turret.mapOfset = -100;
                 }
                 break;
 
@@ -533,7 +533,7 @@ public class back_solo_RED extends OpModeEX {
                     state = AutoState.driveToShootBack;
                     afterGateCollect = true;
                     driveBase.speed = 1;
-                    targetHeading = 52;                         // 360-308
+                    targetHeading = 52;
                     maxToGetToShoot.reset();
                     intake.poz = Intake.intakePoz.normalPoz;
 
@@ -545,22 +545,22 @@ public class back_solo_RED extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 230) {
                     intake.InTake = false;
                 }
-                if (afterGateCollect && odometry.Y() > 280) {
-                    targetHeading = 82;                         // 360-278
+                if (afterGateCollect && odometry.Y() > 270) {
+                    targetHeading = 78;
                 }
                 if (odometry.X() < 284 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){  // 360-76
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;
                 }
-                if (follow.isFinished(15, 30) && Math.abs(odometry.getXVelocity() + odometry.getYVelocity())
-                        + Math.abs(odometry.getHVelocity() * 2) < 50) {
+                if (follow.isFinished(20, 25) && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity()))
+                        + Math.abs(odometry.getHVelocity() * 2) < 60) {
                     pathing = false;
                     driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 90), 0);  // Changed 270 → 90
                     HoldHeadingWhileShooting = true;
                 }
-                if (follow.isFinished(15, 30) && odometry.X() < 250 && !built        // 360-110
-                        && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) + Math.abs(odometry.getHVelocity() * 2) < 25
+                if (follow.isFinished(20, 25) && odometry.X() < 250 && !built
+                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 40
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();
@@ -569,7 +569,7 @@ public class back_solo_RED extends OpModeEX {
                     driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 90), 0);
                     HoldHeadingWhileShooting = true;
 
-                    gateTime = 1050;
+                    gateTime = 1200;
                     backCycles += 1;
                     dontWaitForPoz = false;
                     built = true;
@@ -596,7 +596,7 @@ public class back_solo_RED extends OpModeEX {
                     driveBase.speed = 1;
                     if (backCycles >= 2) {
                         enterGateFromBack();
-                        gateAngle  = 53;                        // 360-307
+                        gateAngle  = 53;
                     } else {
                         follow.usePathHeadings(false);
                         dontWaitForPoz = false;
@@ -624,7 +624,7 @@ public class back_solo_RED extends OpModeEX {
                         gateTolY = 8;
                         gateTurnX = 286;                        // 360-74
                         enterGateFromBack();
-                        gateAngle  = 55;                        // 360-305
+                        gateAngle  = 50;                        // 360-305
                     } else {
                         state = AutoState.backCollect;
                     }
@@ -671,7 +671,7 @@ public class back_solo_RED extends OpModeEX {
         if (pathing && p1Pathing){
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
-            driveBase.queueCommand(driveBase.drivePowers(-currentPower.getHorizontal(),currentPower.getPivot(),-currentPower.getVertical() / 15));
+            driveBase.queueCommand(driveBase.drivePowers(-currentPower.getHorizontal(),currentPower.getPivot(),-currentPower.getVertical() / 10));
         } else if (pathing) {
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
