@@ -95,8 +95,8 @@ public class back_OneSpike_RED extends OpModeEX {
 
     double backCycles = 0;
     double shootWait = 700;
+    double extraShootDrive = 0;
     double gateTolX = 10; double gateTolY = 8; double gateTurnX = 248; double gateAngle = 58; double gateTime = 1200;
-    boolean stage1Done = false;
 
     ElapsedTime shootTime = new ElapsedTime();
     ElapsedTime intakeoff = new ElapsedTime();
@@ -111,10 +111,10 @@ public class back_OneSpike_RED extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 305)),
+            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 308)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(250, 330)),
+            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(235, 338)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(240, 240), new Vector2D(297, 211)),
@@ -272,6 +272,7 @@ public class back_OneSpike_RED extends OpModeEX {
                 intakePathSelected = true;
                 follow.setHeadingOffset(90);
                 follow.usePathHeadings(true);
+                extraShootDrive = 7;
                 intake.block = false;
                 intake.InTake = true;
                 maxWait.reset();
@@ -290,6 +291,8 @@ public class back_OneSpike_RED extends OpModeEX {
                 targetHeading = 100;
                 intake.block = true;
                 intake.InTake = true;
+                extraShootDrive = 0;
+
                 p1Pathing = true;
                 maxWait.reset();
 
@@ -306,6 +309,7 @@ public class back_OneSpike_RED extends OpModeEX {
                 follow.usePathHeadings(true);
                 intake.block = true;
                 intake.InTake = true;
+                extraShootDrive = 0;
                 maxWait.reset();
             }
 
@@ -333,7 +337,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.mapOfset = 40;
-                    turret.turrofset = -1;
+                    turret.turrofset = -3;
                     turret.StopSWM = true;
 
                     targetHeading = 90;
@@ -358,9 +362,9 @@ public class back_OneSpike_RED extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.StopSWM = false;
-                    turret.mapOfset = -20;
+                    turret.mapOfset = -5;
                     targetHeading = 82;
-                    turret.turrofset = -3.5;
+                    turret.turrofset = -6.5;
 
                     pathing = true;
                     built = true;
@@ -389,7 +393,7 @@ public class back_OneSpike_RED extends OpModeEX {
             case driveToShoot1:
                 if (follow.isFinished(22, 34)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 90;
+                    targetHeading = 75;
                 }
                 if (built && follow.isFinished(22, 22) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 30) {
@@ -409,8 +413,8 @@ public class back_OneSpike_RED extends OpModeEX {
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
                     built = true;
-                    turret.turrofset = -3.5;
-                    turret.mapOfset = -60;
+                    turret.turrofset = -7.5;
+                    turret.mapOfset = -75;
                     state = AutoState.backCollect;
 
                 }
@@ -429,13 +433,13 @@ public class back_OneSpike_RED extends OpModeEX {
                     intake.holdUp = true;
                 }
                 if (follow.isFinished(20, 25) && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity()))
-                        + Math.abs(odometry.getHVelocity() * 2) < 70) {
+                        + Math.abs(odometry.getHVelocity() * 2) < 40) {
                     pathing = false;
                     driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 90), 0);  // Changed 270 → 90
                     HoldHeadingWhileShooting = true;
                 }
                 if (follow.isFinished(20, 25) && odometry.X() < 250 && !built
-                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 45
+                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 20
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();
@@ -537,9 +541,9 @@ public class back_OneSpike_RED extends OpModeEX {
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     final sectionBuilder[] S1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(242, 330)),
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(250 - extraShootDrive , 330)),
                     };
-                    driveBase.speed = 1.4;
+                    driveBase.speed = 1;
 
                     paths.addNewPath("S1");
                     paths.buildPath(S1);
@@ -553,9 +557,6 @@ public class back_OneSpike_RED extends OpModeEX {
 
                     ballShot = false;
                     targetHeading = 90;
-
-                    intakeoff.reset();
-                    intakeOff = true;
 
                     pathing = true;
                     built = false;

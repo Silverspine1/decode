@@ -216,10 +216,10 @@ public class red_Tele extends OpModeEX {
         // ────────────────────────────────────────────────────────────────────
 
         // Manual drive only when no automated back-cycle is running
-        if (!isBackCycling && !shooting) {
-            if (!rest) {
+        if (!isBackCycling ) {
+            if (!rest && !shooting) {
                 driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, -gamepad1.right_stick_x);
-            } else {
+            } else if(!shooting){
                 driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, odometry.Heading() - 90);
             }
         }
@@ -330,17 +330,20 @@ public class red_Tele extends OpModeEX {
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
             turret.mapOfset = 50 + baseMapOffset;
-            turret.turrofset = -2+ baseOffset;
+            turret.turrofset = -4+ baseOffset;
         }else {
-            turret.mapOfset = 50 + baseMapOffset;
-            turret.turrofset = -2 + baseOffset;
+            turret.mapOfset = 90 + baseMapOffset;
+            turret.turrofset = -4 + baseOffset;
         }
         if ( !shooting && gamepad2.right_bumper && turret.turretInRange && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 6) < 40){
             intake.InTake = true;
             intake.block = false;
             shooting = true;
             shootTime.reset();
-        } else if (shootTime.milliseconds() > 350) {
+            driveBase.drivePowers(0, 0, 0);
+
+
+        } else if (shootTime.milliseconds() > 300) {
             shooting = false;
         }
 
@@ -456,10 +459,10 @@ public class red_Tele extends OpModeEX {
             turret.lift = true;
         }
 
-        if (!lastGamepad2.a && currentGamepad2.a && turret.toggle) {
+        if (!lastGamepad2.a && currentGamepad2.a && turret.toggle || !lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {
             turret.toggle = false;
             gamepad1.rumble(800);
-        } else if (!lastGamepad2.a && currentGamepad2.a && !turret.toggle) {
+        } else if (!lastGamepad2.a && currentGamepad2.a && !turret.toggle || !lastGamepad1.dpad_up && currentGamepad1.dpad_up && !turret.toggle) {
             turret.toggle = true;
             gamepad1.rumble(800);
         }
@@ -501,6 +504,8 @@ public class red_Tele extends OpModeEX {
             telemetry.addData("turretservang ", turret.turretAngle / turret.gearRatio + 180);
             telemetry.addData("Max Velocity", "%.1f", getAverageMaxVelo());
             telemetry.addData("Max Accel", "%.1f", getAverageMaxAccel());
+            telemetry.addData("predicted angle", getAverageMaxAccel());
+
             // ── Back-cycle telemetry ─────────────────────────────────────────
             telemetry.addData("Back Cycles", backCycles);
             telemetry.addData("Back Cycling", isBackCycling ? (backstate == backState.backCollect ? "COLLECTING" : "SHOOTING") : "OFF");
