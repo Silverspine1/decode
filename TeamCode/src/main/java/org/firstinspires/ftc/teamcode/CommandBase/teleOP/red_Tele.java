@@ -128,6 +128,7 @@ public class red_Tele extends OpModeEX {
     private double currentMaxAccel = 0;
     double baseOffset = 2;
     double baseMapOffset = 0;
+    boolean shooting = false;
 
     // ── Clean cancel: zeroes every back-cycle flag in one place ────────────
     private void cancelBackCycle() {
@@ -215,7 +216,7 @@ public class red_Tele extends OpModeEX {
         // ────────────────────────────────────────────────────────────────────
 
         // Manual drive only when no automated back-cycle is running
-        if (!isBackCycling) {
+        if (!isBackCycling && !shooting) {
             if (!rest) {
                 driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, -gamepad1.right_stick_x);
             } else {
@@ -334,20 +335,29 @@ public class red_Tele extends OpModeEX {
             turret.mapOfset = 50 + baseMapOffset;
             turret.turrofset = -2 + baseOffset;
         }
+        if ( !shooting && gamepad2.right_bumper && turret.turretInRange && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 6) < 40){
+            intake.InTake = true;
+            intake.block = false;
+            shooting = true;
+            shootTime.reset();
+        } else if (shootTime.milliseconds() > 350) {
+            shooting = false;
+        }
 
-        if (gamepad1.right_bumper) {
+
+        if (gamepad1.right_bumper && !shooting) {
             if (!turret.manuel) {
                 intake.block = true;
             }
             intake.InTake = true;
 
-        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange) {
+        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting) {
             intake.InTake = true;
             intake.block = false;
 
-        } else if (turret.intakeTime) {
+        } else if (turret.intakeTime && !shooting) {
             intake.InTake = true;
-        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling) {
+        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting) {
             intake.InTake = false;
         }
 

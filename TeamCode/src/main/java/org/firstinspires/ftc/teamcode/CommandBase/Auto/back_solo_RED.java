@@ -459,7 +459,7 @@ public class back_solo_RED extends OpModeEX {
                     state = AutoState.collect3;
                     driveBase.speed = 1;
                     turret.turrofset = 4;
-                    turret.mapOfset = 105;
+                    turret.mapOfset = 115;
 
                 }
                 break;
@@ -503,8 +503,8 @@ public class back_solo_RED extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = -1.5;
-                    turret.mapOfset = -100;
+                    turret.turrofset = -2;
+                    turret.mapOfset = -90;
                 }
                 break;
 
@@ -641,7 +641,7 @@ public class back_solo_RED extends OpModeEX {
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     final sectionBuilder[] S1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(247, 330)),
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(242, 330)),
                     };
                     paths.addNewPath("S1");
                     paths.buildPath(S1);
