@@ -525,7 +525,7 @@ public class back_solo_RED extends OpModeEX {
                     PIDAtGate = true;
                 }
 
-                if (built && gateInTakeTime.milliseconds() > gateTime || built && ballsInIntake && ballCollectWait.milliseconds() > 260 && gateInTakeTime.milliseconds() > 300) {
+                if (built && gateInTakeTime.milliseconds() > gateTime || built && ballsInIntake && ballCollectWait.milliseconds() > 260 && gateInTakeTime.milliseconds() > 700) {
                     pathing = true;
                     PIDAtGate = false;
                     follow.setPath(paths.returnPath("firstDriveToShootBack"));

@@ -174,7 +174,7 @@ public class back_solo extends OpModeEX {
 
     @Override
     public void initEX() {
-        odometry.startPosition(167.5, 346, 350);           // BLUE
+        odometry.startPosition(167.5, 346, 0);           // BLUE
         odometry.odo.setHeading(90, AngleUnit.DEGREES);    // BLUE heading
 
         turret.Auto = true;
@@ -327,15 +327,15 @@ public class back_solo extends OpModeEX {
                     preload.reset();
                     intake.poz = Intake.intakePoz.gatePoz;
                     Preload = true;
-                    odometry.odo.setHeading(90, AngleUnit.DEGREES);  // BLUE
+                    odometry.odo.setHeading(90, AngleUnit.DEGREES);
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 40;
-                    turret.turrofset = -1;
+                    turret.mapOfset = 65;
+                    turret.turrofset = 1;
                     turret.StopSWM = true;
 
-                    targetHeading = 270;  // CONVERTED: 90 → 270
+                    targetHeading = 270;
                 }
                 if (built && turret.diff < 120 && turret.rpm > 1000){
                     intake.InTake = true;
@@ -357,8 +357,8 @@ public class back_solo extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.StopSWM = false;
-                    turret.mapOfset = -55;
-                    targetHeading = 295;  // CONVERTED: 82 → 295... wait, let me recalculate
+                    turret.mapOfset = -30;
+                    targetHeading = 278;
                     turret.turrofset = 0;
 
                     pathing = true;
@@ -370,8 +370,8 @@ public class back_solo extends OpModeEX {
                 break;
 
             case collect1:
-                if (pathing && odometry.X() < 85 ) {  // FLIPPED: < 85 (was > 275, which is 360-85)
-                    targetHeading = 295;  // CONVERTED: 65 → 295
+                if (pathing && odometry.X() < 85 ) {
+                    targetHeading = 295;
                     follow.usePathHeadings(false);
                 }
                 if (pathing && follow.isFinished(10, 10)) {
@@ -388,7 +388,7 @@ public class back_solo extends OpModeEX {
             case driveToShoot1:
                 if (follow.isFinished(17, 35)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 310;  // CONVERTED: 50 → 310
+                    targetHeading = 310;
                 }
                 if (built && follow.isFinished(22, 22) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 20) {
@@ -405,7 +405,7 @@ public class back_solo extends OpModeEX {
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
                     turret.turrofset = 1;
-                    turret.mapOfset = 15;
+                    turret.mapOfset = 35;
 
                     pathing = true;
                     intake.InTake = true;
@@ -448,7 +448,7 @@ public class back_solo extends OpModeEX {
                     ballShot = false;
                 }
                 if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 340) {
-                    targetHeading = 270;  // CONVERTED: 90 → 270
+                    targetHeading = 270;
                     follow.setPath(paths.returnPath("collect3"));
                     follow.usePathHeadings(false);
                     intake.InTake = true;
@@ -459,14 +459,14 @@ public class back_solo extends OpModeEX {
                     state = AutoState.collect3;
                     driveBase.speed = 1;
                     turret.turrofset = 4;
-                    turret.mapOfset = 115;
+                    turret.mapOfset = 170;
 
                 }
                 break;
 
             case collect3:
                 if (pathing && follow.isFinished(20, 10)) {
-                    targetHeading = 295;  // CONVERTED: 65 → 295
+                    targetHeading = 295;
                     follow.usePathHeadings(false);
                 }
                 if (pathing && follow.isFinished(10, 10)) {
@@ -475,7 +475,7 @@ public class back_solo extends OpModeEX {
                     driveBase.speed = 1;
                     intakeoff.reset();
                     intakeOff = true;
-                    targetHeading = 270;  // CONVERTED: 90 → 270
+                    targetHeading = 270;
                 }
                 break;
 
@@ -503,8 +503,8 @@ public class back_solo extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = -2;
-                    turret.mapOfset = -90;
+                    turret.turrofset = 3;
+                    turret.mapOfset = -65;
                 }
                 break;
 
@@ -525,7 +525,7 @@ public class back_solo extends OpModeEX {
                     PIDAtGate = true;
                 }
 
-                if (built && gateInTakeTime.milliseconds() > gateTime || built && ballsInIntake && ballCollectWait.milliseconds() > 260 && gateInTakeTime.milliseconds() > 300) {
+                if (built && gateInTakeTime.milliseconds() > gateTime || built && ballsInIntake && ballCollectWait.milliseconds() > 260 && gateInTakeTime.milliseconds() > 700) {
                     pathing = true;
                     PIDAtGate = false;
                     follow.setPath(paths.returnPath("firstDriveToShootBack"));
@@ -596,7 +596,7 @@ public class back_solo extends OpModeEX {
                     driveBase.speed = 1;
                     if (backCycles >= 2) {
                         enterGateFromBack();
-                        gateAngle  = 307;  // CONVERTED: 53 → 307
+                        gateAngle  = 307;
                     } else {
                         follow.usePathHeadings(false);
                         dontWaitForPoz = false;
