@@ -97,6 +97,8 @@ public class back_twospike_RED extends OpModeEX {
     double shootWait = 700;
     double gateTolX = 10; double gateTolY = 8; double gateTurnX = 248; double gateAngle = 58; double gateTime = 1150;
     boolean stage1Done = false;
+    double extraShootDrive = 0;
+
 
     ElapsedTime shootTime = new ElapsedTime();
     ElapsedTime intakeoff = new ElapsedTime();
@@ -111,10 +113,10 @@ public class back_twospike_RED extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 308)),
+            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 310)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(220, 296)),
+            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(220, 299)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(240, 240), new Vector2D(300, 211)),
@@ -274,6 +276,9 @@ public class back_twospike_RED extends OpModeEX {
                 follow.usePathHeadings(true);
                 intake.block = false;
                 intake.InTake = true;
+                extraShootDrive = 7;
+
+
                 maxWait.reset();
 
             } else if (processor.hAngleDeg > -6 && !intakePathSelected) {
@@ -292,6 +297,8 @@ public class back_twospike_RED extends OpModeEX {
                 intake.InTake = true;
                 p1Pathing = true;
                 maxWait.reset();
+                extraShootDrive = 0;
+
 
             } else if (!intakePathSelected && processor.hAngleDeg < -6 && processor.hAngleDeg > -22) {
                 final sectionBuilder[] p2 = new sectionBuilder[]{
@@ -306,6 +313,8 @@ public class back_twospike_RED extends OpModeEX {
                 follow.usePathHeadings(true);
                 intake.block = true;
                 intake.InTake = true;
+                extraShootDrive = 0;
+
                 maxWait.reset();
             }
 
@@ -391,7 +400,7 @@ public class back_twospike_RED extends OpModeEX {
                     targetHeading = 50;
                 }
                 if (built && follow.isFinished(22, 22) && (Math.abs(odometry.getXVelocity())
-                        + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 20) {
+                        + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 18) {
                     intake.InTake = true;
                     built = false;
                     pathing = false;
@@ -510,13 +519,13 @@ public class back_twospike_RED extends OpModeEX {
                     intake.holdUp = true;
                 }
                 if (follow.isFinished(20, 25) && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity()))
-                        + Math.abs(odometry.getHVelocity() * 2) < 60) {
+                        + Math.abs(odometry.getHVelocity() * 2) < 50) {
                     pathing = false;
                     driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 90), 0);  // Changed 270 → 90
                     HoldHeadingWhileShooting = true;
                 }
                 if (follow.isFinished(20, 25) && odometry.X() < 250 && !built
-                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 45
+                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 35
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();

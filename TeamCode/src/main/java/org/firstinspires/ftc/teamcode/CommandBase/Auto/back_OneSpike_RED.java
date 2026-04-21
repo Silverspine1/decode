@@ -337,7 +337,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.mapOfset = 40;
-                    turret.turrofset = -3;
+                    turret.turrofset = 0;
                     turret.StopSWM = true;
 
                     targetHeading = 90;
@@ -364,7 +364,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     turret.StopSWM = false;
                     turret.mapOfset = -5;
                     targetHeading = 82;
-                    turret.turrofset = -6.5;
+                    turret.turrofset = -3.5;
 
                     pathing = true;
                     built = true;
@@ -413,7 +413,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
                     built = true;
-                    turret.turrofset = -7.5;
+                    turret.turrofset = -4.5;
                     turret.mapOfset = -75;
                     state = AutoState.backCollect;
 
@@ -433,13 +433,13 @@ public class back_OneSpike_RED extends OpModeEX {
                     intake.holdUp = true;
                 }
                 if (follow.isFinished(20, 25) && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity()))
-                        + Math.abs(odometry.getHVelocity() * 2) < 40) {
+                        + Math.abs(odometry.getHVelocity() * 2) < 50) {
                     pathing = false;
                     driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 90), 0);  // Changed 270 → 90
                     HoldHeadingWhileShooting = true;
                 }
                 if (follow.isFinished(20, 25) && odometry.X() < 250 && !built
-                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 20
+                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 35
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();
