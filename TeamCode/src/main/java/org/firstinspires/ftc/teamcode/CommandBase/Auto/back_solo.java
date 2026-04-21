@@ -21,7 +21,7 @@ import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@Autonomous
+@Autonomous(name="solo", group="Blue")
 
 public class back_solo extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(

@@ -22,7 +22,7 @@ import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@Autonomous
+@Autonomous(name="close_gateCycle", group="Blue")
 
 public class close_gateCycle extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(

@@ -21,7 +21,7 @@ import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@Autonomous
+@Autonomous(name="twospike", group="Red")
 
 public class back_twospike_RED extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(

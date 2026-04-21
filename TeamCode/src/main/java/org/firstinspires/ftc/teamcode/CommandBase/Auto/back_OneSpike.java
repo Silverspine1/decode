@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import android.util.Size;
 
-
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
@@ -22,7 +21,7 @@ import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@Autonomous
+@Autonomous(name="OneSpike", group="Blue")
 
 public class back_OneSpike extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(
@@ -58,16 +57,16 @@ public class back_OneSpike extends OpModeEX {
         finished
     }
 
-    double frontOffset     = 8.0;   // distance from robot center to intake face (along -X at heading 0/360)
-    double sideOffsetDeg   = 0.0;   // sideways camera bias in degrees (+ = right of camera center)
-    double robotHalfWidth  = 17.5;  // half the robot's width parallel to the wall
-    double wallSafetyMargin = 10.0;  // extra clearance beyond robotHalfWidth
-    double wallBuffer       = 20.0; // field units from safe limit where avoidance activates
-    double maxWallAvoidPower = 0.40; // max Y power applied for wall avoidance
-    double wallVelGain      = 0.018; // velocity feedforward gain (predictive braking)
-    double wallLookAheadSecs = 0.12; // seconds ahead to predict wall approach
+    double frontOffset      = 8.0;
+    double sideOffsetDeg    = 0.0;
+    double robotHalfWidth   = 17.5;
+    double wallSafetyMargin = 10.0;
+    double wallBuffer        = 20.0;
+    double maxWallAvoidPower = 0.40;
+    double wallVelGain       = 0.018;
+    double wallLookAheadSecs = 0.12;
 
-    final double WALL_Y = 270; // field Y of the wall
+    final double WALL_Y = 270;
 
     AutoState state = AutoState.preLoad;
 
@@ -96,8 +95,10 @@ public class back_OneSpike extends OpModeEX {
 
     double backCycles = 0;
     double shootWait = 700;
-    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112;double gateAngle = 295; double gateTime = 1200;
-    boolean stage1Done = false;
+    double extraShootDrive = 0;
+    // gateTurnX: 360 - 248 = 112
+    // gateAngle: abs(58 - 360) = 302
+    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112; double gateAngle = 302; double gateTime = 1200;
 
     ElapsedTime shootTime = new ElapsedTime();
     ElapsedTime intakeoff = new ElapsedTime();
@@ -111,55 +112,68 @@ public class back_OneSpike extends OpModeEX {
     ElapsedTime endPath = new ElapsedTime();
     ElapsedTime stage1Timer = new ElapsedTime();
 
-
-
+    // All Vector2D x values: 360 - redX
+    // shoot:         (190,330)->(170,330)   (193,308)->(167,308)
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 305)),
+            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 308)),
     };
+    // driveToShoot1: (287,273)->(73,273)   (235,338)->(125,338)
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(73, 273), new Vector2D(140, 296)),
+            () -> paths.addPoints(new Vector2D(73, 273), new Vector2D(125, 338)),
     };
+    // collect2: (212,305)->(148,305)  (240,240)->(120,240)  (297,211)->(63,211)
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(116, 230), new Vector2D(62.5, 208)),
+            () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(120, 240), new Vector2D(63, 211)),
     };
+    // gate: (222,170)->(138,170)  (311,212)->(49,212)
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(50, 207)),
+            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(49, 212)),
     };
+    // gateFromBack: (222,325)->(138,325)  (306,232)->(54,232)
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(55, 222)),
+            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(54, 232)),
     };
+    // driveToShoot2: (313,206)->(47,206)  (217,150)->(143,150)
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(153, 150)),
+            () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(143, 150)),
     };
+    // collect3: (220,150)->(140,150)  (294,158)->(66,158)
     private final sectionBuilder[] collect3 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(70, 151)),
+            () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(66, 158)),
     };
+    // driveToShoot3Stage1: (282,150)->(78,150)  (248,150)->(112,150)
     private final sectionBuilder[] driveToShoot3Stage1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(78, 150), new Vector2D(112, 150)),
     };
+    // driveToShoot3Stage2: (248,150)->(112,150)  (200,172)->(160,172)
     private final sectionBuilder[] driveToShoot3Stage2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(112, 150), new Vector2D(160, 172)),
     };
+    // firstBackCollect: (243,148)->(117,148)  (196,293)->(164,293)  (274,315)->(86,315)
     private final sectionBuilder[] firstBackCollect = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(117, 148), new Vector2D(164, 293), new Vector2D(86, 315)),
     };
+    // driveToShootBack: (308,329)->(52,329)  (202,327)->(158,327)
     private final sectionBuilder[] driveToShootBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(158, 327)),
     };
+    // firstDriveToShootBack: (320,208)->(40,208)  (230,330)->(130,330)
     private final sectionBuilder[] firstDriveToShootBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(40, 208), new Vector2D(130, 330)),
     };
+    // movePath: (308,329)->(52,329)  (260,300)->(100,300)
     private final sectionBuilder[] movePath = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
+    // S1: (288,340)->(72,340)  (252,320)->(108,320)
     private final sectionBuilder[] S1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(72, 340), new Vector2D(108, 320)),
     };
+    // tryAgain: (255,320)->(105,320)  (224,320)->(136,320)
     private final sectionBuilder[] tryAgain = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(105, 320), new Vector2D(136, 320)),
     };
 
-    // resets all relevant state cleanly.
     private void enterGateFromBack() {
         visionCollect  = false;
         collectDone    = false;
@@ -178,13 +192,14 @@ public class back_OneSpike extends OpModeEX {
 
     @Override
     public void initEX() {
+        // Start position: 360 - 192.5 = 167.5, heading stays 0
         odometry.startPosition(167.5, 342, 0);
-        odometry.odo.setHeading(90, AngleUnit.DEGREES);
+        odometry.odo.setHeading(90, AngleUnit.DEGREES); // Blue heading
 
         turret.Auto = true;
+        // turret.targetX = 360 removed — blue uses default (0)
         driveBase.tele = false;
         follow.setHeadingOffset(90);
-
         paths.addNewPath("shoot");
         paths.buildPath(shoot);
         paths.addNewPath("driveToShoot1");
@@ -239,17 +254,16 @@ public class back_OneSpike extends OpModeEX {
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
 
-
         if (!reset) {
             gameTime.reset();
             reset = true;
-            odometry.odo.setHeading(90, AngleUnit.DEGREES);
+            odometry.odo.setHeading(90, AngleUnit.DEGREES); // Blue
         }
 
         if (intakeOff && intakeoff.milliseconds() > 600) {
             intake.InTake = false;
             intakeOff = false;
-        }else if (intake.ballCount <3 && !intakeOff){
+        } else if (intake.ballCount < 3 && !intakeOff) {
             intakeoff.reset();
         }
 
@@ -264,8 +278,10 @@ public class back_OneSpike extends OpModeEX {
             ballsInIntake = false;
         }
 
-        if (visionCollect){
-            if (processor.hAngleDeg >22 && !intakePathSelected){
+        if (visionCollect) {
+            // Vision angle comparisons: flip operators, remove negatives
+            // Red: < -22  →  Blue: > 22
+            if (processor.hAngleDeg > 22 && !intakePathSelected) {
                 final sectionBuilder[] p3 = new sectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50, 293)),
                 };
@@ -276,13 +292,17 @@ public class back_OneSpike extends OpModeEX {
                 intakePathSelected = true;
                 follow.setHeadingOffset(90);
                 follow.usePathHeadings(true);
+                extraShootDrive = 7;
                 intake.block = false;
                 intake.InTake = true;
                 maxWait.reset();
 
-            } else if (processor.hAngleDeg < 6  && !intakePathSelected) {
+                // Red: > -6  →  Blue: < 6
+            } else if (processor.hAngleDeg < 6 && !intakePathSelected) {
                 final sectionBuilder[] p1 = new sectionBuilder[]{
-                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 337), new Vector2D(50 + processor.radiusPixels /8, 337)),
+                        // Red: (odometry.X(), y), (220,337), (310 - r/8, 337)
+                        // Blue: (odometry.X(), y), (140,337), (50 + r/8, 337)
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 337), new Vector2D(50 + processor.radiusPixels / 8, 337)),
                 };
                 paths.addNewPath("p1");
                 paths.buildPath(p1);
@@ -291,16 +311,18 @@ public class back_OneSpike extends OpModeEX {
                 intakePathSelected = true;
                 follow.setHeadingOffset(90);
                 follow.usePathHeadings(false);
-                targetHeading =270;
+                targetHeading = 260; // abs(100 - 360) = 260
                 intake.block = true;
                 intake.InTake = true;
+                extraShootDrive = 0;
                 p1Pathing = true;
                 maxWait.reset();
 
-
-            }else if(!intakePathSelected && processor.hAngleDeg >6 && processor.hAngleDeg <22 ) {
+                // Red: < -6 && > -22  →  Blue: > 6 && < 22
+            } else if (!intakePathSelected && processor.hAngleDeg > 6 && processor.hAngleDeg < 22) {
                 final sectionBuilder[] p2 = new sectionBuilder[]{
-                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50 + processor.radiusPixels /8, 320)),
+                        // Red: (310 - r/8, 320)  →  Blue: (50 + r/8, 320)
+                        () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50 + processor.radiusPixels / 8, 320)),
                 };
                 paths.addNewPath("p2");
                 paths.buildPath(p2);
@@ -311,26 +333,20 @@ public class back_OneSpike extends OpModeEX {
                 follow.usePathHeadings(true);
                 intake.block = true;
                 intake.InTake = true;
+                extraShootDrive = 0;
                 maxWait.reset();
-
-
             }
-            if (follow.isFinished(5,10)   || maxWait.milliseconds() > 1400 ){
+
+            if (follow.isFinished(5, 10) || maxWait.milliseconds() > 1400) {
                 collectDone = true;
-
             }
-            if (endPath.milliseconds() > 40 && waitAtEnd){
+            if (endPath.milliseconds() > 20 && waitAtEnd) {
                 waitAtEnd = false;
                 collectDone = true;
             }
 
-
-
             intake.block = true;
             intake.InTake = true;
-
-
-
         }
 
         switch (state) {
@@ -339,18 +355,17 @@ public class back_OneSpike extends OpModeEX {
                     preload.reset();
                     intake.poz = Intake.intakePoz.gatePoz;
                     Preload = true;
-                    odometry.odo.setHeading(90, AngleUnit.DEGREES);
+                    odometry.odo.setHeading(90, AngleUnit.DEGREES); // Blue
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.TURRET_COMP_FACTOR = 0;
-                    turret.mapOfset = 95;
-                    turret.turrofset = -1;
+                    turret.mapOfset = 40;
+                    turret.turrofset = 0;
+                    turret.StopSWM = true;
 
-
-                    targetHeading = 270;
+                    targetHeading = 270; // abs(90 - 360) = 270
                 }
-                if (built && turret.diff < 120 && turret.rpm > 1000){
+                if (built && turret.diff < 120 && turret.rpm > 1000) {
                     intake.InTake = true;
                 }
                 if (built && preload.milliseconds() > 1400 || built && turret.diff < 60 && turret.rpm > 1200 && odometry.getYVelocity() < 8) {
@@ -364,19 +379,16 @@ public class back_OneSpike extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 400) {
                     final sectionBuilder[] collect1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(74, 266)),
+                            // Red target was (278,270) → Blue: (360-278,270) = (82,270)
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(82, 270)),
                     };
                     paths.addNewPath("collect1");
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.TURRET_COMP_FACTOR = 0.95;
-                    turret.mapOfset = 85;
-                    targetHeading = 278;
-                    turret.turrofset = -1;
-
-
-
-
+                    turret.StopSWM = false;
+                    turret.mapOfset = -5;
+                    targetHeading = 278; // abs(82 - 360) = 278
+                    turret.turrofset = 3.5; // flip sign: -3.5 → +3.5
 
                     pathing = true;
                     built = true;
@@ -387,8 +399,9 @@ public class back_OneSpike extends OpModeEX {
                 break;
 
             case collect1:
-                if (pathing && odometry.X() < 85 ) {
-                    targetHeading = 295;
+                // Red: odometry.X() > 275  →  Blue: odometry.X() < 85  (360-275=85, flip operator)
+                if (pathing && odometry.X() < 85) {
+                    targetHeading = 305; // abs(55 - 360) = 305
                     follow.usePathHeadings(false);
                 }
                 if (pathing && follow.isFinished(10, 10)) {
@@ -403,12 +416,12 @@ public class back_OneSpike extends OpModeEX {
                 break;
 
             case driveToShoot1:
-                if (follow.isFinished(17, 35)) {
+                if (follow.isFinished(22, 34)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 310;
+                    targetHeading = 285; // abs(75 - 360) = 285
                 }
                 if (built && follow.isFinished(22, 22) && (Math.abs(odometry.getXVelocity())
-                        + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 20) {
+                        + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 30) {
                     intake.InTake = true;
                     built = false;
                     pathing = false;
@@ -416,16 +429,17 @@ public class back_OneSpike extends OpModeEX {
                     shootTime.reset();
                     ballShot = false;
                 }
-                if (!built && shootTime.milliseconds() > 420
-                        || !built && ballShot) {
+                if (!built && shootTime.milliseconds() > 320 || !built && ballShot) {
+                    driveBase.speed = 1.4;
                     collectDone = false;
                     ballsInIntake = false;
                     intake.holdUp = false;
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
                     built = true;
+                    turret.turrofset = 4.5; // flip sign: -4.5 → +4.5
+                    turret.mapOfset = -75;
                     state = AutoState.backCollect;
-
                 }
                 break;
 
@@ -433,32 +447,33 @@ public class back_OneSpike extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 230) {
                     intake.InTake = false;
                 }
-                if (afterGateCollect && odometry.Y() > 280) {
-                    targetHeading = 278;
+                if (afterGateCollect && odometry.Y() > 270) {
+                    targetHeading = 282; // abs(78 - 360) = 282
                 }
-                if (odometry.X() > 76 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){
+                // Red: odometry.X() < 284  →  Blue: odometry.X() > 76  (360-284=76, flip operator)
+                if (odometry.X() > 76 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500 && !(backCycles == 0)) {
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;
                 }
-                if (follow.isFinished(15, 30) && Math.abs(odometry.getXVelocity() + odometry.getYVelocity())
+                if (follow.isFinished(20, 25) && Math.abs(Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity()))
                         + Math.abs(odometry.getHVelocity() * 2) < 50) {
                     pathing = false;
-                    driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 270), 0);
+                    driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 270), 0); // Blue: 270
                     HoldHeadingWhileShooting = true;
-
                 }
-                if (follow.isFinished(15, 30) && odometry.X() > 110 && !built
-                        && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) + Math.abs(odometry.getHVelocity() * 2) < 25
+                // Red: odometry.X() < 250  →  Blue: odometry.X() > 110  (360-250=110, flip operator)
+                if (follow.isFinished(20, 25) && odometry.X() > 110 && !built
+                        && Math.abs(Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 35
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();
                     follow.usePathHeadings(false);
                     pathing = false;
-                    driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 270), 0);
+                    driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 270), 0); // Blue: 270
                     HoldHeadingWhileShooting = true;
 
-                    gateTime = 1050;
+                    gateTime = 1200;
                     backCycles += 1;
                     dontWaitForPoz = false;
                     built = true;
@@ -468,7 +483,7 @@ public class back_OneSpike extends OpModeEX {
                     intake.InTake = true;
                     IntakeOffWait = 200;
                 }
-                if  (built && shootTime.milliseconds() > 120){
+                if (built && shootTime.milliseconds() > 120) {
                     intake.poz = Intake.intakePoz.normalPoz;
                 }
                 if (dontWaitForPoz || afterGateCollect) {
@@ -480,13 +495,12 @@ public class back_OneSpike extends OpModeEX {
                     maxToGetToShoot.reset();
                     alreadyFailed = true;
                 }
-                // alreadyFailed recovery — redirect to gate on cycle 2, else backCollect
                 if (alreadyFailed && maxToGetToShoot.milliseconds() > 2200) {
                     backCycles += 1;
-                    driveBase.speed = 1;
+                    driveBase.speed = 1.4;
                     if (backCycles >= 2) {
                         enterGateFromBack();
-                        gateAngle  = 307;
+                        gateAngle = 307; // abs(53 - 360) = 307
                     } else {
                         follow.usePathHeadings(false);
                         dontWaitForPoz = false;
@@ -498,58 +512,77 @@ public class back_OneSpike extends OpModeEX {
                         maxWait.reset();
                         intake.holdUp = false;
                         alreadyFailed = false;
+                        intake.block = true;
                         state = AutoState.backCollect;
                     }
                 }
                 if (built && shootTime.milliseconds() > shootWait) {
-                    driveBase.speed = 1;
+                    driveBase.speed = 1.4;
                     collectDone = false;
                     ballsInIntake = false;
                     intake.holdUp = false;
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
-
-
                     state = AutoState.backCollect;
-
                 }
                 break;
 
             case backCollect:
-                if (built && !collectDone ){
-                    p1Pathing = false;
-                    visionCollect = true;
-
-
+                if (built && !collectDone) {
+                    if (!(backCycles == 0)) {
+                        p1Pathing = false;
+                        visionCollect = true;
+                    } else if (!pathing) {
+                        final sectionBuilder[] p2 = new sectionBuilder[]{
+                                // Red target was (320,342) → Blue: (360-320,342) = (40,342)
+                                () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(40, 342)),
+                        };
+                        paths.addNewPath("p2");
+                        paths.buildPath(p2);
+                        follow.setPath(paths.returnPath("p2"));
+                        follow.setHeadingOffset(90);
+                        follow.usePathHeadings(true);
+                        if (!pathing) {
+                            maxWait.reset();
+                        }
+                        pathing = true;
+                        intakePathSelected = true;
+                        p3Qued = false;
+                        intake.block = true;
+                    }
+                }
+                // Red: odometry.X() > 275  →  Blue: odometry.X() < 85  (360-275=85, flip operator)
+                if (backCycles == 0 && odometry.X() < 85) {
+                    driveBase.speed = 0.4;
+                }
+                if (backCycles == 0) {
+                }
+                if (backCycles == 0 && follow.isFinished(5, 10)) {
+                    collectDone = true;
                 }
 
-
-
-
-                if (built && collectDone ){
+                if (built && collectDone) {
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
                     final sectionBuilder[] S1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(113, 330)),
+                            // Red: (odometry.X(), y), (250 - extraShootDrive, 330)
+                            // Blue: (odometry.X(), y), (110 + extraShootDrive, 330)  [360-250=110, and extra flips direction]
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(110 + extraShootDrive, 330)),
                     };
+                    driveBase.speed = 1;
+
                     paths.addNewPath("S1");
                     paths.buildPath(S1);
                     follow.setPath(paths.returnPath("S1"));
 
                     follow.usePathHeadings(false);
-                    targetHeading = 270;
-
-
+                    targetHeading = 270; // abs(90 - 360) = 270
 
                     intakePathSelected = false;
                     maxToGetToShoot.reset();
 
                     ballShot = false;
                     targetHeading = 270;
-
-                    intakeoff.reset();
-                    intakeOff = true;
-
 
                     pathing = true;
                     built = false;
@@ -559,15 +592,16 @@ public class back_OneSpike extends OpModeEX {
             case finished:
                 requestOpModeStop();
         }
-        if (pathing && p1Pathing){
+
+        if (pathing && p1Pathing) {
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
-            driveBase.queueCommand(driveBase.drivePowers(-currentPower.getHorizontal(),currentPower.getPivot(),-currentPower.getVertical() / 15));
-        }else if (pathing) {
+            driveBase.queueCommand(driveBase.drivePowers(-currentPower.getHorizontal(), currentPower.getPivot(), -currentPower.getVertical() / 10));
+        } else if (pathing) {
             odometry.queueCommand(odometry.update);
             RobotPower currentPower = follow.followPathAuto(targetHeading, odometry.Heading(), odometry.X(), odometry.Y(), odometry.getXVelocity(), odometry.getYVelocity());
             driveBase.queueCommand(driveBase.drivePowers(currentPower));
-        }else if (!PIDAtGate && !HoldHeadingWhileShooting) {
+        } else if (!PIDAtGate && !HoldHeadingWhileShooting) {
             driveBase.queueCommand(driveBase.drivePowers(0, 0, 0));
         }
     }
