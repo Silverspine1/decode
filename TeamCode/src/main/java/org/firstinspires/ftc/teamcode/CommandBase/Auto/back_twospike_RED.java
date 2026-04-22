@@ -21,7 +21,7 @@ import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@Autonomous(name="twospike", group="Red")
+@Autonomous(name="", group="Red")
 
 public class back_twospike_RED extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(
@@ -113,7 +113,7 @@ public class back_twospike_RED extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 310)),
+            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 298)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(220, 299)),

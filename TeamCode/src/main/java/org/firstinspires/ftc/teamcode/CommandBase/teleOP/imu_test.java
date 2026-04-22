@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.sun.source.doctree.SerialDataTree;
 
-@TeleOp(name = "IMU Test", group = "Test")
+//@TeleOp(name = "IMU Test", group = "Test")
 public class imu_test extends LinearOpMode {
 
     IMU imu;

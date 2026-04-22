@@ -323,7 +323,7 @@ public class Turret extends SubSystem {
         }
         if (robotY > 260 && !StopSWM){
             TURRET_COMP_FACTOR = 0.65;
-        } else if(StopSWM) {
+        } else if(!StopSWM) {
             TURRET_COMP_FACTOR = 0.85;
         }else {
             TURRET_COMP_FACTOR = 0;

@@ -23,6 +23,7 @@ import dev.weaponboy.nexus_pathing.Follower.follower;
 import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
 import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
+import dev.weaponboy.nexus_pathing.PathingUtility.PathingPower;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
@@ -128,6 +129,9 @@ public class blue_Tele extends OpModeEX {
     private double currentMaxAccel = 0;
     double baseOffset = 2;
     double baseMapOffset = 0;
+    boolean shooting = false;
+    PIDController XPID = new PIDController(0.03, 0.0, 0.004);
+    PIDController YPID = new PIDController(0.03, 0.0, 0.004);
 
     // ── Clean cancel: zeroes every back-cycle flag in one place ────────────
     private void cancelBackCycle() {
@@ -173,6 +177,8 @@ public class blue_Tele extends OpModeEX {
 
         veloTimer.reset();
         driveBase.tele = true;
+        turret.targetX = 0;
+        turret.StopSWM = true;
 
     }
 
@@ -214,10 +220,10 @@ public class blue_Tele extends OpModeEX {
         // ────────────────────────────────────────────────────────────────────
 
         // Manual drive only when no automated back-cycle is running
-        if (!isBackCycling) {
-            if (!rest) {
+        if (!isBackCycling ) {
+            if (!rest && !shooting) {
                 driveBase.drivePowers(-gamepad1.right_stick_y, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, -gamepad1.right_stick_x);
-            } else {
+            } else if(!shooting){
                 driveBase.driveFieldCentric(-gamepad1.right_stick_y, -gamepad1.right_stick_x, (gamepad1.left_trigger - gamepad1.right_trigger) * 0.7, odometry.Heading() - 270);
             }
         }
@@ -232,123 +238,65 @@ public class blue_Tele extends OpModeEX {
             gamepad1.rumble(300);
             rumble.reset();
         }
+        if (gamepad2.y) {
+            double currentHeading = odometry.Heading();
 
+            double xDist = 84 - odometry.X();
+            double yDist = 273 - odometry.Y();
 
-        // ── dpad_down: start or CANCEL a back cycle ─────────────────────────
-        if (!lastGamepad1.dpad_down && currentGamepad1.dpad_down) {
-            if (isBackCycling) {
-                // ── CANCEL ──────────────────────────────────────────────────
-                cancelBackCycle();
-            } else {
-                // ── START ────────────────────────────────────────────────────
-                isBackCycling       = false; // set true below after setup
-                backCycleShootReady = false;
-                collectDone         = false;
+            double robotRelativeXError = yDist * Math.sin(Math.toRadians(currentHeading))
+                    + xDist * Math.cos(Math.toRadians(currentHeading));
+            double robotRelativeYError = yDist * Math.cos(Math.toRadians(currentHeading))
+                    - xDist * Math.sin(Math.toRadians(currentHeading));
 
-                if (intake.ballCount >= 2) {
-                    // Enough balls — go straight to shoot position
-                    backstate    = backState.backShoot;
-                    follow.setPath(paths.returnPath("S2"));
-                    follow.usePathHeadings(false);
-                    targetHeading = 270;
-                    pathing = true;
-                    maxToGetToShoot.reset();
-                } else {
-                    // Not enough balls — drive toward balls with vision + wall avoidance
-                    backstate        = backState.backCollect;
-                    visionCollect    = true;
-                    driveBackToShoot = false;
-                    ballsInIntake    = false;
-                    targetHeading    = 270;
-                    intake.block     = true;
-                    intake.InTake    = true;
-                    ballCollectWait.reset();
-                    maxWait.reset();
-                }
-                isBackCycling = true;
-            }
+            double xPower = XPID.calculate(robotRelativeXError);
+            double yPower = YPID.calculate(robotRelativeYError);
+
+            PathingPower correctivePower = new PathingPower();
+            correctivePower.set(xPower, yPower);
+
+            driveBase.drivePowers(
+                    -correctivePower.getHorizontal(),
+                    headingPID.calculate(currentHeading - 90),
+                    -correctivePower.getVertical());
         }
-        // ────────────────────────────────────────────────────────────────────
 
-        // ── Back-cycle state machine (only runs while isBackCycling) ────────
-        if (isBackCycling) {
-            switch (backstate) {
 
-                case backCollect:
-                    // The auto-style vision drive block (below) moves the robot and sets
-                    // driveBackToShoot when it decides collect is done. We just wait for it.
-                    if (driveBackToShoot) {
-                        visionCollect    = false;
-                        driveBackToShoot = false;
-                        ballsInIntake    = false;
-                        backstate        = backState.backShoot;
 
-                        // Build a dynamic shoot-return path from current position
-                        final double snapX = odometry.X();
-                        final double snapY = odometry.Y();
-                        paths.addNewPath("S_dyn");
-                        paths.buildPath(new sectionBuilder[]{
-                                () -> paths.addPoints(new Vector2D(snapX, snapY), new Vector2D(115, 320)),
-                        });
-                        follow.setPath(paths.returnPath("S_dyn"));
-                        follow.usePathHeadings(false);
-                        targetHeading = 270;
-                        pathing = true;
-                        maxToGetToShoot.reset();
-                    }
-                    break;
-
-                case backShoot:
-                    // Timeout safety — if we haven't arrived in 3 s, cancel cleanly
-                    if (maxToGetToShoot.milliseconds() > 3000) {
-                        cancelBackCycle();
-                        break;
-                    }
-
-                    // Arrived at shoot position
-                    if (!backCycleShootReady
-                            && follow.isFinished(10, 10)
-                            && (Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())
-                            + Math.abs(odometry.getHVelocity())) < 40) {
-                        pathing             = false;
-                        backCycleShootReady = true;
-                        intake.block        = false;
-                        intake.InTake       = true;
-                        shootTime.reset();
-                    }
-
-                    // Fire and finish cycle
-                    if (backCycleShootReady && shootTime.milliseconds() > shootWait) {
-                        backCycles++;
-                        cancelBackCycle();   // resets all flags cleanly
-                    }
-                    break;
-            }
-        }
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
             turret.mapOfset = 100 + baseMapOffset;
-            turret.turrofset = -4+ baseOffset;
-            turret.TURRET_COMP_FACTOR = 1;
+            turret.turrofset = -2+ baseOffset;
         }else {
-            turret.mapOfset = 20 + baseMapOffset;
-            turret.turrofset = -6 + baseOffset;
-            turret.TURRET_COMP_FACTOR = 0.3;
+            turret.mapOfset = 60 + baseMapOffset;
+            turret.turrofset = -4 + baseOffset;
+        }
+        if ( !shooting && gamepad2.right_bumper && turret.turretInRange && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 6) < 40){
+            intake.InTake = true;
+            intake.block = false;
+            shooting = true;
+            shootTime.reset();
+            driveBase.drivePowers(0, 0, 0);
+
+
+        } else if (shootTime.milliseconds() > 300) {
+            shooting = false;
         }
 
-        if (gamepad1.right_bumper) {
+
+        if (gamepad1.right_bumper && !shooting) {
             if (!turret.manuel) {
                 intake.block = true;
             }
             intake.InTake = true;
 
-        } else if (currentGamepad1.left_bumper && !intake.InTake && turret.diff < 170 && turret.turretInRange) {
+        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting) {
             intake.InTake = true;
             intake.block = false;
 
-        } else if (turret.intakeTime) {
+        } else if (turret.intakeTime && !shooting) {
             intake.InTake = true;
-        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling) {
+        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting) {
             intake.InTake = false;
         }
 
@@ -365,7 +313,7 @@ public class blue_Tele extends OpModeEX {
             baseMapOffset -= 10;
         }
 
-        if (gamepad1.left_stick_y < -0.3) {
+        if (gamepad1.left_stick_y < -0.3 || gamepad2.left_stick_y < -0.3 && Math.abs(odometry.getXVelocity() + odometry.getYVelocity()) + Math.abs(odometry.getHVelocity() ) < 5) {
             Apriltag.enabled = true;
             if (Apriltag.getH() != 0 && Apriltag.getH() != 180) {
                 togle = true;
@@ -447,10 +395,10 @@ public class blue_Tele extends OpModeEX {
             turret.lift = true;
         }
 
-        if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {
+        if (!lastGamepad2.a && currentGamepad2.a && turret.toggle || !lastGamepad1.dpad_up && currentGamepad1.dpad_up && turret.toggle) {
             turret.toggle = false;
             gamepad1.rumble(800);
-        } else if (!lastGamepad1.dpad_up && currentGamepad1.dpad_up && !turret.toggle) {
+        } else if (!lastGamepad2.a && currentGamepad2.a && !turret.toggle || !lastGamepad1.dpad_up && currentGamepad1.dpad_up && !turret.toggle) {
             turret.toggle = true;
             gamepad1.rumble(800);
         }
@@ -492,6 +440,8 @@ public class blue_Tele extends OpModeEX {
             telemetry.addData("turretservang ", turret.turretAngle / turret.gearRatio + 180);
             telemetry.addData("Max Velocity", "%.1f", getAverageMaxVelo());
             telemetry.addData("Max Accel", "%.1f", getAverageMaxAccel());
+            telemetry.addData("predicted angle", getAverageMaxAccel());
+
             // ── Back-cycle telemetry ─────────────────────────────────────────
             telemetry.addData("Back Cycles", backCycles);
             telemetry.addData("Back Cycling", isBackCycling ? (backstate == backState.backCollect ? "COLLECTING" : "SHOOTING") : "OFF");

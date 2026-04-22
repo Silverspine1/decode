@@ -23,7 +23,6 @@ import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@TeleOp
 public class auto_tele extends OpModeEX {
 
     // ── Pathing & PIDs ───────────────────────────────────────────────────────

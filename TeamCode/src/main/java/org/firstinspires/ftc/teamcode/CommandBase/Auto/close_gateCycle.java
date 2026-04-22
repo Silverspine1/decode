@@ -22,7 +22,7 @@ import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 
-@Autonomous(name="close_gateCycle", group="Blue")
+@Autonomous(name="", group="Blue")
 
 public class close_gateCycle extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(
@@ -109,7 +109,7 @@ public class close_gateCycle extends OpModeEX {
 
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(47.5, 84), new Vector2D(125, 120)),
+            () -> paths.addPoints(new Vector2D(47.5, 84), new Vector2D(105, 120)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(60, 140), new Vector2D(110, 154)),
@@ -118,13 +118,13 @@ public class close_gateCycle extends OpModeEX {
             () -> paths.addPoints(new Vector2D(134, 154), new Vector2D(116, 230), new Vector2D(45, 210)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(130, 150), new Vector2D(38, 209)),
+            () -> paths.addPoints(new Vector2D(130, 150), new Vector2D(38, 211)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(55, 222)),
+            () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(55, 225)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(49, 210), new Vector2D(138, 150)),
+            () -> paths.addPoints(new Vector2D(49, 210), new Vector2D(144, 165)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(70, 151)),
@@ -339,7 +339,8 @@ public class close_gateCycle extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.TURRET_COMP_FACTOR = 0.95;
-                    turret.turrofset = -8;
+                    turret.turrofset = -6;
+                    turret.mapOfset = -20;
 
 
                     targetHeading = 255;
@@ -347,7 +348,7 @@ public class close_gateCycle extends OpModeEX {
                 if (built && turret.diff < 120 && turret.rpm > 1000){
                     intake.InTake = true;
                 }
-                if (built && preload.milliseconds() > 1400 || built && turret.diff < 60 && turret.rpm > 1200 && odometry.getYVelocity() < 8) {
+                if (built && preload.milliseconds() > 1400 || built && turret.diff < 52 && turret.rpm > 1200 && odometry.getYVelocity() < 80) {
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -359,7 +360,7 @@ public class close_gateCycle extends OpModeEX {
                 }
                 if (!built && shootTime.milliseconds() > 400) {
                     final sectionBuilder[] collect1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(52, 158)),
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(60, 158)),
                     };
                     paths.addNewPath("collect1");
                     paths.buildPath(collect1);
@@ -397,7 +398,7 @@ public class close_gateCycle extends OpModeEX {
             case driveToShoot1:
                 if (follow.isFinished(17, 35)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 225;
+                    targetHeading = 235;
                 }
                 if (built && follow.isFinished(22, 22) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 80) {
@@ -415,8 +416,8 @@ public class close_gateCycle extends OpModeEX {
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
-                    turret.turrofset = -6;
-                    turret.mapOfset = 10;
+                    turret.turrofset = -4;
+                    turret.mapOfset = -10;
 
 
 
@@ -449,7 +450,7 @@ public class close_gateCycle extends OpModeEX {
             case driveToShoot2:
                 if (follow.isFinished(43, 43)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 230;
+                    targetHeading = 245;
                 }
                 if (built && follow.isFinished(20, 20) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 80) {
@@ -472,7 +473,7 @@ public class close_gateCycle extends OpModeEX {
                     built = false;
                     state = AutoState.gate;
                     turret.turrofset = -1;
-                    turret.mapOfset = 10;
+                    turret.mapOfset = -10;
 
                 }
                 break;
@@ -495,7 +496,7 @@ public class close_gateCycle extends OpModeEX {
                     PIDAtGate = true;
                 }
 
-                if (odometry.X() < 122 && balls == 24){
+                if (odometry.X() < 122 && balls == 21){
                     state = AutoState.finished;
                 }
 
@@ -518,7 +519,7 @@ public class close_gateCycle extends OpModeEX {
             case gateShoot:
                 if (follow.isFinished(30, 43)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 230;
+                    targetHeading = 245;
                 }
                 if (built && follow.isFinished(20, 20) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 60) {
@@ -541,7 +542,7 @@ public class close_gateCycle extends OpModeEX {
                     built = false;
                     state = AutoState.gate;
                     turret.turrofset = -1;
-                    turret.mapOfset = 10;
+                    turret.mapOfset = -10;
 
                 }
                 break;
