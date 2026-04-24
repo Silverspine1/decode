@@ -464,7 +464,7 @@ public class back_OneSpike extends OpModeEX {
                 }
                 // Red: odometry.X() < 250  →  Blue: odometry.X() > 110  (360-250=110, flip operator)
                 if (follow.isFinished(20, 25) && odometry.X() > 110 && !built
-                        && Math.abs(Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 28
+                        && Math.abs(Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 31
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();

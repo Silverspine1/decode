@@ -299,6 +299,11 @@ public class red_Tele extends OpModeEX {
             intake.InTake = true;
         } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting) {
             intake.InTake = false;
+            if (!gamepad1.dpad_down){
+                intake.poz = Intake.intakePoz.up;
+            }else {
+                intake.poz = Intake.intakePoz.normalPoz;
+            }
         }
 
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left) {

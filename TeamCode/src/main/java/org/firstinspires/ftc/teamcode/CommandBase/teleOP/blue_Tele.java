@@ -179,6 +179,13 @@ public class blue_Tele extends OpModeEX {
         driveBase.tele = true;
         turret.targetX = 0;
         turret.StopSWM = true;
+        turret.lowPower4 +=90;
+        turret.powerHoodComp = 0.1;
+        turret.lowPower3 +=40;
+        turret.lowHoodAngle3 -=2;
+        turret.lowHoodAngle4 -=2;
+
+
 
     }
 
@@ -269,7 +276,7 @@ public class blue_Tele extends OpModeEX {
             turret.turrofset = -2+ baseOffset;
         }else {
             turret.mapOfset = 60 + baseMapOffset;
-            turret.turrofset = -4 + baseOffset;
+            turret.turrofset = -1.5 + baseOffset;
         }
         if ( !shooting && gamepad2.right_bumper && turret.turretInRange && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 6) < 40){
             intake.InTake = true;
@@ -298,7 +305,11 @@ public class blue_Tele extends OpModeEX {
             intake.InTake = true;
         } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting) {
             intake.InTake = false;
-        }
+            if (!gamepad1.dpad_down && rest){
+                intake.poz = Intake.intakePoz.up;
+            }else {
+                intake.poz = Intake.intakePoz.normalPoz;
+            }        }
 
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left) {
             baseOffset -= 1;
@@ -325,6 +336,8 @@ public class blue_Tele extends OpModeEX {
                 odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
                 odometry.odo.setPosY(-Apriltag.getY(), DistanceUnit.CM);
                 odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
+                baseOffset = 0;
+                baseMapOffset = 0;
             }
         } else {
             Apriltag.enabled = false;

@@ -85,12 +85,12 @@ public class Turret extends SubSystem {
 
     double lowHoodAngle1 = 30;
     double lowHoodAngle2 = 51.5;
-    double lowHoodAngle3 = 59;
-    double lowHoodAngle4 = 59.2;
+    public double lowHoodAngle3 = 54;
+    public double lowHoodAngle4 = 54.2;
     double lowPower1 = 1500;
     double lowPower2 = 1980;
-    double lowPower3 = 2408;
-    double lowPower4 = 2690;
+    public double lowPower3 = 2420;
+    public double lowPower4 = 2710;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -154,8 +154,9 @@ public class Turret extends SubSystem {
     boolean turretOutLeft = false;
     boolean turretOutRight = false;
     public boolean StopSWM = false;
+    public double powerHoodComp = 1.4;
 
-    public PIDController shootPID = new PIDController(0.015, 0.000, 0.01);
+    public PIDController shootPID = new PIDController(0.3, 0.000, 0.01);
 
     public Turret(OpModeEX opModeEX) {
         registerSubsystem(opModeEX, defaultCommand);
@@ -303,7 +304,7 @@ public class Turret extends SubSystem {
             case low:
                 interpolatedTOF = interpolateValue(distance, distance1, lowTOF1, distance2, lowTOF2, distance3, lowTOF3,
                         distance4, lowTOF4);
-                ofsetDistance = distanceVelocity * interpolatedTOF *1.4;
+                ofsetDistance = distanceVelocity * interpolatedTOF *powerHoodComp;
                 interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, lowPower1, distance2,
                         lowPower2, distance3, lowPower3, distance4, lowPower4);
                 interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, lowHoodAngle1, distance2,
@@ -312,7 +313,7 @@ public class Turret extends SubSystem {
             case medium:
                 interpolatedTOF = interpolateValue(distance, distance1, mediumTOF1, distance2, mediumTOF2, distance3,
                         mediumTOF3, distance4, mediumTOF4);
-                ofsetDistance = distanceVelocity * interpolatedTOF *1.4;
+                ofsetDistance = distanceVelocity * interpolatedTOF *powerHoodComp;
                 interpolatedPower = interpolateValue(distance + ofsetDistance, distance1, mediumPower1, distance2,
                         mediumPower2, distance3, mediumPower3, distance4, mediumPower4);
                 interpolatedHoodAngle = interpolateValue(distance + ofsetDistance, distance1, mediumHoodAngle1,

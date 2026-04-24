@@ -95,7 +95,7 @@ public class back_solo_RED extends OpModeEX {
 
     double backCycles = 0;
     double shootWait = 700;
-    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 248; double gateAngle = 58; double gateTime = 1200;
+    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 248; double gateAngle = 58; double gateTime = 1050;
     boolean stage1Done = false;
     double extraShootDrive = 0;
 
@@ -121,10 +121,10 @@ public class back_solo_RED extends OpModeEX {
             () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(240, 240), new Vector2D(297, 213)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(222, 170), new Vector2D(311, 209)),
+            () -> paths.addPoints(new Vector2D(222, 170), new Vector2D(312, 211)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(305, 227)),
+            () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(306.5, 228.5)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(313, 206), new Vector2D(217, 150)),
@@ -232,7 +232,7 @@ public class back_solo_RED extends OpModeEX {
     }
 
     @Override
-    public void loopEX() {
+    public void  loopEX() {
         turret.robotX = odometry.X();
         turret.robotY = odometry.Y();
         turret.robotHeading = odometry.normilised;
@@ -335,7 +335,7 @@ public class back_solo_RED extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 80;
+                    turret.mapOfset = 100;
                     turret.turrofset = -1.5;
                     turret.StopSWM = true;
 
@@ -408,8 +408,8 @@ public class back_solo_RED extends OpModeEX {
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
-                    turret.turrofset = 1;
-                    turret.mapOfset = -40;
+                    turret.turrofset = 2.7;
+                    turret.mapOfset = -20;
 
                     pathing = true;
                     intake.InTake = true;
@@ -464,8 +464,8 @@ public class back_solo_RED extends OpModeEX {
                     driveBase.speed = 1;
                     turret.StopSWM = true;
 
-                    turret.turrofset = 0;
-                    turret.mapOfset = 180;
+                    turret.turrofset = 1.4;
+                    turret.mapOfset = 175;
 
                 }
                 break;
@@ -509,8 +509,8 @@ public class back_solo_RED extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = -4;
-                    turret.mapOfset = -20;
+                    turret.turrofset = -2;
+                    turret.mapOfset = 0;
                 }
                 break;
 
@@ -566,16 +566,16 @@ public class back_solo_RED extends OpModeEX {
                     HoldHeadingWhileShooting = true;
                 }
                 if (follow.isFinished(20, 25) && odometry.X() < 250 && !built
-                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 30
+                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 31
                         && !dontWaitForPoz) {
-                    shootWait = 380;
+                    shootWait = 360;
                     shootTime.reset();
                     follow.usePathHeadings(false);
                     pathing = false;
                     driveBase.drivePowers(0, headingPID.calculate(odometry.Heading() - 90), 0);
                     HoldHeadingWhileShooting = true;
 
-                    gateTime = 1200;
+                    gateTime = 1150;
                     backCycles += 1;
                     dontWaitForPoz = false;
                     built = true;
