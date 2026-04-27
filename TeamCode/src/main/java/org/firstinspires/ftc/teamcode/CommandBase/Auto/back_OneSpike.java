@@ -359,7 +359,7 @@ public class back_OneSpike extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 5;
+                    turret.mapOfset = 40;
                     turret.turrofset = 2;
                     turret.StopSWM = true;
 
@@ -386,7 +386,7 @@ public class back_OneSpike extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.StopSWM = false;
-                    turret.mapOfset = -35;
+                    turret.mapOfset = 0;
                     targetHeading = 278; // abs(82 - 360) = 278
                     turret.turrofset = 4; // flip sign: -3.5 → +3.5
 
@@ -438,7 +438,7 @@ public class back_OneSpike extends OpModeEX {
                     HoldHeadingWhileShooting = false;
                     built = true;
                     turret.turrofset = 1.7; // flip sign: -4.5 → +4.5
-                    turret.mapOfset = -75;
+                    turret.mapOfset = -35;
                     state = AutoState.backCollect;
                 }
                 break;

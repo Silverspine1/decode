@@ -132,7 +132,7 @@ public class Intake extends SubSystem {
             secondIntakeMotor.update(0);
         }
         if (poz == intakePoz.normalPoz){
-            intakeUP.setPosition(0.465);
+            intakeUP.setPosition(0.450);
         }else if(poz == intakePoz.gatePoz) {
             intakeUP.setPosition(0.475);
         }else {

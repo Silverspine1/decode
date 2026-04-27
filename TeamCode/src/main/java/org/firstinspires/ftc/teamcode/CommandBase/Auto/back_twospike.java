@@ -338,7 +338,7 @@ public class back_twospike extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 65;
+                    turret.mapOfset = 110;
                     turret.turrofset = 1;
                     turret.StopSWM = true;
 
@@ -364,7 +364,7 @@ public class back_twospike extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.StopSWM = false;
-                    turret.mapOfset = 0;
+                    turret.mapOfset = 40;
                     targetHeading = 278;
                     turret.turrofset = 1.5;
 
@@ -412,7 +412,7 @@ public class back_twospike extends OpModeEX {
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
                     turret.turrofset = -0.5;
-                    turret.mapOfset = -45;
+                    turret.mapOfset = -25;
 
                     pathing = true;
                     intake.InTake = true;
@@ -464,7 +464,7 @@ public class back_twospike extends OpModeEX {
                     built = false;
                     state = AutoState.gate;
                     turret.turrofset = 4;
-                    turret.mapOfset = -10;
+                    turret.mapOfset = 30;
 
                 }
                 break;
