@@ -113,22 +113,22 @@ public class back_twospike extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 312)),
+            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 316.5)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(73, 273), new Vector2D(140, 303)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(120, 240), new Vector2D(77, 211)),
+            () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(125, 240), new Vector2D(77, 211)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(47, 209)),
+            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(46.5, 210)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(50.5, 223.5)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(143, 150)),
+            () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(151, 170)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(66, 158)),
@@ -334,11 +334,10 @@ public class back_twospike extends OpModeEX {
                     preload.reset();
                     intake.poz = Intake.intakePoz.gatePoz;
                     Preload = true;
-                    odometry.odo.setHeading(90, AngleUnit.DEGREES);
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 110;
+                    turret.mapOfset = 115;
                     turret.turrofset = 1;
                     turret.StopSWM = true;
 
@@ -347,7 +346,7 @@ public class back_twospike extends OpModeEX {
                 if (built && turret.diff < 120 && turret.rpm > 1000){
                     intake.InTake = true;
                 }
-                if (built && preload.milliseconds() > 1400 || built && turret.diff < 60 && turret.rpm > 1200 && odometry.getYVelocity() < 8) {
+                if (built && preload.milliseconds() > 1500 || built && turret.diff < 60 && turret.rpm > 2000 && Math.abs(odometry.getYVelocity()) < 6) {
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
@@ -356,7 +355,7 @@ public class back_twospike extends OpModeEX {
                 if (pathing && follow.isFinished(10, 10)) {
                     pathing = false;
                 }
-                if (!built && shootTime.milliseconds() > 400) {
+                if (!built && shootTime.milliseconds() > 370) {
                     final sectionBuilder[] collect1 = new sectionBuilder[] {
                             () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(74, 270)),
                     };
@@ -364,9 +363,9 @@ public class back_twospike extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.StopSWM = false;
-                    turret.mapOfset = 40;
+                    turret.mapOfset = 30;
                     targetHeading = 278;
-                    turret.turrofset = 1.5;
+                    turret.turrofset = -0.5;
 
                     pathing = true;
                     built = true;
@@ -398,7 +397,7 @@ public class back_twospike extends OpModeEX {
                     targetHeading = 310;
                 }
                 if (built && follow.isFinished(22, 22) && (Math.abs(odometry.getXVelocity())
-                        + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 19) {
+                        + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 25) {
                     intake.InTake = true;
                     built = false;
                     pathing = false;
@@ -406,13 +405,13 @@ public class back_twospike extends OpModeEX {
                     shootTime.reset();
                     ballShot = false;
                 }
-                if (!built && shootTime.milliseconds() > 420 || !built && ballShot) {
+                if (!built && shootTime.milliseconds() > 380 || !built && ballShot) {
                     follow.setPath(paths.returnPath("collect2"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
                     turret.turrofset = -0.5;
-                    turret.mapOfset = -25;
+                    turret.mapOfset = -40;
 
                     pathing = true;
                     intake.InTake = true;
@@ -424,7 +423,7 @@ public class back_twospike extends OpModeEX {
 
             case collect2:
                 if (pathing && follow.isFinished(12,12)) {
-                    targetHeading = 252;  // CONVERTED: 108 → 252
+                    targetHeading = 258;  // CONVERTED: 108 → 252
                     follow.usePathHeadings(false);
                 }
                 if (follow.isFinished(8, 8)) {
@@ -442,7 +441,7 @@ public class back_twospike extends OpModeEX {
             case driveToShoot2:
                 if (follow.isFinished(43, 43)) {
                     follow.usePathHeadings(false);
-                    targetHeading = 250;  // CONVERTED: 110 → 250
+                    targetHeading = 255;  // CONVERTED: 110 → 250
                 }
                 if (built && follow.isFinished(20, 20) && (Math.abs(odometry.getXVelocity())
                         + Math.abs(odometry.getYVelocity()) + Math.abs(odometry.getHVelocity())) < 100) {
@@ -454,7 +453,7 @@ public class back_twospike extends OpModeEX {
                     pathing = false;
                     ballShot = false;
                 }
-                if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 340) {
+                if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 380) {
                     follow.setPath(paths.returnPath("gate"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
@@ -463,8 +462,8 @@ public class back_twospike extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = 4;
-                    turret.mapOfset = 30;
+                    turret.turrofset = 1.8;
+                    turret.mapOfset = 20;
 
                 }
                 break;
@@ -508,8 +507,8 @@ public class back_twospike extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = 4;
-                    turret.mapOfset = -10;
+                    turret.turrofset = 2.2;
+                    turret.mapOfset = 38;
                 }
                 break;
 
@@ -553,7 +552,7 @@ public class back_twospike extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 270) {
                     targetHeading = 282;  // CONVERTED: 78 → 282
                 }
-                if (odometry.X() > 76 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){  // FLIPPED: > 76 (was < 284, which is 360-76)
+                if (odometry.X() > 71 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){  // FLIPPED: > 76 (was < 284, which is 360-76)
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;

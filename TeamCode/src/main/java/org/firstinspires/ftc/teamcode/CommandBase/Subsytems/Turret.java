@@ -154,7 +154,7 @@ public class Turret extends SubSystem {
     boolean turretOutLeft = false;
     boolean turretOutRight = false;
     public boolean StopSWM = false;
-    public double powerHoodComp = 1.4;
+    public double powerHoodComp = 1;
 
     public PIDController shootPID = new PIDController(0.3, 0.000, 0.01);
 

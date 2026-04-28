@@ -27,12 +27,12 @@ public class back_OneSpike_RED extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(
             0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
             0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 181, 650, 700));
+            130, 190, 650, 780));
 
     follower follow = new follower(new RobotConfig(
             0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
             0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 181, 650, 700));
+            130, 190, 650, 780));
 
     PIDController headingPID = new PIDController(0.009, 0, 0.0030);
     PIDController x = new PIDController(0.06, 0, 0.0030);
@@ -114,7 +114,7 @@ public class back_OneSpike_RED extends OpModeEX {
             () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 298)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(235, 338)),
+            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(235, 334)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(240, 240), new Vector2D(297, 211)),
@@ -332,39 +332,39 @@ public class back_OneSpike_RED extends OpModeEX {
                     preload.reset();
                     intake.poz = Intake.intakePoz.gatePoz;
                     Preload = true;
-                    odometry.odo.setHeading(270, AngleUnit.DEGREES);
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 120;
-                    turret.turrofset = -0.5;
+                    turret.mapOfset = 90;
+                    turret.turrofset = -2;
                     turret.StopSWM = true;
 
                     targetHeading = 90;
                 }
-                if (built && turret.diff < 120 && turret.rpm > 1000){
+                if (built && turret.diff < 100 && turret.rpm > 1000){
                     intake.InTake = true;
                 }
-                if (built && preload.milliseconds() > 1400 || built && turret.diff < 60 && turret.rpm > 1200 && odometry.getYVelocity() < 8) {
+                if (built && preload.milliseconds() > 1500 || built && turret.diff < 80 && turret.rpm > 2000 && Math.abs(odometry.getYVelocity()) < 10) {
                     intake.InTake = true;
                     built = false;
                     intake.block = false;
+
+
                     shootTime.reset();
                 }
                 if (pathing && follow.isFinished(10, 10)) {
                     pathing = false;
                 }
-                if (!built && shootTime.milliseconds() > 400) {
+                if (!built && shootTime.milliseconds() > 360) {
                     final sectionBuilder[] collect1 = new sectionBuilder[] {
-                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(278, 270)),
+                            () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(284, 270)),
                     };
                     paths.addNewPath("collect1");
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.StopSWM = false;
-                    turret.mapOfset = 60;
+                    turret.mapOfset = 50;
                     targetHeading = 82;
-                    turret.turrofset = -3.5;
+                    turret.turrofset = -5.8;
 
                     pathing = true;
                     built = true;
@@ -413,9 +413,10 @@ public class back_OneSpike_RED extends OpModeEX {
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
                     built = true;
-                    turret.turrofset = -5.2;
-                    turret.mapOfset = 50;
+                    turret.turrofset = -4.3;
+                    turret.mapOfset = 15;
                     state = AutoState.backCollect;
+                    turret.powerHoodComp = 1;
 
                 }
                 break;
@@ -427,7 +428,7 @@ public class back_OneSpike_RED extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 270) {
                     targetHeading = 78;
                 }
-                if (odometry.X() < 284 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500 && !(backCycles == 0)){  // 360-76
+                if (odometry.X() < 289 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500 && !(backCycles == 0)){  // 360-76
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;
@@ -439,9 +440,9 @@ public class back_OneSpike_RED extends OpModeEX {
                     HoldHeadingWhileShooting = true;
                 }
                 if (follow.isFinished(20, 25) && odometry.X() < 250 && !built
-                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 35
+                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 31
                         && !dontWaitForPoz) {
-                    shootWait = 380;
+                    shootWait = 360;
                     shootTime.reset();
                     follow.usePathHeadings(false);
                     pathing = false;
@@ -545,7 +546,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     final sectionBuilder[] S1 = new sectionBuilder[] {
                             () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(250 - extraShootDrive , 330)),
                     };
-                    driveBase.speed = 1;
+                    driveBase.speed = 1.1;
 
                     paths.addNewPath("S1");
                     paths.buildPath(S1);

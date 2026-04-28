@@ -278,17 +278,6 @@ public class blue_Tele extends OpModeEX {
             turret.mapOfset = 60 + baseMapOffset;
             turret.turrofset = -1.5 + baseOffset;
         }
-        if ( !shooting && gamepad2.right_bumper && turret.turretInRange && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 6) < 40){
-            intake.InTake = true;
-            intake.block = false;
-            shooting = true;
-            shootTime.reset();
-            driveBase.drivePowers(0, 0, 0);
-
-
-        } else if (shootTime.milliseconds() > 300) {
-            shooting = false;
-        }
 
 
         if (gamepad1.right_bumper && !shooting) {
@@ -296,20 +285,33 @@ public class blue_Tele extends OpModeEX {
                 intake.block = true;
             }
             intake.InTake = true;
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
 
-        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting) {
+        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting  && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 30) {
             intake.InTake = true;
             intake.block = false;
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
 
         } else if (turret.intakeTime && !shooting) {
             intake.InTake = true;
-        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting) {
+        } else if (gamepad1.right_bumper && turret.diff < 270 && turret.turretInRange && !shooting) {
+            intake.InTake = true;
+            intake.block = false;
+            turret.hoodCompensation = 1.2;
+            turret.TURRET_COMP_FACTOR = 0.85;
+        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting){
             intake.InTake = false;
-            if (!gamepad1.dpad_down && rest){
+
+            if (!gamepad1.dpad_down && rest || !gamepad2.left_bumper && rest){
                 intake.poz = Intake.intakePoz.up;
             }else {
                 intake.poz = Intake.intakePoz.normalPoz;
-            }        }
+            }
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
+        }
 
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left) {
             baseOffset -= 1;
