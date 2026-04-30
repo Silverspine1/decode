@@ -179,6 +179,12 @@ public class red_Tele extends OpModeEX {
         driveBase.tele = true;
         turret.targetX = 360;
         turret.StopSWM = true;
+        turret.lowPower4 +=90;
+        turret.powerHoodComp = 0.1;
+        turret.lowPower3 +=40;
+        turret.lowHoodAngle3 -=2;
+        turret.lowHoodAngle4 -=2;
+
 
 
     }
@@ -266,22 +272,11 @@ public class red_Tele extends OpModeEX {
 
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
-            turret.mapOfset = 50 + baseMapOffset;
-            turret.turrofset = -4+ baseOffset;
+            turret.mapOfset = 80 + baseMapOffset;
+            turret.turrofset = -6+ baseOffset;
         }else {
-            turret.mapOfset = 30 + baseMapOffset;
+            turret.mapOfset = 49 + baseMapOffset;
             turret.turrofset = -4 + baseOffset;
-        }
-        if ( !shooting && gamepad2.right_bumper && turret.turretInRange && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 6) < 40){
-            intake.InTake = true;
-            intake.block = false;
-            shooting = true;
-            shootTime.reset();
-            driveBase.drivePowers(0, 0, 0);
-
-
-        } else if (shootTime.milliseconds() > 300) {
-            shooting = false;
         }
 
 
@@ -290,21 +285,32 @@ public class red_Tele extends OpModeEX {
                 intake.block = true;
             }
             intake.InTake = true;
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
 
-        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting) {
+        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting  && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 30) {
             intake.InTake = true;
             intake.block = false;
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
 
         } else if (turret.intakeTime && !shooting) {
             intake.InTake = true;
-        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting) {
+        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting){
             intake.InTake = false;
-            if (!gamepad1.dpad_down){
+
+            if (!gamepad1.dpad_down && rest || !gamepad2.left_bumper && rest){
                 intake.poz = Intake.intakePoz.up;
             }else {
                 intake.poz = Intake.intakePoz.normalPoz;
             }
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
         }
+        if (gamepad2.left_bumper && rest){
+            intake.poz = Intake.intakePoz.normalPoz;
+        }
+
 
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left) {
             baseOffset -= 1;
@@ -331,6 +337,8 @@ public class red_Tele extends OpModeEX {
                 odometry.odo.setPosX(Apriltag.getX(), DistanceUnit.CM);
                 odometry.odo.setPosY(-Apriltag.getY(), DistanceUnit.CM);
                 odometry.odo.setHeading(-Apriltag.getH(), AngleUnit.DEGREES);
+                baseOffset = 0;
+                baseMapOffset = 0;
             }
         } else {
             Apriltag.enabled = false;

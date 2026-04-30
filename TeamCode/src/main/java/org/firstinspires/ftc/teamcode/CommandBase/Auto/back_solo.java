@@ -567,7 +567,7 @@ public class back_solo extends OpModeEX {
                     HoldHeadingWhileShooting = true;
                 }
                 if (follow.isFinished(20, 25) && odometry.X() > 110 && !built  // FLIPPED: > 110 (was < 250, which is 360-110)
-                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 30
+                        && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 28
                         && !dontWaitForPoz) {
                     shootWait = 380;
                     shootTime.reset();

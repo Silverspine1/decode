@@ -27,12 +27,12 @@ public class back_OneSpike_RED extends OpModeEX {
     pathsManager paths = new pathsManager(new RobotConfig(
             0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
             0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 190, 650, 780));
+            130, 195, 650, 900));
 
     follower follow = new follower(new RobotConfig(
             0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
             0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 190, 650, 780));
+            130, 195, 650, 900));
 
     PIDController headingPID = new PIDController(0.009, 0, 0.0030);
     PIDController x = new PIDController(0.06, 0, 0.0030);
@@ -111,7 +111,7 @@ public class back_OneSpike_RED extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 298)),
+            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 308)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(235, 334)),
@@ -362,9 +362,9 @@ public class back_OneSpike_RED extends OpModeEX {
                     paths.addNewPath("collect1");
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
-                    turret.mapOfset = 50;
+                    turret.mapOfset = 60;
                     targetHeading = 82;
-                    turret.turrofset = -5.8;
+                    turret.turrofset = -6.4;
 
                     pathing = true;
                     built = true;
@@ -413,8 +413,8 @@ public class back_OneSpike_RED extends OpModeEX {
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
                     built = true;
-                    turret.turrofset = -4.3;
-                    turret.mapOfset = 15;
+                    turret.turrofset = -6.3;
+                    turret.mapOfset = 45;
                     state = AutoState.backCollect;
                     turret.powerHoodComp = 1;
 

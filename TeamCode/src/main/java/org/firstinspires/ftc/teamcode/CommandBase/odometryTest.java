@@ -15,5 +15,9 @@ public class odometryTest extends OpModeEX {
         telemetry.addData("Y",odometry.Y());
         telemetry.addData("heading",odometry.Heading());
 
+        odometry.odo.recalibrateIMU();
+        odometry.odo.resetPosAndIMU();
+
+
     }
 }

@@ -182,11 +182,8 @@ public class blue_Tele extends OpModeEX {
         turret.lowPower4 +=90;
         turret.powerHoodComp = 0.1;
         turret.lowPower3 +=40;
-        turret.lowHoodAngle3 -=2;
-        turret.lowHoodAngle4 -=2;
-
-
-
+        turret.lowHoodAngle3 -= 2;
+        turret.lowHoodAngle4 -= 2;
     }
 
     @Override
@@ -215,7 +212,6 @@ public class blue_Tele extends OpModeEX {
 
         driveBase.fieldVelY = odometry.getYVelocity();
         driveBase.fieldVelX = odometry.getXVelocity();
-
 
         // ── Track when 3 balls are loaded (mirrors auto) ─────────────────────
         if (intake.ballCount > 2 && !ballsInIntake) {
@@ -268,8 +264,6 @@ public class blue_Tele extends OpModeEX {
                     -correctivePower.getVertical());
         }
 
-
-
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
             turret.mapOfset = 100 + baseMapOffset;
@@ -288,15 +282,13 @@ public class blue_Tele extends OpModeEX {
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
 
-        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting  && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 30) {
+        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting  && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 20) {
             intake.InTake = true;
             intake.block = false;
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
 
-        } else if (turret.intakeTime && !shooting) {
-            intake.InTake = true;
-        } else if (gamepad1.right_bumper && turret.diff < 270 && turret.turretInRange && !shooting) {
+        }  else if (gamepad2.right_bumper  && !shooting) {
             intake.InTake = true;
             intake.block = false;
             turret.hoodCompensation = 1.2;
@@ -312,6 +304,10 @@ public class blue_Tele extends OpModeEX {
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
         }
+        if (gamepad2.left_bumper && rest){
+            intake.poz = Intake.intakePoz.normalPoz;
+        }
+
 
         if (!lastGamepad2.dpad_left && currentGamepad2.dpad_left) {
             baseOffset -= 1;
