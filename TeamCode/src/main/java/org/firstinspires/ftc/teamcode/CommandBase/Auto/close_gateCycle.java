@@ -91,7 +91,7 @@ public class close_gateCycle extends OpModeEX {
 
     double balls = 0;
     double shootWait = 700;
-    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112;double gateAngle = 295; double gateTime = 1100;
+    double gateTolX = 10; double gateTolY = 8; double gateTurnX = 112;double gateAngle = 295; double gateTime = 1600;
     boolean stage1Done = false;
 
     ElapsedTime shootTime = new ElapsedTime();
@@ -115,7 +115,7 @@ public class close_gateCycle extends OpModeEX {
             () -> paths.addPoints(new Vector2D(60, 140), new Vector2D(110, 154)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(134, 154), new Vector2D(116, 230), new Vector2D(45, 210)),
+            () -> paths.addPoints(new Vector2D(134, 154), new Vector2D(116, 230), new Vector2D(47, 210)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(130, 150), new Vector2D(38, 211)),
@@ -339,8 +339,8 @@ public class close_gateCycle extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.TURRET_COMP_FACTOR = 0.95;
-                    turret.turrofset = -6;
-                    turret.mapOfset = -20;
+                    turret.turrofset = -5;
+                    turret.mapOfset = -25;
 
 
                     targetHeading = 255;
@@ -410,14 +410,14 @@ public class close_gateCycle extends OpModeEX {
                     balls +=3;
                     ballShot = false;
                 }
-                if (!built && shootTime.milliseconds() > 380
+                if (!built && shootTime.milliseconds() > 400
                         || !built && ballShot) {
                     follow.setPath(paths.returnPath("collect2"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(160);
                     follow.setHeadingOffset(90);
-                    turret.turrofset = -4;
-                    turret.mapOfset = -10;
+                    turret.turrofset = -5;
+                    turret.mapOfset = -20;
 
 
 
@@ -463,7 +463,7 @@ public class close_gateCycle extends OpModeEX {
                     balls +=3;
                     ballShot = false;
                 }
-                if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 380) {
+                if (follow.isFinished(15, 15) && !built && shootTime.milliseconds() > 420) {
                     follow.setPath(paths.returnPath("gate"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
@@ -474,6 +474,7 @@ public class close_gateCycle extends OpModeEX {
                     state = AutoState.gate;
                     turret.turrofset = -1;
                     turret.mapOfset = -10;
+
 
                 }
                 break;
@@ -496,7 +497,7 @@ public class close_gateCycle extends OpModeEX {
                     PIDAtGate = true;
                 }
 
-                if (odometry.X() < 122 && balls == 21){
+                if (odometry.X() < 132 && balls == 21){
                     state = AutoState.finished;
                 }
 
@@ -511,7 +512,7 @@ public class close_gateCycle extends OpModeEX {
                     afterGateCollect = true;
                     driveBase.speed = 1;
                     maxToGetToShoot.reset();
-                    intake.poz = Intake.intakePoz.normalPoz;
+                    intake.poz = Intake.intakePoz.up;
                     intakeOff = true;
                     built = true;
                 }
@@ -532,7 +533,7 @@ public class close_gateCycle extends OpModeEX {
                     ballShot = false;
                     balls += 3;
                 }
-                if ( !built && shootTime.milliseconds() > 400) {
+                if ( !built && shootTime.milliseconds() > 430) {
                     follow.setPath(paths.returnPath("gate"));
                     follow.usePathHeadings(true);
                     follow.setHeadingLookAheadDistance(100);
@@ -543,6 +544,8 @@ public class close_gateCycle extends OpModeEX {
                     state = AutoState.gate;
                     turret.turrofset = -1;
                     turret.mapOfset = -10;
+                    intake.poz = Intake.intakePoz.normalPoz;
+
 
                 }
                 break;

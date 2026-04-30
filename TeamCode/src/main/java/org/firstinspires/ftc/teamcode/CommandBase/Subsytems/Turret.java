@@ -88,9 +88,9 @@ public class Turret extends SubSystem {
     public double lowHoodAngle3 = 54;
     public double lowHoodAngle4 = 54.2;
     double lowPower1 = 1500;
-    double lowPower2 = 1980;
-    public double lowPower3 = 2420;
-    public double lowPower4 = 2710;
+    double lowPower2 = 2000;
+    public double lowPower3 = 2430;
+    public double lowPower4 = 2720;
 
     double lowTOF4 = 1.12;
     double lowTOF3 = 1.063;
@@ -127,6 +127,7 @@ public class Turret extends SubSystem {
     private final ElapsedTime turretAngleTimer = new ElapsedTime();
     public double TURRET_MECH_LOOKAHEAD_S = 0.12;
     public double turretAngleVelo = 0;
+    public boolean setToCenter = false;
 
 
 
@@ -185,8 +186,8 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(176);
-        turretTurnTwo.setOffset(178);
+        turretTurnOne.setOffset(176.5);
+        turretTurnTwo.setOffset(178.5);
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         hoodAdjust.setOffset(60);
 

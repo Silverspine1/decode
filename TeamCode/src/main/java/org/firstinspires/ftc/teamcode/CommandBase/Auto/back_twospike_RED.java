@@ -113,16 +113,16 @@ public class back_twospike_RED extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 316.5)),
+            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 318)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(220, 303)),
+            () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(218, 310)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(235, 240), new Vector2D(281, 214)),
+            () -> paths.addPoints(new Vector2D(212, 305), new Vector2D(235, 240), new Vector2D(281, 216)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(222, 170), new Vector2D(314.8, 211)),
+            () -> paths.addPoints(new Vector2D(222, 170), new Vector2D(317.5, 211)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(316, 233)),
@@ -146,7 +146,7 @@ public class back_twospike_RED extends OpModeEX {
             () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(202, 327)),
     };
     private final sectionBuilder[] firstDriveToShootBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(320, 208), new Vector2D(230, 323)),
+            () -> paths.addPoints(new Vector2D(320, 208), new Vector2D(225, 325)),
     };
     private final sectionBuilder[] movePath = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(260, 300)),
@@ -228,6 +228,8 @@ public class back_twospike_RED extends OpModeEX {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         dashboard.startCameraStream(visionPortal, 4);
         intake.auto = true;
+
+        processor.blueAlance = false;
 
         turret.targetX = 360;
     }
@@ -463,7 +465,7 @@ public class back_twospike_RED extends OpModeEX {
                     built = false;
                     state = AutoState.gate;
                     turret.turrofset = -4.2;
-                    turret.mapOfset = 18;
+                    turret.mapOfset = 45;
 
                 }
                 break;
@@ -507,7 +509,7 @@ public class back_twospike_RED extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = -5.2;
+                    turret.turrofset = -3.7;
                     turret.mapOfset = 18;
                 }
                 break;
@@ -554,7 +556,7 @@ public class back_twospike_RED extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 266) {
                     targetHeading = 78;
                 }
-                if (odometry.X() < 289 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){
+                if (odometry.X() < 300  && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;

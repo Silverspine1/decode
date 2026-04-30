@@ -179,9 +179,9 @@ public class blue_Tele extends OpModeEX {
         driveBase.tele = true;
         turret.targetX = 0;
         turret.StopSWM = true;
-        turret.lowPower4 +=90;
+        turret.lowPower4 +=60;
         turret.powerHoodComp = 0.1;
-        turret.lowPower3 +=40;
+        turret.lowPower3 +=10;
         turret.lowHoodAngle3 -= 2;
         turret.lowHoodAngle4 -= 2;
     }
@@ -288,12 +288,7 @@ public class blue_Tele extends OpModeEX {
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
 
-        }  else if (gamepad2.right_bumper  && !shooting) {
-            intake.InTake = true;
-            intake.block = false;
-            turret.hoodCompensation = 1.2;
-            turret.TURRET_COMP_FACTOR = 0.85;
-        } else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting){
+        }  else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting){
             intake.InTake = false;
 
             if (!gamepad1.dpad_down && rest || !gamepad2.left_bumper && rest){
@@ -304,8 +299,16 @@ public class blue_Tele extends OpModeEX {
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
         }
-        if (gamepad2.left_bumper && rest){
+        if (!gamepad1.dpad_down && rest || !gamepad2.left_bumper && rest){
             intake.poz = Intake.intakePoz.normalPoz;
+        }
+
+        if (gamepad2.b){
+            turret.hoodCompensation = 1.2;
+            turret.TURRET_COMP_FACTOR = 0.9;
+        }else{
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
         }
 
 

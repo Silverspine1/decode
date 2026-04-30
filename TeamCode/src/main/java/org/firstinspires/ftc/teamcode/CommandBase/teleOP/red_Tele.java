@@ -179,14 +179,13 @@ public class red_Tele extends OpModeEX {
         driveBase.tele = true;
         turret.targetX = 360;
         turret.StopSWM = true;
-        turret.lowPower4 +=90;
+        turret.lowPower4 +=60;
         turret.powerHoodComp = 0.1;
-        turret.lowPower3 +=40;
-        turret.lowHoodAngle3 -=2;
-        turret.lowHoodAngle4 -=2;
-
-
-
+        turret.lowPower3 +=10;
+        turret.lowHoodAngle3 -= 2;
+        turret.lowHoodAngle4 -= 2;
+        turret.hoodCompensation = 0;
+        turret.TURRET_COMP_FACTOR = 0;
     }
 
     @Override
@@ -215,7 +214,6 @@ public class red_Tele extends OpModeEX {
 
         driveBase.fieldVelY = odometry.getYVelocity();
         driveBase.fieldVelX = odometry.getXVelocity();
-
 
         // ── Track when 3 balls are loaded (mirrors auto) ─────────────────────
         if (intake.ballCount > 2 && !ballsInIntake) {
@@ -268,8 +266,6 @@ public class red_Tele extends OpModeEX {
                     -correctivePower.getVertical());
         }
 
-
-
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
             turret.mapOfset = 80 + baseMapOffset;
@@ -307,8 +303,16 @@ public class red_Tele extends OpModeEX {
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
         }
-        if (gamepad2.left_bumper && rest){
+        if (!gamepad1.dpad_down && rest || !gamepad2.left_bumper && rest){
             intake.poz = Intake.intakePoz.normalPoz;
+        }
+
+        if (gamepad2.b){
+            turret.hoodCompensation = 1.2;
+            turret.TURRET_COMP_FACTOR = 0.9;
+        }else{
+            turret.hoodCompensation = 0;
+            turret.TURRET_COMP_FACTOR = 0;
         }
 
 

@@ -257,17 +257,26 @@ public class LocalVision implements VisionProcessor {
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
         lastFrameTimeMs = System.currentTimeMillis();
+        if (blueAlance){
+            CROP_X = 0.15;
+        }else{
+            CROP_X = -0.15;
+
+        }
 
 
         int fullW = frame.width();
         int fullH = frame.height();
 
         // ── 1. Compute crop rectangle in full-frame pixels ─────────────────
-        int cropX = (int) Math.max(0, Math.min(CROP_X * fullW, fullW - 2));
-        int cropY = (int) Math.max(0, Math.min(CROP_Y * fullH, fullH - 2));
-        int cropW = (int) Math.max(1, Math.min(CROP_W * fullW, fullW - cropX));
-        int cropH = (int) Math.max(1, Math.min(CROP_H * fullH, fullH - cropY));
-
+// Positive CROP_X = remove from left, Negative CROP_X = remove from right
+// Positive CROP_Y = remove from top,  Negative CROP_Y = remove from bottom
+        int cropX = CROP_X >= 0 ? (int)(CROP_X * fullW) : 0;
+        int cropY = CROP_Y >= 0 ? (int)(CROP_Y * fullH) : 0;
+        int cropR = CROP_X >= 0 ? (int)(CROP_W * fullW) : (int)((1.0 + CROP_X) * fullW);
+        int cropB = CROP_Y >= 0 ? (int)(CROP_H * fullH) : (int)((1.0 + CROP_Y) * fullH);
+        int cropW = Math.max(1, Math.min(cropR - cropX, fullW - cropX));
+        int cropH = Math.max(1, Math.min(cropB - cropY, fullH - cropY));
         // ── 2. PHYSICALLY copy the crop region into smallRgb ──────────────
         // submat() is a view — using it directly means coordinates still
         // reference the original origin.  Resize forces a real pixel copy

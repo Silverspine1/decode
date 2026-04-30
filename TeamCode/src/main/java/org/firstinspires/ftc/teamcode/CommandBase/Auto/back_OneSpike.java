@@ -115,11 +115,11 @@ public class back_OneSpike extends OpModeEX {
     // All Vector2D x values: 360 - redX
     // shoot:         (190,330)->(170,330)   (193,308)->(167,308)
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 316.5)),
+            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 318)),
     };
     // driveToShoot1: (287,273)->(73,273)   (235,338)->(125,338)
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(82, 270), new Vector2D(125, 338)),
+            () -> paths.addPoints(new Vector2D(82, 270), new Vector2D(128, 342)),
     };
     // collect2: (212,305)->(148,305)  (240,240)->(120,240)  (297,211)->(63,211)
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
@@ -246,6 +246,7 @@ public class back_OneSpike extends OpModeEX {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         dashboard.startCameraStream(visionPortal, 4);
         intake.auto = true;
+        processor.blueAlance = true;
     }
 
     @Override
@@ -438,8 +439,8 @@ public class back_OneSpike extends OpModeEX {
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
                     built = true;
-                    turret.turrofset = 2.5; // flip sign: -4.5 → +4.5
-                    turret.mapOfset = 7;
+                    turret.turrofset = 3.5; // flip sign: -4.5 → +4.5
+                    turret.mapOfset = 30;
                     state = AutoState.backCollect;
                 }
                 break;
@@ -452,7 +453,7 @@ public class back_OneSpike extends OpModeEX {
                     targetHeading = 282; // abs(78 - 360) = 282
                 }
                 // Red: odometry.X() < 284  →  Blue: odometry.X() > 76  (360-284=76, flip operator)
-                if (odometry.X() > 76 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500 && !(backCycles == 0)) {
+                if (odometry.X() > 65 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500 && !(backCycles == 0)) {
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;

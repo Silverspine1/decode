@@ -113,22 +113,22 @@ public class back_twospike extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 316.5)),
+            () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 318)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(73, 273), new Vector2D(140, 303)),
+            () -> paths.addPoints(new Vector2D(73, 273), new Vector2D(142, 310)),
     };
     private final sectionBuilder[] collect2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(125, 240), new Vector2D(77, 211)),
     };
     private final sectionBuilder[] gate = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(46.5, 210)),
+            () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(45.5, 210)),
     };
     private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(50.5, 223.5)),
     };
     private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(151, 170)),
+            () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(164, 170)),
     };
     private final sectionBuilder[] collect3 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(66, 158)),
@@ -146,7 +146,7 @@ public class back_twospike extends OpModeEX {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(158, 327)),
     };
     private final sectionBuilder[] firstDriveToShootBack = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(40, 208), new Vector2D(130, 323)),
+            () -> paths.addPoints(new Vector2D(40, 208), new Vector2D(132, 327)),
     };
     private final sectionBuilder[] movePath = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
@@ -216,6 +216,8 @@ public class back_twospike extends OpModeEX {
         Apriltag.limelight.pipelineSwitch(0);
 
         processor = new LocalVision(LocalVision.TargetColor.BOTH);
+        processor.blueAlance = true;
+
 
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
@@ -337,7 +339,7 @@ public class back_twospike extends OpModeEX {
                     follow.setPath(paths.returnPath("shoot"));
                     pathing = true;
                     driveBase.speed = 1;
-                    turret.mapOfset = 115;
+                    turret.mapOfset = 105;
                     turret.turrofset = 1;
                     turret.StopSWM = true;
 
@@ -363,7 +365,7 @@ public class back_twospike extends OpModeEX {
                     paths.buildPath(collect1);
                     follow.setPath(paths.returnPath("collect1"));
                     turret.StopSWM = false;
-                    turret.mapOfset = 30;
+                    turret.mapOfset = 35;
                     targetHeading = 278;
                     turret.turrofset = -0.5;
 
@@ -462,8 +464,8 @@ public class back_twospike extends OpModeEX {
                     intake.block = true;
                     built = false;
                     state = AutoState.gate;
-                    turret.turrofset = 1.8;
-                    turret.mapOfset = 20;
+                    turret.turrofset = 3.5;
+                    turret.mapOfset = 40;
 
                 }
                 break;
@@ -552,7 +554,7 @@ public class back_twospike extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 270) {
                     targetHeading = 282;  // CONVERTED: 78 → 282
                 }
-                if (odometry.X() > 71 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){  // FLIPPED: > 76 (was < 284, which is 360-76)
+                if (odometry.X() > 65 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500){  // FLIPPED: > 76 (was < 284, which is 360-76)
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;
