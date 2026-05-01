@@ -267,10 +267,10 @@ public class blue_Tele extends OpModeEX {
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
             turret.mapOfset = 100 + baseMapOffset;
-            turret.turrofset = -2+ baseOffset;
+            turret.turrofset = 0.5+ baseOffset;
         }else {
             turret.mapOfset = 60 + baseMapOffset;
-            turret.turrofset = -1.5 + baseOffset;
+            turret.turrofset = 1 + baseOffset;
         }
 
 
@@ -282,13 +282,13 @@ public class blue_Tele extends OpModeEX {
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
 
-        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting  && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 20) {
+        } else if (gamepad1.left_bumper && turret.diff < 270 && turret.turretInRange && !shooting  && Math.abs( Math.abs(odometry.getXVelocity()) + Math.abs(odometry.getYVelocity())) + Math.abs(odometry.getHVelocity() * 2) < 20 && !turret.setToCenter) {
             intake.InTake = true;
             intake.block = false;
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
 
-        }  else if (!currentGamepad1.left_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting){
+        } else if (!currentGamepad1.right_bumper && !currentGamepad1.right_bumper && !isBackCycling && !shooting){
             intake.InTake = false;
 
             if (!gamepad1.dpad_down && rest || !gamepad2.left_bumper && rest){
@@ -299,7 +299,7 @@ public class blue_Tele extends OpModeEX {
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
         }
-        if (!gamepad1.dpad_down && rest || !gamepad2.left_bumper && rest){
+        if (gamepad1.dpad_down && rest || gamepad2.left_bumper && rest){
             intake.poz = Intake.intakePoz.normalPoz;
         }
 
@@ -309,6 +309,12 @@ public class blue_Tele extends OpModeEX {
         }else{
             turret.hoodCompensation = 0;
             turret.TURRET_COMP_FACTOR = 0;
+        }
+        if (gamepad2.right_bumper){
+            turret.setToCenter = true;
+        }else{
+            turret.setToCenter = false;
+
         }
 
 

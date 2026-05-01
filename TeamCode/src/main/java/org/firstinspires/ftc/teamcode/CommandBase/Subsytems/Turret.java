@@ -69,6 +69,10 @@ public class Turret extends SubSystem {
     public double turretAngle;
     public final double gearRatio = 0.74;
     final double turretLimitAngle = 120;
+    double leftTurretLimitAngle = 133;
+    double rightTurretLimitAngle = 133;
+
+
 
     public double distance;
     public double ofsetDistance;
@@ -140,7 +144,7 @@ public class Turret extends SubSystem {
     private final double[] expandedT = new double[6];
     public boolean intakeTime;
     public boolean turretInRange = false;
-    public boolean spinDown = false;
+    public boolean offsetSet = false;
     public boolean Auto = false;
     public boolean toggle = true;
     public boolean testOP = false;
@@ -156,6 +160,10 @@ public class Turret extends SubSystem {
     boolean turretOutRight = false;
     public boolean StopSWM = false;
     public double powerHoodComp = 1;
+    double limitAngleAdjust = 66.6;
+    double turretServoOfset = 177.25;
+
+
 
     public PIDController shootPID = new PIDController(0.3, 0.000, 0.01);
 
@@ -186,8 +194,7 @@ public class Turret extends SubSystem {
         shooterMotorOne.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotorTwo.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        turretTurnOne.setOffset(176.5);
-        turretTurnTwo.setOffset(178.5);
+
         hoodAdjust.setDirection(Servo.Direction.FORWARD);
         hoodAdjust.setOffset(60);
 
@@ -274,6 +281,20 @@ public class Turret extends SubSystem {
             gameTimeReset = true;
             gameTime.reset();
         }
+        if(!offsetSet){
+            offsetSet = true;
+            if (targetRPM == 360){
+                turretServoOfset += 79;
+                turretTurnOne.setOffset(turretServoOfset);
+                turretTurnTwo.setOffset(turretServoOfset);
+            }else{
+                turretServoOfset -= 79;
+                turretTurnOne.setOffset(turretServoOfset);
+                turretTurnTwo.setOffset(turretServoOfset);
+            }
+        }
+
+
 
         double deltaX = robotX - targetX;
         double deltaY = robotY - targetY;
@@ -368,32 +389,34 @@ public class Turret extends SubSystem {
         if (Math.abs(turretAngleVelo) > 4) {
             turretAngle += turretAngleVelo * TURRET_MECH_LOOKAHEAD_S;
         }
+        double tPos = (turretAngle + turrofset) / gearRatio;
 
-        if ((turretAngle) > turretLimitAngle && !turretOutLeft) {
+
+        if ((tPos) > 335  && !turretOutLeft) {
             turretInRange = false;
-            turretAngle = 55;
+            turretAngle = 0;
             turretToCenter.reset();
             turretOutRight = true;
-        } else if ((turretAngle) < -turretLimitAngle && !turretOutRight) {
+        } else if ((tPos) < -166 && !turretOutRight) {
             turretInRange = false;
-            turretAngle = -55;
+            turretAngle = 0;
             turretToCenter.reset();
             turretOutLeft = true;
-        } else if (turretToCenter.milliseconds() > 500) {
+        } else if (turretToCenter.milliseconds() > 600) {
             turretInRange = true;
             turretOutLeft = false;
             turretOutRight = false;
         } else {
             if (turretOutRight) {
-                turretAngle = 55;
+                turretAngle = 30;
             } else {
-                turretAngle = -55;
+                turretAngle = -30;
             }
         }
-        if (!reset && !Auto && gameTime.milliseconds() > 3000 || !Auto && lift && gameTime.milliseconds() > 3000) {
-            double tPos = (0 + turrofset) / gearRatio;
-            turretTurnOne.setPosition(tPos);
-            turretTurnTwo.setPosition(tPos);
+        if ( !Auto && setToCenter|| !Auto && lift && gameTime.milliseconds() > 3000) {
+            double TPos = (0 + turrofset) / gearRatio;
+            turretTurnOne.setPosition(TPos);
+            turretTurnTwo.setPosition(TPos);
         }
 
         if (toggle &&!Auto && !lift) {
@@ -408,14 +431,14 @@ public class Turret extends SubSystem {
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
 
-            if (!stopTurret && !manuel && reset) {
-                double tPos = (turretAngle + turrofset) / gearRatio;
-                turretTurnOne.setPosition(tPos);
-                turretTurnTwo.setPosition(tPos);
-            } else if (!reset) {
-                double tPos = (0 + turrofset) / gearRatio;
-                turretTurnOne.setPosition(tPos);
-                turretTurnTwo.setPosition(tPos);
+            if (!stopTurret && !manuel && reset && !setToCenter) {
+                double TPos = (turretAngle + turrofset) / gearRatio;
+                turretTurnOne.setPosition(TPos);
+                turretTurnTwo.setPosition(TPos);
+            } else if (!reset && !setToCenter) {
+                double TPos = (0 + turrofset) / gearRatio;
+                turretTurnOne.setPosition(TPos);
+                turretTurnTwo.setPosition(TPos);
             }
         } else if (Auto) {
             targetRPM = interpolatedPower + mapOfset;
@@ -423,9 +446,9 @@ public class Turret extends SubSystem {
             shooterMotorOne.update(shootPower);
             shooterMotorTwo.update(shootPower);
             if (!stopTurret) {
-                double tPos = (turretAngle + turrofset) / gearRatio;
-                turretTurnOne.setPosition(tPos);
-                turretTurnTwo.setPosition(tPos);
+                double TPos = (turretAngle + turrofset) / gearRatio;
+                turretTurnOne.setPosition(TPos);
+                turretTurnTwo.setPosition(TPos);
             }
         } else {
             shooterMotorTwo.update(0);
