@@ -111,7 +111,7 @@ public class back_OneSpike_RED extends OpModeEX {
     ElapsedTime stage1Timer = new ElapsedTime();
 
     private final sectionBuilder[] shoot = new sectionBuilder[] {
-            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(193, 318)),
+            () -> paths.addPoints(new Vector2D(190, 330), new Vector2D(196, 318)),
     };
     private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(287, 273), new Vector2D(232, 336)),
@@ -174,7 +174,7 @@ public class back_OneSpike_RED extends OpModeEX {
 
     @Override
     public void initEX() {
-        odometry.startPosition(192.5, 342, 0);           // 360 - 167.5
+        odometry.startPosition(194, 342, 0);           // 360 - 167.5
         odometry.odo.setHeading(270, AngleUnit.DEGREES); // Red heading
 
         turret.Auto = true;
@@ -338,7 +338,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     pathing = true;
                     driveBase.speed = 1;
                     turret.mapOfset = 90;
-                    turret.turrofset = -2.5;
+                    turret.turrofset = -0.5;
                     turret.StopSWM = true;
 
                     targetHeading = 90;
@@ -366,7 +366,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     follow.setPath(paths.returnPath("collect1"));
                     turret.mapOfset = 70;
                     targetHeading = 82;
-                    turret.turrofset = -6.5;
+                    turret.turrofset = -4.5;
 
                     pathing = true;
                     built = true;
@@ -415,7 +415,7 @@ public class back_OneSpike_RED extends OpModeEX {
                     maxWait.reset();
                     HoldHeadingWhileShooting = false;
                     built = true;
-                    turret.turrofset = -5.3;
+                    turret.turrofset = -3.3;
                     turret.mapOfset = 60;
                     state = AutoState.backCollect;
                     turret.powerHoodComp = 1;
@@ -430,7 +430,7 @@ public class back_OneSpike_RED extends OpModeEX {
                 if (afterGateCollect && odometry.Y() > 270) {
                     targetHeading = 78;
                 }
-                if (odometry.X() < 304 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500 && !(backCycles == 0)){  // 360-76
+                if (odometry.X() < 312 && intake.poz == Intake.intakePoz.normalPoz && shootTime.milliseconds() > 500 && !(backCycles == 0)){  // 360-76
                     intake.poz = Intake.intakePoz.up;
                     intake.InTake = false;
                     intake.holdUp = true;

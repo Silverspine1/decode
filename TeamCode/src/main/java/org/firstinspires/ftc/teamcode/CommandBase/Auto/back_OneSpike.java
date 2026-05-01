@@ -193,7 +193,7 @@ public class back_OneSpike extends OpModeEX {
     @Override
     public void initEX() {
         // Start position: 360 - 192.5 = 167.5, heading stays 0
-        odometry.startPosition(167.5, 342, 0);
+        odometry.startPosition(168, 342, 0);
         odometry.odo.setHeading(90, AngleUnit.DEGREES); // Blue heading
 
         turret.Auto = true;
