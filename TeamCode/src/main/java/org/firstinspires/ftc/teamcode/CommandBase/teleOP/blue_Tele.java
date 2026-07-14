@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.CommandBase.teleOP;
+ package org.firstinspires.ftc.teamcode.CommandBase.teleOP;
 
 import android.util.Size;
 
@@ -179,7 +179,7 @@ public class blue_Tele extends OpModeEX {
         driveBase.tele = true;
         turret.targetX = 0;
         turret.StopSWM = true;
-        turret.lowPower4 +=60;
+        turret.lowPower4 +=20;
         turret.powerHoodComp = 0.1;
         turret.lowPower3 +=10;
         turret.lowHoodAngle3 -= 2;
@@ -266,11 +266,11 @@ public class blue_Tele extends OpModeEX {
 
         // ────────────────────────────────────────────────────────────────────
         if (odometry.Y() > 260) {
-            turret.mapOfset = 100 + baseMapOffset;
-            turret.turrofset = 0.5+ baseOffset;
+            turret.mapOfset = 60 + baseMapOffset;
+            turret.turrofset = 2+ baseOffset;
         }else {
             turret.mapOfset = 60 + baseMapOffset;
-            turret.turrofset = 1 + baseOffset;
+            turret.turrofset = 2 + baseOffset;
         }
 
 

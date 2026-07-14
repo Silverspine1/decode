@@ -287,10 +287,15 @@ public class Turret extends SubSystem {
                 turretServoOfset += 79;
                 turretTurnOne.setOffset(turretServoOfset);
                 turretTurnTwo.setOffset(turretServoOfset);
+                leftTurretLimitAngle = 166;
+                rightTurretLimitAngle = 335;
+
             }else{
-                turretServoOfset -= 79;
+                turretServoOfset += 0;
                 turretTurnOne.setOffset(turretServoOfset);
                 turretTurnTwo.setOffset(turretServoOfset);
+                leftTurretLimitAngle = 172;
+                rightTurretLimitAngle = 342;
             }
         }
 
@@ -392,27 +397,28 @@ public class Turret extends SubSystem {
         double tPos = (turretAngle + turrofset) / gearRatio;
 
 
-        if ((tPos) > 335  && !turretOutLeft) {
+
+        if (turretToCenter.milliseconds() > 600) {
+            turretInRange = true;
+            turretOutLeft = false;
+            turretOutRight = false;
+        }else if ((tPos) > rightTurretLimitAngle  && !turretOutLeft) {
             turretInRange = false;
             turretAngle = 0;
             turretToCenter.reset();
             turretOutRight = true;
-        } else if ((tPos) < -166 && !turretOutRight) {
+        } else if ((tPos) < -leftTurretLimitAngle && !turretOutRight) {
             turretInRange = false;
             turretAngle = 0;
             turretToCenter.reset();
             turretOutLeft = true;
-        } else if (turretToCenter.milliseconds() > 600) {
-            turretInRange = true;
-            turretOutLeft = false;
-            turretOutRight = false;
-        } else {
-            if (turretOutRight) {
-                turretAngle = 30;
-            } else {
-                turretAngle = -30;
-            }
         }
+//            if (turretOutRight) {
+//                turretAngle = 30;
+//            } else {
+//                turretAngle = -30;
+//            }
+
         if ( !Auto && setToCenter|| !Auto && lift && gameTime.milliseconds() > 3000) {
             double TPos = (0 + turrofset) / gearRatio;
             turretTurnOne.setPosition(TPos);
