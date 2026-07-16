@@ -1,71 +1,93 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Auto.tuner;
 
 /**
- * Model-based PD tuner (replaces the black-box Twiddle search).
+ * Model-based PD gain computation. Everything here is driven by on-robot
+ * measurements made by PathTuner - there are no hand-set numbers.
  *
- * The Nexus follower's PD gains map an ERROR straight to a motor POWER:
- *   translation gains: error in cm  -> power  (setX/YOnPathPD, setX/YLastAdjustmentPD)
- *   heading gains:     error in deg -> turn power (setFast/SlowHeadingPD)
+ * Inputs (all measured):
+ *   aFwd / aStr / aTurn - acceleration produced per unit motor power
+ *                         (cm/s^2 per power, deg/s^2 per power for turn),
+ *                         from a least-squares fit of the full-power ramp.
+ *   ksFwd / ksStr / ksTurn - breakaway (static friction) power per axis,
+ *                            from a slow power ramp until movement.
+ *   tolX / tolY / tolH  - stop tolerances, derived from the stiction position
+ *                         quantum (smallest reliable move), not hand-picked.
+ *   tsX / tsY / tsH     - settling-time targets, driven down by PathTuner's
+ *                         probe search until each axis just meets tolerance.
  *
- * Near the target the velocity feed-forward is ~0, so each axis behaves like a
- * second-order position loop:
- *
+ * Gain math - standard pole placement on the near-target 2nd-order loop
  *     error'' + A*Kd*error' + A*Kp*error = 0
+ *     Kp = wn^2/A,  Kd = 2*zeta*wn/A,  wn = 4/(zeta*ts),  zeta = 1
+ * with two fixes over the old version:
  *
- * where A = "acceleration produced per unit motor power" (cm/s^2 per power for
- * translation, deg/s^2 per power for heading). Matching to the standard
- * second-order form  s^2 + 2*zeta*wn*s + wn^2  gives closed-form gains:
+ * 1. ANTI-TWITCH ENDPOINT CAP. Endpoint twitch is stick-slip: PD power below
+ *    static friction leaves the robot stuck, error integrates nowhere, then a
+ *    disturbance breaks it loose and it lurches. The cure is to guarantee that
+ *    inside the tolerance box the commanded power stays BELOW breakaway, so
+ *    the robot simply stays put once it is in tolerance:
+ *        Kp_end <= kS / tol
+ *    Endpoint Kp is min(pole-placement Kp, that cap).
  *
- *     Kp = wn^2 / A
- *     Kd = 2*zeta*wn / A
- *     wn = 4 / (zeta * ts)          (2% settling-time relation)
+ * 2. DAMPING PRESERVED THROUGH CLAMPS. If Kp is capped/clamped, Kd is
+ *    re-derived from the ACTUAL Kp so the pair stays critically damped:
+ *        Kd = 2*zeta*sqrt(Kp/A)
+ *    (The old code clamped Kp and Kd independently, which silently produced
+ *    underdamped pairs - the source of the wobble.)
  *
- * A is not guessed - it is MEASURED on the robot with direct-power step runs
- * (see PathTuner CHARACTERISE phase). zeta = 1 gives a critically damped,
- * overshoot-free response (matches the loose, accuracy-first gate).
- *
- * Refs: pole-placement PD design for 2nd-order position control
- *   Caltech CDS "Control of Second-Order Systems"
- *   https://www.cds.caltech.edu/~murray/courses/cds101/fa02/caltech/pph02-ch13.pdf
- *   Astrom & Murray, "PID Control" (Feedback Systems, ch.10)
- *   https://www.cds.caltech.edu/~murray/books/AM08/pdf/am08-pid_02Dec08.pdf
+ * Refs: Astrom & Murray, "Feedback Systems", ch.10 (PID / pole placement).
  */
 public class ModelTuner {
 
-    // Measured accel-per-unit-power. Translation in cm/s^2, heading in deg/s^2.
-    public double aFwd  = 0;   // forward  (robot Y) -> sets the Y gains
-    public double aStr  = 0;   // strafe   (robot X) -> sets the X gains
-    public double aTurn = 0;   // rotation          -> sets the heading gains
+    // Measured accel-per-unit-power (regression over full-power ramp).
+    public double aFwd  = 0;   // robot Y, cm/s^2 per power
+    public double aStr  = 0;   // robot X, cm/s^2 per power
+    public double aTurn = 0;   // heading, deg/s^2 per power
 
-    // Fallbacks if a characterisation run is bad (use the robot's rated limits).
-    public double aFwdFallback, aStrFallback, aTurnFallback;
+    // Measured breakaway (static friction) power per axis, 0..1.
+    public double ksFwd  = 0;
+    public double ksStr  = 0;
+    public double ksTurn = 0;
 
-    // Design knobs. zeta stays 1 (no overshoot). The per-axis settling times are
-    // NOT set by hand - PathTuner's speed search drives them down until each axis
-    // just meets its tolerance, so the user only ever specifies tolerances.
-    public double zeta = 1.0;     // 1.0 = critically damped (no overshoot)
-    public double tsX  = 0.70;    // s, X (strafe) settling target
-    public double tsY  = 0.70;    // s, Y (forward) settling target
-    public double tsH  = 0.60;    // s, heading settling target
+    // Derived stop tolerances (PathTuner computes these from the stiction
+    // position quantum; they are not user knobs).
+    public double tolX = 2.0;   // cm
+    public double tolY = 2.0;   // cm
+    public double tolH = 2.0;   // deg
 
-    // On-path tracking is made stiffer than the endpoint hold by this ratio.
+    // Settling-time targets, driven by PathTuner's search.
+    public double zeta = 1.0;
+    public double tsX  = 0.70;
+    public double tsY  = 0.70;
+    public double tsH  = 0.60;
+
+    // On-path tracking is stiffer than the endpoint hold by this ratio
+    // (tracking has feed-forward help; the endpoint loop is on its own).
     private static final double PATH_RATIO = 0.75;
 
-    // Safety clamps on the produced gains.
+    // Hard sanity bounds only - real shaping comes from measurement.
     private static final double KP_MIN = 1e-4, KP_MAX = 1.0;
-    private static final double KD_MIN = 0.0,  KD_MAX = 0.30;
+    private static final double KD_MAX = 0.5;
 
-    private double naturalFreq(double ts) {
-        return 4.0 / (zeta * ts);
+    /**
+     * {Kp, Kd} for one axis. If kpCap > 0 the proportional gain is limited to
+     * it (anti-twitch endpoint cap). Kd is always re-derived from the final
+     * Kp so the pair stays at the requested zeta no matter what clamped.
+     */
+    public double[] pd(double A, double ts, double kpCap) {
+        if (A <= 1.0) A = 1.0;                    // degenerate measurement guard
+        double wn = 4.0 / (zeta * ts);
+        double kp = wn * wn / A;
+        if (kpCap > 0 && kp > kpCap) kp = kpCap;
+        kp = clamp(kp, KP_MIN, KP_MAX);
+        // critical damping for the ACTUAL kp: wn' = sqrt(kp*A), kd = 2*zeta*wn'/A
+        double kd = clamp(2.0 * zeta * Math.sqrt(kp / A), 0, KD_MAX);
+        return new double[]{kp, kd};
     }
 
-    /** {Kp, Kd} for one axis given its measured A and a settling target. */
-    public double[] pd(double A, double fallback, double ts) {
-        double a = (A > 1.0) ? A : fallback;   // reject junk measurements
-        double wn = naturalFreq(ts);
-        double kp = clamp(wn * wn / a, KP_MIN, KP_MAX);
-        double kd = clamp(2 * zeta * wn / a, KD_MIN, KD_MAX);
-        return new double[]{kp, kd};
+    /** Anti-twitch cap: power at the tolerance edge stays under breakaway. */
+    private double endCap(double ks, double tol) {
+        if (ks <= 0 || tol <= 0) return 0;        // no measurement -> no cap
+        return ks / tol;
     }
 
     /**
@@ -73,13 +95,15 @@ public class ModelTuner {
      *  0,1 onPathX   2,3 onPathY   4,5 endX   6,7 endY   8,9 hdgFast   10,11 hdgSlow
      */
     public double[] gains() {
-        double[] px = pd(aStr,  aStrFallback,  tsX * PATH_RATIO); // on-path X (strafe)
-        double[] py = pd(aFwd,  aFwdFallback,  tsY * PATH_RATIO); // on-path Y (forward)
-        double[] ex = pd(aStr,  aStrFallback,  tsX);             // end X
-        double[] ey = pd(aFwd,  aFwdFallback,  tsY);             // end Y
-        double[] hf = pd(aTurn, aTurnFallback, tsH);             // heading fast
-        // "slow" heading profile: same damping, ~40% gentler proportional term
-        double[] hs = new double[]{ clamp(hf[0] * 0.6, KP_MIN, KP_MAX), hf[1] };
+        double[] px = pd(aStr,  tsX * PATH_RATIO, 0);
+        double[] py = pd(aFwd,  tsY * PATH_RATIO, 0);
+        double[] ex = pd(aStr,  tsX, endCap(ksStr, tolX));
+        double[] ey = pd(aFwd,  tsY, endCap(ksFwd, tolY));
+        double[] hf = pd(aTurn, tsH, 0);
+        // Slow heading profile: own pole placement at a longer settling time
+        // (not a scaled copy of fast - a scaled Kp with unscaled Kd is no
+        // longer critically damped and steps torque at the profile switch).
+        double[] hs = pd(aTurn, tsH * 1.5, endCap(ksTurn, tolH));
 
         return new double[]{
                 px[0], px[1], py[0], py[1],
