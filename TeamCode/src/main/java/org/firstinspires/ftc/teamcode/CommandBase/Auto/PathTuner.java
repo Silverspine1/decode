@@ -293,11 +293,16 @@ public class PathTuner extends OpModeEX {
         rampPower = Math.min(RAMP_MAX_POWER, phaseTimer.seconds() * RAMP_RATE);
         applyAxisPower(Ax.values()[axIdx], rampPower);
 
+        // detect on VELOCITY first (fires with far less latency than waiting
+        // for displacement to accumulate, so kS isn't overestimated) with the
+        // displacement check kept as a backstop
         boolean moved;
         if (Ax.values()[axIdx] == Ax.TURN) {
-            moved = Math.abs(wrap180(odometry.Heading() - phaseStartH)) > moveThreshH;
+            moved = Math.abs(degPerSec()) > stopEpsH * 1.5
+                    || Math.abs(wrap180(odometry.Heading() - phaseStartH)) > moveThreshH;
         } else {
-            moved = Math.hypot(odometry.X() - phaseStartX, odometry.Y() - phaseStartY) > moveThreshT;
+            moved = Math.hypot(odometry.getXVelocity(), odometry.getYVelocity()) > stopEpsT * 1.5
+                    || Math.hypot(odometry.X() - phaseStartX, odometry.Y() - phaseStartY) > moveThreshT;
         }
 
         if (moved || rampPower >= RAMP_MAX_POWER || skip) {
@@ -330,10 +335,12 @@ public class PathTuner extends OpModeEX {
         model.ksFwd  = ks[Ax.FWD.ordinal()];
         model.ksStr  = ks[Ax.STR.ordinal()];
         model.ksTurn = ks[Ax.TURN.ordinal()];
-        // tolerance = 1.5x the lurch quantum, floored at odometry noise x4
-        model.tolX = Math.max(Math.max(1.0, posNoise * 4), 1.5 * quantum[Ax.STR.ordinal()]);
-        model.tolY = Math.max(Math.max(1.0, posNoise * 4), 1.5 * quantum[Ax.FWD.ordinal()]);
-        model.tolH = Math.max(Math.max(1.0, hdgNoise * 4), 1.5 * quantum[Ax.TURN.ordinal()]);
+        // tolerance = 1.5x the lurch quantum, floored at odometry noise x4 and
+        // CEILINGED - a noisy lurch measurement must not inflate tolerance so
+        // far that the endpoint Kp cap (kS/tol) collapses the gains to nothing
+        model.tolX = clamp(1.5 * quantum[Ax.STR.ordinal()], Math.max(1.0, posNoise * 4), 4.0);
+        model.tolY = clamp(1.5 * quantum[Ax.FWD.ordinal()], Math.max(1.0, posNoise * 4), 4.0);
+        model.tolH = clamp(1.5 * quantum[Ax.TURN.ordinal()], Math.max(1.0, hdgNoise * 4), 4.0);
     }
 
     // ============================= 3. MAX V / A =============================
@@ -451,16 +458,24 @@ public class PathTuner extends OpModeEX {
         double err = (sIdx == 0) ? tr.finalErrX : (sIdx == 1) ? tr.finalErrY : tr.finalHdgErr;
         double tol = axisTol(sIdx);
         boolean pass = !tr.timedOut && !tr.leftBox && err <= tol && !sustainedOvershoot;
+        // DIRECTION of the failure matters:
+        //   too WEAK  (timed out / never reached tolerance, no overshoot)
+        //       -> ts must go DOWN (stronger gains)
+        //   too STRONG (overshoot / left the box)
+        //       -> ts must go UP (weaker gains)
+        // The old logic treated every fail as "too strong", so a weak start
+        // spiralled weaker each iteration and the robot just crept in place.
+        boolean tooStrong = tr.leftBox || sustainedOvershoot;
 
         if (sIter == 0) firstSettle[sIdx] = tr.settleTime;
         sIter++;
 
         if (confirming) {
             if (pass) { lockAxis(curTs); return; }
-            // confirm failed - back off further and confirm again
-            curTs *= LOCK_MARGIN;
-            if (sIter >= MAX_ITER) { lockAxis(curTs); return; }
-            runProbeAt(curTs);
+            if (sIter >= MAX_ITER) { lockAxis(anyPass ? lastPassTs : curTs); return; }
+            // confirm failed - move away from the failure direction and retry
+            curTs = tooStrong ? curTs * LOCK_MARGIN : curTs * TS_DOWN;
+            runProbeAt(clampTs(curTs));
             return;
         }
 
@@ -477,18 +492,24 @@ public class PathTuner extends OpModeEX {
                 return;
             }
             runProbeAt(curTs);
+        } else if (anyPass) {
+            // first fail after passes: back off with margin, then CONFIRM
+            confirming = true;
+            curTs = lastPassTs * LOCK_MARGIN;
+            runProbeAt(curTs);
         } else {
-            if (anyPass) {
-                // first fail after passes: back off with margin, then CONFIRM
-                confirming = true;
-                curTs = lastPassTs * LOCK_MARGIN;
-                runProbeAt(curTs);
-            } else {
-                curTs /= TS_DOWN;   // never passed yet - go slower
-                if (sIter >= MAX_ITER || curTs > 2.5) { lockAxis(curTs); return; }
-                runProbeAt(curTs);
+            // never passed yet - move in the direction the failure demands
+            curTs = tooStrong ? curTs / TS_DOWN : curTs * TS_DOWN;
+            if (sIter >= MAX_ITER || curTs > 2.5 || curTs < TS_FLOOR) {
+                lockAxis(clampTs(curTs));
+                return;
             }
+            runProbeAt(curTs);
         }
+    }
+
+    private static double clampTs(double ts) {
+        return ts < TS_FLOOR ? TS_FLOOR : (ts > 2.5 ? 2.5 : ts);
     }
 
     private void runProbeAt(double ts) {
@@ -729,6 +750,7 @@ public class PathTuner extends OpModeEX {
                 .setRobotConstants(maxXV, maxYV, maxXA, maxYA);
     }
 
+    private static double clamp(double v, double lo, double hi) { return v < lo ? lo : (v > hi ? hi : v); }
     private static double wrap360(double a) { a %= 360; if (a < 0) a += 360; return a; }
     private static double wrap180(double a) { while (a > 180) a -= 360; while (a < -180) a += 360; return a; }
 

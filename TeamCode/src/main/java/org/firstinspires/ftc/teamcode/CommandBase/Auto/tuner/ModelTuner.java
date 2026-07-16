@@ -73,11 +73,12 @@ public class ModelTuner {
      * it (anti-twitch endpoint cap). Kd is always re-derived from the final
      * Kp so the pair stays at the requested zeta no matter what clamped.
      */
-    public double[] pd(double A, double ts, double kpCap) {
+    public double[] pd(double A, double ts, double kpCap, double kpFloor) {
         if (A <= 1.0) A = 1.0;                    // degenerate measurement guard
         double wn = 4.0 / (zeta * ts);
         double kp = wn * wn / A;
         if (kpCap > 0 && kp > kpCap) kp = kpCap;
+        if (kp < kpFloor) kp = kpFloor;
         kp = clamp(kp, KP_MIN, KP_MAX);
         // critical damping for the ACTUAL kp: wn' = sqrt(kp*A), kd = 2*zeta*wn'/A
         double kd = clamp(2.0 * zeta * Math.sqrt(kp / A), 0, KD_MAX);
@@ -94,16 +95,27 @@ public class ModelTuner {
      * Full 12-gain vector in PathTuner's order:
      *  0,1 onPathX   2,3 onPathY   4,5 endX   6,7 endY   8,9 hdgFast   10,11 hdgSlow
      */
+    /** Floor so the loop can actually break static friction: at an error of
+     *  errScale the commanded power must reach breakaway, or the robot creeps
+     *  forever and every probe times out. */
+    private double stictionFloor(double ks, double errScale) {
+        if (ks <= 0 || errScale <= 0) return 0;
+        return ks / errScale;
+    }
+
     public double[] gains() {
-        double[] px = pd(aStr,  tsX * PATH_RATIO, 0);
-        double[] py = pd(aFwd,  tsY * PATH_RATIO, 0);
-        double[] ex = pd(aStr,  tsX, endCap(ksStr, tolX));
-        double[] ey = pd(aFwd,  tsY, endCap(ksFwd, tolY));
-        double[] hf = pd(aTurn, tsH, 0);
+        // on-path: power must reach breakaway within ~10cm/10deg of error
+        double[] px = pd(aStr,  tsX * PATH_RATIO, 0, stictionFloor(ksStr, 10));
+        double[] py = pd(aFwd,  tsY * PATH_RATIO, 0, stictionFloor(ksFwd, 10));
+        // endpoint: floor at 3x tolerance (still converges), cap at 1x
+        // tolerance (no stick-slip twitch inside the box)
+        double[] ex = pd(aStr,  tsX, endCap(ksStr, tolX), stictionFloor(ksStr, 3 * tolX));
+        double[] ey = pd(aFwd,  tsY, endCap(ksFwd, tolY), stictionFloor(ksFwd, 3 * tolY));
+        double[] hf = pd(aTurn, tsH, 0, stictionFloor(ksTurn, 10));
         // Slow heading profile: own pole placement at a longer settling time
         // (not a scaled copy of fast - a scaled Kp with unscaled Kd is no
         // longer critically damped and steps torque at the profile switch).
-        double[] hs = pd(aTurn, tsH * 1.5, endCap(ksTurn, tolH));
+        double[] hs = pd(aTurn, tsH * 1.5, endCap(ksTurn, tolH), stictionFloor(ksTurn, 3 * tolH));
 
         return new double[]{
                 px[0], px[1], py[0], py[1],
