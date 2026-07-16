@@ -138,6 +138,7 @@ public class PathTuner extends OpModeEX {
     private int sIdx = 0;                    // 0=X(STR), 1=Y(FWD), 2=H(TURN)
     private double curTs, lastPassTs;
     private boolean anyPass, confirming;
+    private int confirmTries = 0;
     private int sIter;
     private boolean searching = false;
     private final double[] lockedTs = { Double.NaN, Double.NaN, Double.NaN };
@@ -342,9 +343,9 @@ public class PathTuner extends OpModeEX {
         // tolerance = 1.5x the lurch quantum, floored at odometry noise x4 and
         // CEILINGED - a noisy lurch measurement must not inflate tolerance so
         // far that the endpoint Kp cap (kS/tol) collapses the gains to nothing
-        model.tolX = clamp(1.5 * quantum[Ax.STR.ordinal()], Math.max(1.0, posNoise * 4), 4.0);
-        model.tolY = clamp(1.5 * quantum[Ax.FWD.ordinal()], Math.max(1.0, posNoise * 4), 4.0);
-        model.tolH = clamp(1.5 * quantum[Ax.TURN.ordinal()], Math.max(1.0, hdgNoise * 4), 4.0);
+        model.tolX = clamp(1.5 * quantum[Ax.STR.ordinal()], Math.max(2.5, posNoise * 4), 5.0);
+        model.tolY = clamp(1.5 * quantum[Ax.FWD.ordinal()], Math.max(2.5, posNoise * 4), 5.0);
+        model.tolH = clamp(1.5 * quantum[Ax.TURN.ordinal()], Math.max(2.5, hdgNoise * 4), 5.0);
     }
 
     // ============================= 3. MAX V / A =============================
@@ -488,8 +489,13 @@ public class PathTuner extends OpModeEX {
 
         if (confirming) {
             if (pass) { lockAxis(curTs); return; }
-            if (sIter >= MAX_ITER) { lockAxis(anyPass ? lastPassTs : curTs); return; }
-            // confirm failed - move away from the failure direction and retry
+            confirmTries++;
+            // Don't ping-pong between "too weak" and "too strong" forever -
+            // after two failed confirms just lock the last pass with margin.
+            if (confirmTries >= 2 || sIter >= MAX_ITER) {
+                lockAxis(anyPass ? lastPassTs * LOCK_MARGIN : clampTs(curTs));
+                return;
+            }
             curTs = tooStrong ? curTs * LOCK_MARGIN : curTs * TS_DOWN;
             runProbeAt(clampTs(curTs));
             return;
@@ -503,6 +509,7 @@ public class PathTuner extends OpModeEX {
             if (curTs < TS_FLOOR || sIter >= MAX_ITER) {
                 // hit the floor while still passing - confirm at margin and lock
                 confirming = true;
+                confirmTries = 0;
                 curTs = Math.max(TS_FLOOR, lastPassTs) * LOCK_MARGIN;
                 runProbeAt(curTs);
                 return;
@@ -511,6 +518,7 @@ public class PathTuner extends OpModeEX {
         } else if (anyPass) {
             // first fail after passes: back off with margin, then CONFIRM
             confirming = true;
+            confirmTries = 0;
             curTs = lastPassTs * LOCK_MARGIN;
             runProbeAt(curTs);
         } else {
@@ -634,14 +642,25 @@ public class PathTuner extends OpModeEX {
         drive(follow, targetHeading);
         sampleMetrics();
 
-        // settled = inside the tolerance box AND actually stopped, held for
-        // SETTLE_N consecutive samples (no coast prediction - just the truth)
+        // settled = inside the tolerance box AND slow, held for SETTLE_N
+        // consecutive samples. During a probe only the PROBED axis is judged
+        // at full tolerance - the other axes just need to be roughly sane
+        // (3x tol). Demanding all three at full tolerance failed good runs on
+        // cross-axis noise and drove the search toward mush gains.
         double aX = Math.abs(odometry.X() - targetX);
         double aY = Math.abs(odometry.Y() - targetY);
         double aH = Math.abs(wrap180(targetHeading - odometry.Heading()));
-        boolean inZone = aX <= model.tolX && aY <= model.tolY && aH <= model.tolH;
+        boolean inZone;
+        if (searching) {
+            double fx = (sIdx == 0) ? 1 : 3, fy = (sIdx == 1) ? 1 : 3, fh = (sIdx == 2) ? 1 : 3;
+            inZone = aX <= model.tolX * fx && aY <= model.tolY * fy && aH <= model.tolH * fh;
+        } else {
+            inZone = aX <= model.tolX && aY <= model.tolY && aH <= model.tolH;
+        }
+        // "slow", not perfectly stopped - holdPositionAtPathEnd keeps making
+        // micro-corrections, so a hard stop threshold never latches
         double vt = Math.hypot(odometry.getXVelocity(), odometry.getYVelocity());
-        boolean stopped = vt < stopEpsT && Math.abs(degPerSec()) < stopEpsH;
+        boolean stopped = vt < stopEpsT * 3 && Math.abs(degPerSec()) < stopEpsH * 3;
 
         if (inZone && stopped) {
             if (settleStreak == 0) settleEnterT = phaseTimer.seconds();

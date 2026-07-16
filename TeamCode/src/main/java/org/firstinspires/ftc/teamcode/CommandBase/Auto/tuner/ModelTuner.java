@@ -111,6 +111,12 @@ public class ModelTuner {
         // tolerance (no stick-slip twitch inside the box)
         double[] ex = pd(aStr,  tsX, endCap(ksStr, tolX), stictionFloor(ksStr, 3 * tolX));
         double[] ey = pd(aFwd,  tsY, endCap(ksFwd, tolY), stictionFloor(ksFwd, 3 * tolY));
+        // The endpoint loop must NEVER be stiffer than the on-path loop - the
+        // follower switches to it near the path end, and a stiffer endpoint
+        // gain makes the robot visibly speed up right before the target and
+        // overshoot. Cap it, and re-derive Kd so damping stays critical.
+        ex = capToPath(ex, px, aStr);
+        ey = capToPath(ey, py, aFwd);
         double[] hf = pd(aTurn, tsH, 0, stictionFloor(ksTurn, 10));
         // Slow heading profile: own pole placement at a longer settling time
         // (not a scaled copy of fast - a scaled Kp with unscaled Kd is no
@@ -122,6 +128,14 @@ public class ModelTuner {
                 ex[0], ex[1], ey[0], ey[1],
                 hf[0], hf[1], hs[0], hs[1]
         };
+    }
+
+    private double[] capToPath(double[] end, double[] path, double A) {
+        if (end[0] <= path[0]) return end;
+        if (A <= 1.0) A = 1.0;
+        double kp = path[0];
+        double kd = clamp(2.0 * zeta * Math.sqrt(kp / A), 0, KD_MAX);
+        return new double[]{kp, kd};
     }
 
     private static double clamp(double v, double lo, double hi) {
