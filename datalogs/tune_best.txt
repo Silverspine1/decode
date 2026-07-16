@@ -1,0 +1,15 @@
+// PathTuner (self tuning) result - everything below was MEASURED
+// odometry noise  pos=0.09cm hdg=0.52deg  vel=1.1cm/s 6.0deg/s
+// breakaway power  fwd=0.14 strafe=0.33 turn=0.20
+// derived tolerances  X=1.4 Y=1.5 cm  H=4.0 deg
+// measured maxV  fwd=168 strafe=117 turn=381  [plateau true/true/true]
+// accel per power (regression)  fwd=371 strafe=250 turn=1822
+// locked ts  X=2.50 Y=2.50 H=2.50  (zeta=1.00, lock margin 1.20x)
+new RobotConfig()
+    .setXOnPathPD(0.03327, 0.02309)
+    .setYOnPathPD(0.01431, 0.01242)
+    .setXLastAdjustmentPD(0.07655, 0.03502)
+    .setYLastAdjustmentPD(0.03279, 0.01880)
+    .setFastHeadingPD(0.02021, 0.00666)
+    .setSlowHeadingPD(0.01684, 0.00608)
+    .setRobotConstants(117, 168, 250, 371);
