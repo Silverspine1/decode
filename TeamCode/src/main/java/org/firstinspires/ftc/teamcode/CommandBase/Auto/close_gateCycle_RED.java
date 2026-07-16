@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
 
-import dev.weaponboy.nexus_pathing.Follower.follower;
-import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
-import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
+import dev.weaponboy.nexus_pathing.Follower.Follower;
+import dev.weaponboy.nexus_pathing.PathGeneration.commands.SectionBuilder;
+import dev.weaponboy.nexus_pathing.PathGeneration.PathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
@@ -25,14 +25,22 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous(name="", group="Red")
 
 public class close_gateCycle_RED extends OpModeEX {
-    pathsManager paths = new pathsManager(new RobotConfig(
-            0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
-            0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 181, 650, 700));
-    follower follow = new follower(new RobotConfig(
-            0.02, 0.004, 0.02, 0.009, 0.08, 0.004,
-            0.2, 0.004, 0.01, 0.0005, 0.012, 0.002,
-            130, 181, 650, 700));
+    PathsManager paths = new PathsManager(new RobotConfig()
+            .setXLastAdjustmentPD(0.02, 0.004)
+            .setYLastAdjustmentPD(0.02, 0.009)
+            .setXOnPathPD(0.08, 0.004)
+            .setYOnPathPD(0.2, 0.004)
+            .setFastHeadingPD(0.01, 0.0005)
+            .setSlowHeadingPD(0.012, 0.002)
+            .setRobotConstants(130, 181, 650, 700));
+    Follower follow = new Follower(new RobotConfig()
+            .setXLastAdjustmentPD(0.02, 0.004)
+            .setYLastAdjustmentPD(0.02, 0.009)
+            .setXOnPathPD(0.08, 0.004)
+            .setYOnPathPD(0.2, 0.004)
+            .setFastHeadingPD(0.01, 0.0005)
+            .setSlowHeadingPD(0.012, 0.002)
+            .setRobotConstants(130, 181, 650, 700));
     PIDController headingPID = new PIDController(0.009, 0, 0.0030);
     PIDController x = new PIDController(0.06, 0, 0.0030);
     PIDController y = new PIDController(0.013, 0, 0.0030);
@@ -111,63 +119,63 @@ public class close_gateCycle_RED extends OpModeEX {
 
     // All Vector2D x values: 360 - oldX
     // shoot:       (47.5,84)->(312.5,84)   (125,120)->(235,120)
-    private final sectionBuilder[] shoot = new sectionBuilder[] {
+    private final SectionBuilder[] shoot = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(312.5, 84), new Vector2D(255, 120)),
     };
     // driveToShoot1: (60,140)->(300,140)   (110,154)->(250,154)
-    private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
+    private final SectionBuilder[] driveToShoot1 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(300, 140), new Vector2D(240, 154)),
     };
     // collect2: (134,154)->(226,154)  (116,230)->(244,230)  (45,210)->(315,210)
-    private final sectionBuilder[] collect2 = new sectionBuilder[] {
+    private final SectionBuilder[] collect2 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(226, 154), new Vector2D(244, 230), new Vector2D(310, 210)),
     };
     // gate: (130,150)->(230,150)  (38,209)->(322,209) -- NOTE: blue drives left toward gate; red drives right
-    private final sectionBuilder[] gate = new sectionBuilder[] {
+    private final SectionBuilder[] gate = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(207, 165), new Vector2D(313, 208)),
     };
     // gateFromBack: (138,325)->(222,325)  (55,222)->(305,222)
-    private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
+    private final SectionBuilder[] gateFromBack = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(222, 325), new Vector2D(290, 237)),
     };
     // driveToShoot2: (49,210)->(311,210)  (138,150)->(222,150)
-    private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
+    private final SectionBuilder[] driveToShoot2 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(311, 210), new Vector2D(215, 165)),
     };
     // collect3: (140,150)->(220,150)  (70,151)->(290,151)
-    private final sectionBuilder[] collect3 = new sectionBuilder[] {
+    private final SectionBuilder[] collect3 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(220, 150), new Vector2D(290, 151)),
     };
     // driveToShoot3Stage1: (78,150)->(282,150)  (112,150)->(248,150)
-    private final sectionBuilder[] driveToShoot3Stage1 = new sectionBuilder[] {
+    private final SectionBuilder[] driveToShoot3Stage1 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(282, 150), new Vector2D(248, 150)),
     };
     // driveToShoot3Stage2: (112,150)->(248,150)  (160,172)->(200,172)
-    private final sectionBuilder[] driveToShoot3Stage2 = new sectionBuilder[] {
+    private final SectionBuilder[] driveToShoot3Stage2 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(248, 150), new Vector2D(200, 172)),
     };
     // firstBackCollect: (117,148)->(243,148)  (164,293)->(196,293)  (86,315)->(274,315)
-    private final sectionBuilder[] firstBackCollect = new sectionBuilder[] {
+    private final SectionBuilder[] firstBackCollect = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(243, 148), new Vector2D(196, 293), new Vector2D(274, 315)),
     };
     // driveToShootBack: (52,329)->(308,329)  (158,327)->(202,327)
-    private final sectionBuilder[] driveToShootBack = new sectionBuilder[] {
+    private final SectionBuilder[] driveToShootBack = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(202, 327)),
     };
     // firstDriveToShootBack: (40,208)->(320,208)  (130,330)->(230,330)
-    private final sectionBuilder[] firstDriveToShootBack = new sectionBuilder[] {
+    private final SectionBuilder[] firstDriveToShootBack = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(320, 208), new Vector2D(230, 330)),
     };
     // movePath: (52,329)->(308,329)  (100,300)->(260,300)
-    private final sectionBuilder[] movePath = new sectionBuilder[] {
+    private final SectionBuilder[] movePath = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(308, 329), new Vector2D(260, 300)),
     };
     // S1: (72,340)->(288,340)  (108,320)->(252,320)
-    private final sectionBuilder[] S1 = new sectionBuilder[] {
+    private final SectionBuilder[] S1 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(288, 340), new Vector2D(252, 320)),
     };
     // tryAgain: (105,320)->(255,320)  (136,320)->(224,320)
-    private final sectionBuilder[] tryAgain = new sectionBuilder[] {
+    private final SectionBuilder[] tryAgain = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(255, 320), new Vector2D(224, 320)),
     };
 
@@ -281,7 +289,7 @@ public class close_gateCycle_RED extends OpModeEX {
             // Vision angle comparisons: flip operators AND flip sign of threshold
             // Blue: > 22  →  Red: < -22
             if (processor.hAngleDeg < -22 && !intakePathSelected) {
-                final sectionBuilder[] p3 = new sectionBuilder[]{
+                final SectionBuilder[] p3 = new SectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(360 - odometry.X(), odometry.Y()), new Vector2D(305, 293)),
                 };
                 paths.addNewPath("p3");
@@ -297,7 +305,7 @@ public class close_gateCycle_RED extends OpModeEX {
 
             // Blue: < 6  →  Red: > -6
             } else if (processor.hAngleDeg > -6 && !intakePathSelected) {
-                final sectionBuilder[] p1 = new sectionBuilder[]{
+                final SectionBuilder[] p1 = new SectionBuilder[]{
                         // X coords: 360 - odometry.X() for current pos; 360-140=220, 360-(55+r/8)=305-r/8
                         () -> paths.addPoints(new Vector2D(360 - odometry.X(), odometry.Y()), new Vector2D(220, 337), new Vector2D(305 - processor.radiusPixels / 8, 337)),
                 };
@@ -316,7 +324,7 @@ public class close_gateCycle_RED extends OpModeEX {
 
             // Blue: > 6 && < 22  →  Red: < -6 && > -22
             } else if (!intakePathSelected && processor.hAngleDeg < -6 && processor.hAngleDeg > -22) {
-                final sectionBuilder[] p2 = new sectionBuilder[]{
+                final SectionBuilder[] p2 = new SectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(360 - odometry.X(), odometry.Y()), new Vector2D(305 - processor.radiusPixels / 8, 320)),
                 };
                 paths.addNewPath("p2");
@@ -374,7 +382,7 @@ public class close_gateCycle_RED extends OpModeEX {
                     pathing = false;
                 }
                 if (!built && shootTime.milliseconds() > 420) {
-                    final sectionBuilder[] collect1 = new sectionBuilder[] {
+                    final SectionBuilder[] collect1 = new SectionBuilder[] {
                             // current X → 360 - odometry.X(); target was (52,158) → (308,158)
                             () -> paths.addPoints(new Vector2D(360 - odometry.X(), odometry.Y()), new Vector2D(298, 158)),
                     };

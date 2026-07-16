@@ -19,9 +19,9 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.weaponboy.nexus_pathing.Follower.follower;
-import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
-import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
+import dev.weaponboy.nexus_pathing.Follower.Follower;
+import dev.weaponboy.nexus_pathing.PathGeneration.commands.SectionBuilder;
+import dev.weaponboy.nexus_pathing.PathGeneration.PathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 import dev.weaponboy.nexus_pathing.PathingUtility.PathingPower;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
@@ -34,11 +34,23 @@ public class red_Tele extends OpModeEX {
     private VisionPortal visionPortal;
     private LocalVision processor;
     private FtcDashboard dashboard;
-    pathsManager paths = new pathsManager(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01,
-            0.0005, 0.012, 0.002, 200, 273, 270, 320));
+    PathsManager paths = new PathsManager(new RobotConfig()
+            .setXLastAdjustmentPD(0.015, 0.004)
+            .setYLastAdjustmentPD(0.016, 0.005)
+            .setXOnPathPD(0.02, 0.004)
+            .setYOnPathPD(0.055, 0.004)
+            .setFastHeadingPD(0.01, 0.0005)
+            .setSlowHeadingPD(0.012, 0.002)
+            .setRobotConstants(200, 273, 270, 320));
 
-    follower follow = new follower(new RobotConfig(0.015, 0.004, 0.016, 0.005, 0.02, 0.004, 0.055, 0.004, 0.01, 0.0005,
-            0.012, 0.002, 200, 273, 270, 320));
+    Follower follow = new Follower(new RobotConfig()
+            .setXLastAdjustmentPD(0.015, 0.004)
+            .setYLastAdjustmentPD(0.016, 0.005)
+            .setXOnPathPD(0.02, 0.004)
+            .setYOnPathPD(0.055, 0.004)
+            .setFastHeadingPD(0.01, 0.0005)
+            .setSlowHeadingPD(0.012, 0.002)
+            .setRobotConstants(200, 273, 270, 320));
 
     double heading;
 
@@ -97,13 +109,13 @@ public class red_Tele extends OpModeEX {
     ElapsedTime ejectTimer = new ElapsedTime();
 
     // Shoot-return paths (used after vision collect)
-    private final sectionBuilder[] S1 = new sectionBuilder[] {
+    private final SectionBuilder[] S1 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(56, 340), new Vector2D(115, 320)),
     };
-    private final sectionBuilder[] S2 = new sectionBuilder[] {
+    private final SectionBuilder[] S2 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(56, 320), new Vector2D(115, 320)),
     };
-    private final sectionBuilder[] S3 = new sectionBuilder[] {
+    private final SectionBuilder[] S3 = new SectionBuilder[] {
             () -> paths.addPoints(new Vector2D(56, 284), new Vector2D(115, 320)),
     };
 
