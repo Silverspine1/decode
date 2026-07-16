@@ -80,11 +80,13 @@ public class PathTuner extends OpModeEX {
     private static final double CX = 180, CY = 180;
     private static final double BOX_MIN = 55, BOX_MAX = 305;
 
-    // known-good gains ONLY for driving home between steps (never tuned/saved)
+    // known-good gains ONLY for driving home between steps (never tuned/saved).
+    // ~2x the old conservative set - returns were crawling. Only used until
+    // the first axis is tuned; after that returns run on the tuned gains.
     private static final double[] SAFE_GAINS = {
-            0.08, 0.004,  0.2, 0.004,
-            0.02, 0.004,  0.02, 0.009,
-            0.01, 0.0005, 0.012, 0.002
+            0.16, 0.008,  0.3, 0.006,
+            0.05, 0.008,  0.05, 0.014,
+            0.02, 0.001,  0.02, 0.003
     };
     private static final double FALLBACK_XV = 130, FALLBACK_YV = 181;
     private static final double FALLBACK_XA = 650, FALLBACK_YA = 700;
@@ -536,6 +538,13 @@ public class PathTuner extends OpModeEX {
     private void lockAxis(double ts) {
         lockedTs[sIdx] = ts;
         applyTs(ts);
+        // from here on, drive home with the tuned gains - much faster than
+        // the conservative safe set
+        safeFollow = new Follower(buildConfig(model.gains(),
+                positiveOr(maxV[Ax.STR.ordinal()], FALLBACK_XV),
+                positiveOr(maxV[Ax.FWD.ordinal()], FALLBACK_YV),
+                positiveOr(maxA[Ax.STR.ordinal()], FALLBACK_XA),
+                positiveOr(maxA[Ax.FWD.ordinal()], FALLBACK_YA)));
         if (sIdx >= 2) {
             buildTunedFollower();
             saveBest();
