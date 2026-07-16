@@ -62,7 +62,9 @@ public class PathTuner extends OpModeEX {
     private static final double BRAKE_POWER     = 0.5;
     private static final double BRAKE_MAX_TIME  = 0.5;   // s
     private static final double SETTLE_TIMEOUT  = 3.5;   // s per probe run
-    private static final double RETURN_TIMEOUT  = 3.5;
+    private static final double RETURN_TIMEOUT  = 6.0;   // s per return attempt
+    private static final int    RETURN_RETRIES  = 3;     // rebuild+retry if not home
+    private static final double HOME_OK_DIST    = 30;    // cm - close enough to start a path
     private static final int    SETTLE_N        = 5;     // consecutive in-zone+stopped samples
     private static final int    OVERSHOOT_N     = 4;     // consecutive past-tol samples = real
     private static final double TS_START_T      = 0.90;  // conservative search starts
@@ -70,7 +72,7 @@ public class PathTuner extends OpModeEX {
     private static final double TS_FLOOR        = 0.12;
     private static final double TS_DOWN         = 0.75;  // shrink on pass
     private static final double LOCK_MARGIN     = 1.20;  // back off from edge before locking
-    private static final int    MAX_ITER        = 12;
+    private static final int    MAX_ITER        = 16;
     private static final double SAMPLE_DT_MIN   = 0.02;
     private static final int    MAX_SAMPLES     = 256;
 
@@ -454,7 +456,19 @@ public class PathTuner extends OpModeEX {
         state = State.SEARCH_PROBE;
     }
 
+    private int invalidRuns = 0;
+    private boolean invalidRun = false;
+
     private void searchDecision() {
+        // started outside the box - position problem, not a gains verdict;
+        // rerun the SAME ts without spending an iteration (bounded)
+        if (invalidRun && invalidRuns < 3) {
+            invalidRuns++;
+            runProbeAt(curTs);
+            return;
+        }
+        invalidRuns = 0;
+
         double err = (sIdx == 0) ? tr.finalErrX : (sIdx == 1) ? tr.finalErrY : tr.finalHdgErr;
         double tol = axisTol(sIdx);
         boolean pass = !tr.timedOut && !tr.leftBox && err <= tol && !sustainedOvershoot;
@@ -557,7 +571,18 @@ public class PathTuner extends OpModeEX {
         startX = cx; startY = cy;
         startHeading = wrap360(odometry.Heading());
 
-        double[] last = it.rel[it.rel.length - 1];
+        // Aim the path TOWARD the field centre on each axis. Runs always
+        // pushing the same direction compounded any return-home shortfall
+        // until the robot walked itself out of the safety box.
+        double sx = (cx > CX) ? -1 : 1;
+        double sy = (cy > CY) ? -1 : 1;
+        double[][] rel = new double[it.rel.length][2];
+        for (int i = 0; i < it.rel.length; i++) {
+            rel[i][0] = it.rel[i][0] * sx;
+            rel[i][1] = it.rel[i][1] * sy;
+        }
+
+        double[] last = rel[rel.length - 1];
         targetX = cx + last[0];
         targetY = cy + last[1];
         double len = Math.hypot(last[0], last[1]);
@@ -566,10 +591,10 @@ public class PathTuner extends OpModeEX {
         targetHeading = wrap360(startHeading + it.hdgDelta);
         hdgDeltaSign = Math.signum(it.hdgDelta);
 
-        final Vector2D[] pts = new Vector2D[it.rel.length + 1];
+        final Vector2D[] pts = new Vector2D[rel.length + 1];
         pts[0] = new Vector2D(cx, cy);
-        for (int i = 0; i < it.rel.length; i++) {
-            pts[i + 1] = new Vector2D(cx + it.rel[i][0], cy + it.rel[i][1]);
+        for (int i = 0; i < rel.length; i++) {
+            pts[i + 1] = new Vector2D(cx + rel[i][0], cy + rel[i][1]);
         }
         SectionBuilder[] section = new SectionBuilder[]{ () -> addPts(pts) };
         paths.addNewPath("outPath");
@@ -581,6 +606,7 @@ public class PathTuner extends OpModeEX {
 
         tr = new TrialResult();
         tr.settleTime = SETTLE_TIMEOUT;
+        invalidRun = false;
         settleStreak = 0;
         overshootStreak = 0;
         sustainedOvershoot = false;
@@ -588,7 +614,12 @@ public class PathTuner extends OpModeEX {
     }
 
     private void runPath(boolean skip) {
-        if (outsideBox(0)) { tr.leftBox = true; captureFinal(); finishPath(); return; }
+        if (outsideBox(0)) {
+            // devCount == 0 -> we were ALREADY outside before driving at all;
+            // that's a bad start position, not the gains' fault
+            if (tr.devCount == 0) invalidRun = true;
+            tr.leftBox = true; captureFinal(); finishPath(); return;
+        }
         if (skip) { tr.timedOut = true; captureFinal(); finishPath(); return; }
 
         drive(follow, targetHeading);
@@ -689,7 +720,14 @@ public class PathTuner extends OpModeEX {
         }
     }
 
+    private int returnTries = 0;
+
     private void buildReturnPath() {
+        returnTries = 0;
+        rebuildReturnPath();
+    }
+
+    private void rebuildReturnPath() {
         final Vector2D[] pts = new Vector2D[]{
                 new Vector2D(odometry.X(), odometry.Y()),
                 new Vector2D(CX, CY)
@@ -702,14 +740,26 @@ public class PathTuner extends OpModeEX {
         safeFollow.holdPositionAtPathEnd(true);
     }
 
-    /** @return true when home (or timed out). */
+    /** @return true only when ACTUALLY near home (retries the return path if a
+     *  timeout leaves the robot far away - starting the next run from a bad
+     *  position was what marched the robot off the field). */
     private boolean returnHome() {
         drive(safeFollow, 0);
         boolean stopped = Math.hypot(odometry.getXVelocity(), odometry.getYVelocity()) < stopEpsT;
         boolean home = safeFollow.isFinished(8, 8);
-        if ((home && stopped) || phaseTimer.seconds() > RETURN_TIMEOUT) {
+        double distHome = Math.hypot(odometry.X() - CX, odometry.Y() - CY);
+        if (home && stopped) {
             stopDrive();
             return true;
+        }
+        if (phaseTimer.seconds() > RETURN_TIMEOUT) {
+            if (distHome <= HOME_OK_DIST || returnTries >= RETURN_RETRIES) {
+                stopDrive();
+                return true;    // close enough, or out of retries - carry on
+            }
+            returnTries++;
+            rebuildReturnPath();  // fresh path from wherever we actually are
+            phaseTimer.reset();
         }
         return false;
     }
