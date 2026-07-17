@@ -13,9 +13,9 @@ import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
 
-import dev.weaponboy.nexus_pathing.Follower.Follower;
-import dev.weaponboy.nexus_pathing.PathGeneration.commands.SectionBuilder;
-import dev.weaponboy.nexus_pathing.PathGeneration.PathsManager;
+import dev.weaponboy.nexus_pathing.Follower.follower;
+import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
+import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
@@ -24,23 +24,9 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 @Autonomous(name="", group="Blue")
 
 public class back_twospike extends OpModeEX {
-    PathsManager paths = new PathsManager(new RobotConfig()
-            .setXLastAdjustmentPD(0.02, 0.004)
-            .setYLastAdjustmentPD(0.02, 0.009)
-            .setXOnPathPD(0.08, 0.004)
-            .setYOnPathPD(0.2, 0.004)
-            .setFastHeadingPD(0.01, 0.0005)
-            .setSlowHeadingPD(0.012, 0.002)
-            .setRobotConstants(130, 181, 650, 700));
+    pathsManager paths = new pathsManager(new RobotConfig(0.02, 0.004, 0.02, 0.009, 0.08, 0.004, 0.2, 0.004, 0.01, 0.0005, 0.012, 0.002, 130, 181, 650, 700));
 
-    Follower follow = new Follower(new RobotConfig()
-            .setXLastAdjustmentPD(0.02, 0.004)
-            .setYLastAdjustmentPD(0.02, 0.009)
-            .setXOnPathPD(0.08, 0.004)
-            .setYOnPathPD(0.2, 0.004)
-            .setFastHeadingPD(0.01, 0.0005)
-            .setSlowHeadingPD(0.012, 0.002)
-            .setRobotConstants(130, 181, 650, 700));
+    follower follow = new follower(new RobotConfig(0.02, 0.004, 0.02, 0.009, 0.08, 0.004, 0.2, 0.004, 0.01, 0.0005, 0.012, 0.002, 130, 181, 650, 700));
 
     PIDController headingPID = new PIDController(0.009, 0, 0.0030);
     PIDController x = new PIDController(0.06, 0, 0.0030);
@@ -120,49 +106,49 @@ public class back_twospike extends OpModeEX {
     ElapsedTime endPath = new ElapsedTime();
     ElapsedTime stage1Timer = new ElapsedTime();
 
-    private final SectionBuilder[] shoot = new SectionBuilder[] {
+    private final sectionBuilder[] shoot = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(170, 330), new Vector2D(167, 318)),
     };
-    private final SectionBuilder[] driveToShoot1 = new SectionBuilder[] {
+    private final sectionBuilder[] driveToShoot1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(73, 273), new Vector2D(142, 310)),
     };
-    private final SectionBuilder[] collect2 = new SectionBuilder[] {
+    private final sectionBuilder[] collect2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(148, 305), new Vector2D(125, 240), new Vector2D(77, 211)),
     };
-    private final SectionBuilder[] gate = new SectionBuilder[] {
+    private final sectionBuilder[] gate = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(138, 170), new Vector2D(45.5, 210)),
     };
-    private final SectionBuilder[] gateFromBack = new SectionBuilder[] {
+    private final sectionBuilder[] gateFromBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(138, 325), new Vector2D(50.5, 223.5)),
     };
-    private final SectionBuilder[] driveToShoot2 = new SectionBuilder[] {
+    private final sectionBuilder[] driveToShoot2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(47, 206), new Vector2D(164, 170)),
     };
-    private final SectionBuilder[] collect3 = new SectionBuilder[] {
+    private final sectionBuilder[] collect3 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(140, 150), new Vector2D(66, 158)),
     };
-    private final SectionBuilder[] driveToShoot3Stage1 = new SectionBuilder[] {
+    private final sectionBuilder[] driveToShoot3Stage1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(78, 150), new Vector2D(112, 150)),
     };
-    private final SectionBuilder[] driveToShoot3Stage2 = new SectionBuilder[] {
+    private final sectionBuilder[] driveToShoot3Stage2 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(112, 150), new Vector2D(160, 172)),
     };
-    private final SectionBuilder[] firstBackCollect = new SectionBuilder[] {
+    private final sectionBuilder[] firstBackCollect = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(117, 148), new Vector2D(164, 293), new Vector2D(86, 315)),
     };
-    private final SectionBuilder[] driveToShootBack = new SectionBuilder[] {
+    private final sectionBuilder[] driveToShootBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(158, 327)),
     };
-    private final SectionBuilder[] firstDriveToShootBack = new SectionBuilder[] {
+    private final sectionBuilder[] firstDriveToShootBack = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(40, 208), new Vector2D(132, 327)),
     };
-    private final SectionBuilder[] movePath = new SectionBuilder[] {
+    private final sectionBuilder[] movePath = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(52, 329), new Vector2D(100, 300)),
     };
-    private final SectionBuilder[] S1 = new SectionBuilder[] {
+    private final sectionBuilder[] S1 = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(72, 340), new Vector2D(108, 320)),
     };
-    private final SectionBuilder[] tryAgain = new SectionBuilder[] {
+    private final sectionBuilder[] tryAgain = new sectionBuilder[] {
             () -> paths.addPoints(new Vector2D(105, 320), new Vector2D(136, 320)),
     };
 
@@ -274,7 +260,7 @@ public class back_twospike extends OpModeEX {
 
         if (visionCollect){
             if (processor.hAngleDeg > 22 && !intakePathSelected){  // FLIPPED: > 22 (was < -22)
-                final SectionBuilder[] p3 = new SectionBuilder[]{
+                final sectionBuilder[] p3 = new sectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50, 293)),
                 };
                 paths.addNewPath("p3");
@@ -291,7 +277,7 @@ public class back_twospike extends OpModeEX {
                 maxWait.reset();
 
             } else if (processor.hAngleDeg < 6 && !intakePathSelected) {  // FLIPPED: < 6 (was > -6)
-                final SectionBuilder[] p1 = new SectionBuilder[]{
+                final sectionBuilder[] p1 = new sectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(140, 337), new Vector2D(50 + processor.radiusPixels /8, 337)),
                 };
                 paths.addNewPath("p1");
@@ -310,7 +296,7 @@ public class back_twospike extends OpModeEX {
 
 
             } else if (!intakePathSelected && processor.hAngleDeg > 6 && processor.hAngleDeg < 22) {  // FLIPPED
-                final SectionBuilder[] p2 = new SectionBuilder[]{
+                final sectionBuilder[] p2 = new sectionBuilder[]{
                         () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(50 + processor.radiusPixels /8, 320)),
                 };
                 paths.addNewPath("p2");
@@ -366,7 +352,7 @@ public class back_twospike extends OpModeEX {
                     pathing = false;
                 }
                 if (!built && shootTime.milliseconds() > 370) {
-                    final SectionBuilder[] collect1 = new SectionBuilder[] {
+                    final sectionBuilder[] collect1 = new sectionBuilder[] {
                             () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(74, 270)),
                     };
                     paths.addNewPath("collect1");
@@ -654,7 +640,7 @@ public class back_twospike extends OpModeEX {
                 if (built && collectDone ){
                     visionCollect = false;
                     state = AutoState.driveToShootBack;
-                    final SectionBuilder[] S1 = new SectionBuilder[] {
+                    final sectionBuilder[] S1 = new sectionBuilder[] {
                             () -> paths.addPoints(new Vector2D(odometry.X(), odometry.Y()), new Vector2D(118+extraShootDrive, 330)),
                     };
                     paths.addNewPath("S1");

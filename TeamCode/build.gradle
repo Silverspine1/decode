@@ -21,15 +21,6 @@ android {
     packagingOptions {
         jniLibs.useLegacyPackaging true
     }
-
-    // oldAutos/ still targets the pre-v4.0.2 Nexus API; exclude until migrated.
-    sourceSets {
-        main {
-            java {
-                exclude '**/oldAutos/**'
-            }
-        }
-    }
 }
 
 dependencies {
