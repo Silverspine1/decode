@@ -15,9 +15,9 @@ import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.Intake;
 import org.firstinspires.ftc.teamcode.CommandBase.Subsytems.LocalVision;
 import org.firstinspires.ftc.vision.VisionPortal;
 
-import dev.weaponboy.nexus_pathing.Follower.follower;
-import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
-import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
+import dev.weaponboy.nexus_pathing.Follower.Follower;
+import dev.weaponboy.nexus_pathing.PathGeneration.commands.SectionBuilder;
+import dev.weaponboy.nexus_pathing.PathGeneration.PathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.PIDController;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
@@ -26,8 +26,22 @@ import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
 public class auto_tele extends OpModeEX {
 
     // ── Pathing & PIDs ───────────────────────────────────────────────────────
-    pathsManager paths = new pathsManager(new RobotConfig(0.02, 0.004, 0.02, 0.009, 0.08, 0.004, 0.2, 0.004, 0.01, 0.0005, 0.012, 0.002, 130, 181, 650, 700));
-    follower follow = new follower(new RobotConfig(0.02, 0.004, 0.02, 0.009, 0.08, 0.004, 0.2, 0.004, 0.01, 0.0005, 0.012, 0.002, 130, 181, 650, 700));
+    PathsManager paths = new PathsManager(new RobotConfig()
+            .setXLastAdjustmentPD(0.02, 0.004)
+            .setYLastAdjustmentPD(0.02, 0.009)
+            .setXOnPathPD(0.08, 0.004)
+            .setYOnPathPD(0.2, 0.004)
+            .setFastHeadingPD(0.01, 0.0005)
+            .setSlowHeadingPD(0.012, 0.002)
+            .setRobotConstants(130, 181, 650, 700));
+    Follower follow = new Follower(new RobotConfig()
+            .setXLastAdjustmentPD(0.02, 0.004)
+            .setYLastAdjustmentPD(0.02, 0.009)
+            .setXOnPathPD(0.08, 0.004)
+            .setYOnPathPD(0.2, 0.004)
+            .setFastHeadingPD(0.01, 0.0005)
+            .setSlowHeadingPD(0.012, 0.002)
+            .setRobotConstants(130, 181, 650, 700));
 
     PIDController headingPID = new PIDController(0.009, 0, 0.003);
     PIDController xPID       = new PIDController(0.06,  0, 0.003);
@@ -141,7 +155,7 @@ public class auto_tele extends OpModeEX {
     /** Build a 2-point adaptive path from current position and activate it. */
     private void setAdaptivePath(String name, double tx, double ty) {
         final double sx = odometry.X(), sy = odometry.Y();
-        final sectionBuilder[] seg = {
+        final SectionBuilder[] seg = {
                 () -> paths.addPoints(new Vector2D(sx, sy), new Vector2D(tx, ty))
         };
         paths.addNewPath(name);
@@ -153,7 +167,7 @@ public class auto_tele extends OpModeEX {
     /** Build a 3-point adaptive path (current → waypoint → target). */
     private void setAdaptivePath(String name, double wx, double wy, double tx, double ty) {
         final double sx = odometry.X(), sy = odometry.Y();
-        final sectionBuilder[] seg = {
+        final SectionBuilder[] seg = {
                 () -> paths.addPoints(new Vector2D(sx, sy),
                         new Vector2D(wx, wy),
                         new Vector2D(tx, ty))
@@ -288,7 +302,7 @@ public class auto_tele extends OpModeEX {
         if (!intakePathSelected) {
             if (processor.hAngleDeg > 16) {
                 final double sx = odometry.X(), sy = odometry.Y();
-                final sectionBuilder[] p = { () -> paths.addPoints(
+                final SectionBuilder[] p = { () -> paths.addPoints(
                         new Vector2D(sx, sy), new Vector2D(50, 293)) };
                 paths.addNewPath("bc_p3"); paths.buildPath(p);
                 follow.setPath(paths.returnPath("bc_p3"));
@@ -301,7 +315,7 @@ public class auto_tele extends OpModeEX {
 
             } else if (processor.hAngleDeg < 1) {
                 final double sx = odometry.X(), sy = odometry.Y();
-                final sectionBuilder[] p = { () -> paths.addPoints(
+                final SectionBuilder[] p = { () -> paths.addPoints(
                         new Vector2D(sx, sy),
                         new Vector2D(140, 340),
                         new Vector2D(50, 340)) };
@@ -316,7 +330,7 @@ public class auto_tele extends OpModeEX {
 
             } else { // 1 – 16 deg
                 final double sx = odometry.X(), sy = odometry.Y();
-                final sectionBuilder[] p = { () -> paths.addPoints(
+                final SectionBuilder[] p = { () -> paths.addPoints(
                         new Vector2D(sx, sy), new Vector2D(50, 311)) };
                 paths.addNewPath("bc_p2"); paths.buildPath(p);
                 follow.setPath(paths.returnPath("bc_p2"));

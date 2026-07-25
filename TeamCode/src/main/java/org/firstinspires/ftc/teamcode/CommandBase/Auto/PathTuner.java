@@ -10,9 +10,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import dev.weaponboy.nexus_pathing.Follower.follower;
-import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
-import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
+import dev.weaponboy.nexus_pathing.Follower.Follower;
+import dev.weaponboy.nexus_pathing.PathGeneration.commands.SectionBuilder;
+import dev.weaponboy.nexus_pathing.PathGeneration.PathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
@@ -122,9 +122,9 @@ public class PathTuner extends OpModeEX {
 
     // ---- pathing objects ----
     private RobotConfig genConfig;
-    private pathsManager paths;
-    private follower follow;        // tuned gains
-    private follower safeFollow;    // safe gains for going home
+    private PathsManager paths;
+    private Follower follow;        // tuned gains
+    private Follower safeFollow;    // safe gains for going home
     private final ModelTuner model = new ModelTuner();
     private double[] tunedGains = null;
 
@@ -188,8 +188,8 @@ public class PathTuner extends OpModeEX {
         driveBase.speed = 1;
 
         genConfig = buildConfig(SAFE_GAINS, FALLBACK_XV, FALLBACK_YV, FALLBACK_XA, FALLBACK_YA);
-        paths = new pathsManager(genConfig);
-        safeFollow = new follower(genConfig);
+        paths = new PathsManager(genConfig);
+        safeFollow = new Follower(genConfig);
 
         telemetry.addLine("PathTuner (self tuning). Robot at CENTRE, facing 0.");
         telemetry.addLine("No values to set - everything is measured.");
@@ -436,8 +436,8 @@ public class PathTuner extends OpModeEX {
 
         // rebuild path generation + safe follower with real constants
         genConfig = buildConfig(SAFE_GAINS, xv, yv, xa, ya);
-        paths = new pathsManager(genConfig);
-        safeFollow = new follower(genConfig);
+        paths = new PathsManager(genConfig);
+        safeFollow = new Follower(genConfig);
     }
 
     private static double positiveOr(double v, double fallback) {
@@ -548,7 +548,7 @@ public class PathTuner extends OpModeEX {
         applyTs(ts);
         // from here on, drive home with the tuned gains - much faster than
         // the conservative safe set
-        safeFollow = new follower(buildConfig(model.gains(),
+        safeFollow = new Follower(buildConfig(model.gains(),
                 positiveOr(maxV[Ax.STR.ordinal()], FALLBACK_XV),
                 positiveOr(maxV[Ax.FWD.ordinal()], FALLBACK_YV),
                 positiveOr(maxA[Ax.STR.ordinal()], FALLBACK_XA),
@@ -575,7 +575,7 @@ public class PathTuner extends OpModeEX {
 
     private void buildTunedFollower() {
         tunedGains = model.gains();
-        follow = new follower(buildConfig(tunedGains,
+        follow = new Follower(buildConfig(tunedGains,
                 positiveOr(maxV[Ax.STR.ordinal()], FALLBACK_XV),
                 positiveOr(maxV[Ax.FWD.ordinal()], FALLBACK_YV),
                 positiveOr(maxA[Ax.STR.ordinal()], FALLBACK_XA),
@@ -613,12 +613,13 @@ public class PathTuner extends OpModeEX {
         for (int i = 0; i < rel.length; i++) {
             pts[i + 1] = new Vector2D(cx + rel[i][0], cy + rel[i][1]);
         }
-        sectionBuilder[] section = new sectionBuilder[]{ () -> addPts(pts) };
+        SectionBuilder[] section = new SectionBuilder[]{ () -> addPts(pts) };
         paths.addNewPath("outPath");
         paths.buildPath(section);
 
         follow.setPath(paths.returnPath("outPath"));
         follow.usePathHeadings(false);
+        follow.holdPositionAtPathEnd(true);
 
         tr = new TrialResult();
         tr.settleTime = SETTLE_TIMEOUT;
@@ -656,8 +657,8 @@ public class PathTuner extends OpModeEX {
         } else {
             inZone = aX <= model.tolX && aY <= model.tolY && aH <= model.tolH;
         }
-        // "slow", not perfectly stopped - endpoint corrections can keep making
-        // small adjustments, so a hard stop threshold never latches.
+        // "slow", not perfectly stopped - holdPositionAtPathEnd keeps making
+        // micro-corrections, so a hard stop threshold never latches
         double vt = Math.hypot(odometry.getXVelocity(), odometry.getYVelocity());
         boolean stopped = vt < stopEpsT * 3 && Math.abs(degPerSec()) < stopEpsH * 3;
 
@@ -759,11 +760,12 @@ public class PathTuner extends OpModeEX {
                 new Vector2D(odometry.X(), odometry.Y()),
                 new Vector2D(CX, CY)
         };
-        sectionBuilder[] section = new sectionBuilder[]{ () -> addPts(pts) };
+        SectionBuilder[] section = new SectionBuilder[]{ () -> addPts(pts) };
         paths.addNewPath("backPath");
         paths.buildPath(section);
         safeFollow.setPath(paths.returnPath("backPath"));
         safeFollow.usePathHeadings(false);
+        safeFollow.holdPositionAtPathEnd(true);
     }
 
     /** @return true only when ACTUALLY near home (retries the return path if a
@@ -790,7 +792,7 @@ public class PathTuner extends OpModeEX {
         return false;
     }
 
-    private void drive(follower f, double heading) {
+    private void drive(Follower f, double heading) {
         RobotPower cp = f.followPathAuto(heading, odometry.Heading(),
                 odometry.X(), odometry.Y(),
                 odometry.getXVelocity(), odometry.getYVelocity());
@@ -816,11 +818,14 @@ public class PathTuner extends OpModeEX {
     private double degPerSec() { return odometry.getHVelocity() * 180.0 / Math.PI; }
 
     private static RobotConfig buildConfig(double[] p, double maxXV, double maxYV, double maxXA, double maxYA) {
-        return new RobotConfig(
-                p[4], p[5], p[6], p[7],
-                p[0], p[1], p[2], p[3],
-                p[8], p[9], p[10], p[11],
-                maxXV, maxYV, maxXA, maxYA);
+        return new RobotConfig()
+                .setXOnPathPD(p[0], p[1])
+                .setYOnPathPD(p[2], p[3])
+                .setXLastAdjustmentPD(p[4], p[5])
+                .setYLastAdjustmentPD(p[6], p[7])
+                .setFastHeadingPD(p[8], p[9])
+                .setSlowHeadingPD(p[10], p[11])
+                .setRobotConstants(maxXV, maxYV, maxXA, maxYA);
     }
 
     private static double clamp(double v, double lo, double hi) { return v < lo ? lo : (v > hi ? hi : v); }
@@ -909,8 +914,14 @@ public class PathTuner extends OpModeEX {
                     model.aFwd, model.aStr, model.aTurn));
             w.write(String.format("// locked ts  X=%.2f Y=%.2f H=%.2f  (zeta=%.2f, lock margin %.2fx)\n",
                     lockedTs[0], lockedTs[1], lockedTs[2], model.zeta, LOCK_MARGIN));
-            w.write(String.format("new RobotConfig(%.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %.5f, %.0f, %.0f, %.0f, %.0f);\n",
-                    b[4], b[5], b[6], b[7], b[0], b[1], b[2], b[3], b[8], b[9], b[10], b[11],
+            w.write("new RobotConfig()\n");
+            w.write(String.format("    .setXOnPathPD(%.5f, %.5f)\n", b[0], b[1]));
+            w.write(String.format("    .setYOnPathPD(%.5f, %.5f)\n", b[2], b[3]));
+            w.write(String.format("    .setXLastAdjustmentPD(%.5f, %.5f)\n", b[4], b[5]));
+            w.write(String.format("    .setYLastAdjustmentPD(%.5f, %.5f)\n", b[6], b[7]));
+            w.write(String.format("    .setFastHeadingPD(%.5f, %.5f)\n", b[8], b[9]));
+            w.write(String.format("    .setSlowHeadingPD(%.5f, %.5f)\n", b[10], b[11]));
+            w.write(String.format("    .setRobotConstants(%.0f, %.0f, %.0f, %.0f);\n",
                     positiveOr(maxV[Ax.STR.ordinal()], FALLBACK_XV),
                     positiveOr(maxV[Ax.FWD.ordinal()], FALLBACK_YV),
                     positiveOr(maxA[Ax.STR.ordinal()], FALLBACK_XA),

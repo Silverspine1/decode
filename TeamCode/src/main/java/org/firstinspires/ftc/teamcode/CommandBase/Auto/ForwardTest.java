@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.OpModeEX;
 
-import dev.weaponboy.nexus_pathing.Follower.follower;
-import dev.weaponboy.nexus_pathing.PathGeneration.commands.sectionBuilder;
-import dev.weaponboy.nexus_pathing.PathGeneration.pathsManager;
+import dev.weaponboy.nexus_pathing.Follower.Follower;
+import dev.weaponboy.nexus_pathing.PathGeneration.commands.SectionBuilder;
+import dev.weaponboy.nexus_pathing.PathGeneration.PathsManager;
 import dev.weaponboy.nexus_pathing.PathingUtility.RobotPower;
 import dev.weaponboy.nexus_pathing.RobotUtilities.RobotConfig;
 import dev.weaponboy.nexus_pathing.RobotUtilities.Vector2D;
@@ -24,10 +24,17 @@ public class ForwardTest extends OpModeEX {
     private static final double START_X = 180, START_Y = 120;
 
     // exact auto config (close_gateCycle.java)
-    private static final RobotConfig CONFIG = new RobotConfig(0.02, 0.004, 0.02, 0.009, 0.08, 0.004, 0.2, 0.004, 0.01, 0.0005, 0.012, 0.002, 130, 181, 650, 700);
+    private static final RobotConfig CONFIG = new RobotConfig()
+            .setXLastAdjustmentPD(0.02, 0.004)
+            .setYLastAdjustmentPD(0.02, 0.009)
+            .setXOnPathPD(0.08, 0.004)
+            .setYOnPathPD(0.2, 0.004)
+            .setFastHeadingPD(0.01, 0.0005)
+            .setSlowHeadingPD(0.012, 0.002)
+            .setRobotConstants(130, 181, 650, 700);
 
-    private final pathsManager paths = new pathsManager(CONFIG);
-    private final follower follow = new follower(CONFIG);
+    private final PathsManager paths = new PathsManager(CONFIG);
+    private final Follower follow = new Follower(CONFIG);
 
     private boolean running = false;
     private double targetX, targetY;
@@ -90,7 +97,7 @@ public class ForwardTest extends OpModeEX {
                 new Vector2D(cx, cy),
                 new Vector2D(targetX, targetY)
         };
-        sectionBuilder[] section = new sectionBuilder[]{
+        SectionBuilder[] section = new SectionBuilder[]{
                 () -> paths.addPoints(pts[0], pts[1])
         };
         paths.addNewPath("fwd120");
@@ -98,5 +105,6 @@ public class ForwardTest extends OpModeEX {
 
         follow.setPath(paths.returnPath("fwd120"));
         follow.usePathHeadings(false);
+        follow.holdPositionAtPathEnd(true);
     }
 }
